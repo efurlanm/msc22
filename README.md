@@ -1,9 +1,12 @@
 # Implementations
 
-| Directory | Description                                                                                                                                                                                                                                 |
-|:---------:| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| st        | Finite difference method to solve the partial differential equations resulting from the Poisson equations for a 2D heat transfer problem. It requires the calculation of a 5-point stencil over the discretized domain grid                 |
-| ft        | Fast Fourier transform, used for example in signal and image processing, in which the three-dimensional domain is decomposed, along one dimension, into slices along the chosen dimension                                                   |
-| rf        | Random decision forest, used for example for classification and regression tasks, is a machine learning method that operates by creating randomly a combination of decision trees, and in general uses cases trained by a classifier method |
+| Directory | Description |
+|:---:| --- |
+| st | The five-point stencil test case, used in a heat transfer problem on a finite surface modeled by the Poison partial differential equation. |
+| ft | The three dimensional fast Fourier transform test case, an
+algorithm that computes the multidimensional Fourier transform of an 3D
+array using a fast Fourier transform algorithm. |
+| rf | The random forest test case, an ensemble learning method for
+tasks such as classification and regression. |
 
 
