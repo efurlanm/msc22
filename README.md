@@ -1,5 +1,12 @@
 # Implementations
 
+<table>
+    <tr>
+        <td><img src="img/construction.gif"></td>
+        <td>This repository is permanently under construction, so its content changes constantly</td>
+    </tr>
+</table>
+
 | Directory | Description |
 |:---:| --- |
 | st | The five-point stencil test case, used in a heat transfer problem on a finite surface modeled by the Poison partial differential equation. |
