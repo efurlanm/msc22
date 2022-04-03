@@ -6,6 +6,8 @@
 | ft | The three dimensional fast Fourier transform test case, an algorithm that computes the multidimensional Fourier transform of an 3D array using a fast Fourier transform algorithm. |
 | rf | The random forest test case, an ensemble learning method for tasks such as classification and regression. |
 
+---
+
 <table>
     <tr>
         <td><img src="img/construction.gif"></td>
