@@ -1,0 +1,24 @@
+\begin{tabular}{lrrrrrrrrr}\toprule																	
+	&		&	\multicolumn{7}{c}{\textbf{Number of MPI processes}}													\\
+\cline{3-9}\vspace{-10pt}	&		&		&		&		&		&		&		&		\\
+\textbf{Parameter}	&	\textbf{Serial}	&	\textbf{1}	&	\textbf{4}	&	\textbf{16}	&	\textbf{24}	&	\textbf{48}	&	\textbf{72}	&	\textbf{96}	\vspace{2pt}\\
+\midrule[0.1pt]\vspace{-10pt}	&		&		&		&		&		&		&		&		\\
+\textbf{Elapsed Time [s]}	&	\fcblue{20.3}	&	21.1	&	7.4	&	4.0	&	4.0	&	3.8	&	5.1	&	5.5	\\
+\fcorange{NonMPI Time [s]}	&	\fcorange{-}	&	\fcorange{20.6}	&	\fcorange{5.8}	&	\fcorange{2.3}	&	\fcorange{1.9}	&	\fcorange{1.2}	&	\fcorange{1.3}	&	\fcorange{1.3}	\\
+\fcorange{Speedup}	&	\fcorange{-}	&	\fcorange{1.0}	&	\fcorange{2.7}	&	\fcorange{5.1}	&	\fcorange{5.1}	&	\fcorange{5.4}	&	\fcorange{4.0}	&	\fcorange{3.7}	\\
+\fcorange{Efficiency}	&	\fcorange{-}	&	\fcorange{1.0}	&	\fcorange{0.7}	&	\fcorange{0.3}	&	\fcorange{0.2}	&	\fcorange{0.1}	&	\fcorange{0.1}	&	\fcorange{0.0}	\\
+\textbf{MPI Time [s]}	&	-	&	0.5	&	1.5	&	1.7	&	2.1	&	2.5	&	3.7	&	4.1	\\
+\textbf{MPI Time [\%]}	&	-	&	2.4	&	\fcred{20.9}	&	\fcred{41.9}	&	\fcred{52.2}	&	\fcred{68.3}	&	\fcred{78.7}	&	\fcred{77.3}	\\
+\textbf{MPI\_Init [s]}	&	-	&	0.5	&	0.7	&	1.0	&	1.5	&	1.8	&	2.2	&	2.6	\\
+\textbf{MPI\_Sendrecv [s]}	&	-	&	-	&	0.8	&	0.6	&	0.4	&	0.3	&	0.5	&	0.3	\\
+\textbf{MPI Imbalance [s]}	&	-	&	-	&	0.1	&	0.3	&	0.2	&	0.4	&	1.2	&	1.1	\\
+\textbf{DP [GFlops]}	&	1.1	&	1.1	&	3.0	&	5.6	&	6.3	&	6.2	&	4.5	&	3.6	\\
+\textbf{IPC Rate}	&	1.4	&	1.4	&	1.3	&	1.1	&	1.1	&	1.3	&	1.6	&	1.5	\\
+\fcgreen{Bound}	&	\fcgreen{mem}	&	\fcgreen{mem}	&	\fcgreen{mem}	&	\fcgreen{MPI}	&	\fcgreen{MPI}	&	\fcgreen{MPI}	&	\fcgreen{MPI}	&	\fcgreen{MPI}	\\
+\textbf{Cache Stalls [\%c]}	&	9.1	&	8.8	&	19.2	&	17.9	&	18.0	&	13.7	&	9.3	&	10.6	\\
+\textbf{DRAM Stalls [\%c]}	&	\fcred{32.2}	&	\fcred{29.2}	&	16.0	&	\fcred{21.0}	&	\fcred{21.5}	&	12.3	&	5.7	&	4.9	\\
+\textbf{DRAM [GB/s]}	&	-	&	1.6	&	6.9	&	15.5	&	16.5	&	8.8	&	4.6	&	2.8	\\
+\textbf{Mem Stalls [\%ps]}	&	\fcred{45.9}	&	\fcred{41.7}	&	\fcred{41.3}	&	\fcred{44.9}	&	\fcred{43.2}	&	\fcred{29.4}	&	13.7	&	17.4	\\
+\textbf{Vectorization [\%]}	&	\fcred{5.3}	&	\fcred{5.5}	&	\fcred{5.3}	&	\fcred{5.4}	&	\fcred{7.8}	&	\fcred{5.0}	&	\fcred{31.0}	&	\fcred{18.4}	\\
+\bottomrule																	
+\end{tabular}																	

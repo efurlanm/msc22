@@ -1,0 +1,16 @@
+\begin{tabular}{lrrrrrrr}\toprule
+\textbf{Implemen-} & &\multicolumn{5}{c}{\textbf{Number of MPI processes}} \\
+\cline{3-7}\vspace{-10pt} & & & & & & \\
+\textbf{tation} &\textbf{Serial} &\textbf{1} &\textbf{4} &\textbf{9} &\textbf{16} &\textbf{36} \\
+\toprule\vspace{-11pt} & & & & & & \\
+\textbf{Numba-GPU/B715} &9.35 &104.82 &27.25 &11.71 &7.92 &4.35 \\
+\quad\textbf{Kernel} &1.08 &1.77 &1.34 &1.01 &0.84 &1.19 \\
+\quad\textbf{Mem transf} &0.32 &102.97 &25.51 &9.73 &5.48 &2.75 \\
+\quad\textbf{Insert energy} &7.93 &0.04 &0.04 &0.02 &0.00 &0.00 \\
+\midrule[0.1pt]\vspace{-10pt} & & & & & & \\
+\textbf{Numba-GPU/Seq-X} &2.25 &49.54 &15.16 &6.91 &6.72 &9.09 \\
+\quad\textbf{Kernel} &0.28 &0.86 &0.27 &0.31 &0.40 &0.46 \\
+\quad\textbf{Mem transf} &0.27 &48.63 &14.55 &5.78 &4.18 &6.69 \\
+\quad\textbf{Insert energy} &1.67 &0.02 &0.02 &0.01 &0.00 &0.00 \\
+\bottomrule
+\end{tabular}

@@ -1,0 +1,462 @@
+%   ____ _                 _              _  _   
+%  / ___| |__   __ _ _ __ | |_ ___ _ __  | || |  
+% | |   | '_ \ / _` | '_ \| __/ _ \ '__| | || |_ 
+% | |___| | | | (_| | |_) | ||  __/ |    |__   _|
+%  \____|_| |_|\__,_| .__/ \__\___|_|       |_|  
+%                   |_|   
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{TEST CASES PARALLEL PERFORMANCE}
+\label{ch_analysis}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This chapter covers the analysis of the parallel performance of the different serial and parallel implementations (F90 and Python) for each one of the three selected test cases. Most of the parallel implementations are MPI-based, but there are some others that employ specific Python libraries. The only implementations that were executed using thread parallelism were Numba-GPU and CuPy for GPU execution, and the loky implementation for CPU execution using threads. This chapter is divided as follows:
+
+\begin{itemize}
+
+\item\autoref {sec_analintr} Test environment: standard parallel performance definitions, description of the SDumont execution nodes, and a listing of the versions of the employed compilers, Python, etc.;
+
+\item\autoref {sec_analsten} Stencil test case: a five-point stencil finite difference method to solve partial differential equations resulting from Poisson equations, applied to a 2D heat transfer problem on a finite surface;
+
+\item\autoref {sec_analfft} Fast Fourier Transform (FFT) test case: an algorithm that computes the multidimensional Fourier transform of an 3D array of synthetic data; 
+
+\item\autoref {sec_analrf} Random Forest test case: a random forest algorithm applied for the classification of asteroid orbits of a NASA dataset.
+
+\end{itemize}
+
+\textbf{General guidelines for the tests}: all processing times shown here are the average of 3 executions. The calculation of speedups and parallel efficiencies always took the serial execution time of the F90 implementation as a reference, except for the Randon Forest test case, which used the serial execution time of the standard Python implementation as a reference. The serial and parallel test cases were executed by means of the Slurm job scheduler, except where otherwise stated. The JupyterLab interactive environment was employed in all tests.
+
+%
+%
+%
+%----------------------------------------
+\section{Test environment}
+\label{sec_analintr}
+%----------------------------------------
+
+Standard parallel performance metrics are used here, like the speedup $S_p$, given by the ratio between the serial $t_s$ and the parallel execution time $t_p$, using $p$ processes or threads (\autoref {eq_spd}), being the ideal speedup, called linear speedup, equal to $p$.
+
+\vspace{-2mm}
+\begin{equation}\label{eq_spd}
+S_p = \frac{t_s}{t_p}
+\end{equation}
+
+In this work, for each considered implementation of any test case, the speedup is calculated using the time of the serial version and the corresponding time of the parallel version, i.e., same programming language and compiler. However, the best serial time of each test case is considered, in order to allow a more fair comparison of speedups. Another standard metric is the parallel efficiency $E_p$, given by the ratio between the speedup $S_p$ and the corresponding number of $p$ processes or threads (\autoref {eq_ep}). Thus, a linear speedup corresponds to a parallel efficiency of 100\%, or unitary. It is important to note that the parallel efficiency can be higher than 100\%, depending on the value adopted as a reference for the speedup calculation. It can also happen for serial and parallel versions generated with the same programming language and compiler, if the parallelization implies in an optimization of the memory access, and thus lowering execution times of each process/thread.
+
+\vspace{-2mm}
+\begin{equation}\label{eq_ep}
+E_p = \frac{S_p}{p}
+\end{equation}
+
+%
+%
+%
+%----------------------------------------
+\subsection{The Santos Dumont computing environment}
+\label{sec_sdenviron}
+%----------------------------------------
+
+This section describes briefly the SDumont computing environment in terms of software and hardware. Three different computer nodes \footnote{\url{http://sdumont.lncc.br/machine.php?pg=machine}} of the LNCC Santos Dumont supercomputer were employed:
+
+\begin{itemize}
+
+\item \textbf{Thin node B710} (B710), with 2 Intel Xeon E5-2695v2 Ivy Bridge (2.4 GHz) 12-core processors (total of 24 cores per node) and 64 GB main memory; compilers and libraries include GNU Fortran 7.4, GNU Fortran 8.3, OpenMPI 4.0.1, Intel Fortran 19.0.3, Intel MPI, Python 3.6.12, Cython 0.29.20, NumPy 1.18.1, and  Numba 0.41.0;
+
+\item \textbf{Thin node B715} (B715), with 2 Intel Xeon E5-2695v2 Ivy Bridge (2.4 GHz) 12-core processors (total of 24 cores per node), 64 GB main memory, and 2 GPUs Nvidia Tesla K40t; in addition to the compilers and libraries of the B710 nodes, there are CUDA libraries;
+
+\item \textbf{Sequana X node} (Seq-X)
+
+    \begin{itemize}
+    
+    \item \textbf{Execution node}, with 2 Intel Xeon Gold 6252 (2.1 GHz) 24-core processors (total of 48 cores per node), 4 GPUs Nvidia Volta V100 and 384 GB main memory; in addition to the compilers and libraries of the B710 nodes, there are CUDA libraries;
+    
+    \item \textbf{sdumont18 login node} \footnote{\url{http://sdumont.lncc.br/support_manual.php?pg=support\#6.8}} , with 2 Intel Xeon Gold 6152 (2.1 GHz) 22-core processors (total of 44 cores per node), 4 GPUs Nvidia Volta V100 and 768 GB main memory.
+    
+    \end{itemize}
+
+\end{itemize}
+
+The employed compilers and libraries for F90 and Python are available in the SDumont computing environment. Serial and parallel implementations of the F90 used two suites of tools and compilers: GNU version 4.8.5 and Intel versions 19.0.3 or 19.1.2, included in the Intel Parallel Studio (PSXE) 2019/2020. Intel-compiled implementations used the Intel MPI library of the corresponding version, while GNU-compiled implementations used the OpenMPI library versions 3.3.8, 4.0.1 and 4.0.4. The standard optimization flag adopted in this work for F90 is -O3, which in general allows a performance close to the maximum attainable. Some particular implementations, or SDumont computer nodes, required different compiler or library versions. There is also available the PGI \textit {Portland Group Inc.} suite of compilers, but it was not considered in this work. 
+
+Two Python distributions are available in the SDumont computing environment: Python versions 3.6.8 and 3.7.7 of the Intel PSXE 2019/2020, and Python versions 3.7.3, 3.8.5, and 3.9.4 of the Anaconda 2018.12 and 2020.11 distribution. Additionally, the Conda environment and package manager was also employed. As already mentioned, some particular implementations, or SDumont computer nodes, required different compiler or library versions.
+
+%
+%
+%
+%----------------------------------------
+\subsection{Compiler evaluation for the Stencil test case}
+%\label{sec_analcompeval}
+%----------------------------------------
+
+A preliminary performance test for the Stencil test case was performed in order to choose one of the F90 compilers (GNU or Intel) to be adopted for this work. These codes are compiled \textit {Ahead Of Time} (AOT), that is, at compile time. This test also included a comparison between the Intel and Anaconda Python distributions, using the Numba compiler (not Intel or GNU) which is compatible with a subset of Python and NumPy, is a JIT compiler (\textit {Just In Time}), or that is, it compiles at runtime, and does not require major changes to Python code. For Numba, only the compute-intensive kernel is JIT-compiled and executed as machine code, with the rest of the code being interpreted by standard Python. Two Python distributions were compared: Anaconda 2018.12 with Python 3.7.3 and OpenMPI 4.0.1, and Intel PSXE 2019 with Python 3.6.8 and Intel MPI. Two different SDumont nodes are used, B710 and Seq-X.
+
+\autoref {tab_fort} shows the serial and parallel elapsed times for the Intel/GNU F90-compiled implementations and for the Intel/Anaconda implementations executed in the B710 or Seq-X nodes. Running up to 16 processes required a single B710 node, while 36 processes on the B710 required two nodes, and on Seq-X required a single node.
+
+    \TABLE [10pt] {Serial and parallel elapsed times (seconds) (Stencil test case, B710 or Seq-X nodes) as a function of the number of processes, for the different F90 and Numba implementations. Best times are highlighted in \fcred{red} for Seq-X, and in \fcblue{blue} for B710.} {Author's production.} {tab_fort}
+
+Considering these processing performance results, the GNU compiler suite was adopted for the remaining of this work, except for the profiling tests, shown in the \autoref {ch_profiling}, which required the Intel compiler suite. These results also compare Numba performance for Intel and Anaconda distributions, but Numba is just one of the available Python HPC approaches. In this work, the Python Anaconda distribution was adopted due to the wide availability of libraries and documentation.
+
+%
+%
+%
+%
+%
+%
+%
+%  ____  _                  _ _ 
+% / ___|| |_ ___ _ __   ___(_) |
+% \___ \| __/ _ \ '_ \ / __| | |
+%  ___) | ||  __/ | | | (__| | |
+% |____/ \__\___|_| |_|\___|_|_|
+%----------------------------------------
+\section{Stencil test case processing performance}
+\label{sec_analsten}
+%----------------------------------------
+
+This section shows the processing performance of the Stencil test case, for both serial and parallel implementations performed on CPUs/cores of one or multiple core processors of one or more computer nodes, and also on GPUs. The compute-intensive part of the implementations was hand coded, thus not using a specific off-the-shelf external library. 
+
+\autoref {tab_stim} shows processing times of the test case for the different implementations in one or more SDumont B710 computer nodes. The same table also shows processing times for the serial and for the MPI version with 1, 4, 9, 16, 36, 49, 64, and 81 processes. \autoref {fig_sttime} shows the processing times as a function of the number of MPI processes for the different implementations, \autoref {fig_stspee} shows the corresponding speedups, and \autoref {fig_steffi} shows the parallel efficiencies. 
+
+In general, according to \autoref {tab_stim}, the F90 and the F2PY achieved the best performance, with the latter yielding the lowest processing time of 1.01~s with 81 MPI processes. They are followed by the Cython and Numba implementations, with standard Python well behind. F2PY required little changes to the F90 original code, while Cython and Numba, little changes to the Python code. Numba performance was comparable to the others, only from 4 up to 36 processes. The very poor performance of the standard Python serial and parallel versions shows the convenience of using implementations like F2PY, Cython or even Numba. 
+
+    \TABLE {Performance (Stencil test case, B710 nodes) of the different implementations, depending on the number of MPI processes: processing times, speedups, and parallel efficiencies. Best values for serial or for each number of MPI processes are highlighted in \fcred{red}. The execution time of the compiled serial code was taken as a reference for the calculation of speedup (highlighted in \fcblue{blue}).} {Author's production.} {tab_stim}
+
+    \FIGURE {Processing times (seconds) (Stencil test case, B710 nodes) of the different implementations, depending on the number of MPI processes. For convenience, times above 30~s are not fully depicted.} {Author's production.} {fig_sttime}
+
+    \FIGURE {Speedups (Stencil test case, B710 nodes) of the different implementations, depending on the number of MPI processes. The execution time of the \textit {F90 serial} was taken as the reference for speedup calculation. Dashed line denotes the linear speedup.} {Author's production.} {fig_stspee}
+
+    \FIGURE {Parallel efficiencies (Stencil test case, B710 nodes) of the different implementations, depending on the number of MPI processes.} {Author's production.} {fig_steffi}
+
+As can be seen from \autoref {tab_stim}, \autoref {fig_sttime}, \autoref {fig_stspee} and \autoref {fig_steffi}, parallel scalability is not good as the test case algorithm updates all grid points at each time step, thus requiring the exchange of boundary grid point temperatures between neighboring subdomains in order to update the corresponding ghost zones. This update implies in communication between processes that compromises the parallel efficiency (below 40\% for 9 MPI processes or more). It can be seen that for up to 36 MPI processes, executed in two B710 nodes, all implementations performed similarly, except for standard Python. In the case of 81 MPI processes, executed in 4 computer nodes, the performance of all implementations was significantly lower in comparison to 64 MPI processes, executed in 3 computer nodes. The exception was F2PY that obtained the lowest time with 81 MPI processes.
+
+%
+%
+%
+%----------------------------------------
+\subsection{F90 serial and parallel (CPU)}
+\label{sec_stenf90}
+%----------------------------------------
+
+In this work, the parallelization was performed by dividing the domain of the test case into square subdomains of up to $ 9 \times 9 $ that are performed by 81 processes. The parameters of the test case are the number of points of the grid, the energy to be inserted, and the number of iterations. F90 obtained the best serial execution among the implementations, but not for the parallel executions with 16, 49, and 81 processes. 
+
+The results were evaluated in the JupyterLab interactive environment using a set of commands called \textit {cell magics} such as  \textit {\%\%writefile} to write the source code to disk, and \textit {\%\%bash} to access the \textit {shell}, for instance, to build the executable file that will be specified in the Slurm script. Output files resulting from the execution can be read and analyzed on the Notebook, allowing documentation and, consequently, reproducibility. 
+
+%
+%
+%
+%----------------------------------------
+\subsection{F2PY serial and parallel (CPU)}
+\label{sec_stenf2py}
+%----------------------------------------
+
+F2PY and F90 were the best performing implementations. Despite the overhead added by the wrapper and the Python interpreter, F2PY achieved superior performance for 16, 49 and 81 processes, and also in the serial implementation. For 81 processes, the performance of F2PY was much better than F90 (1.01~s versus 1.69~s).
+
+%
+%
+%
+%----------------------------------------
+\subsection{Standard Python serial and parallel (CPU)}
+\label{sec_stenpyth}
+%----------------------------------------
+
+The standard implementation in Python only uses, as external library, NumPy. It preserves most of the original code, being the 2D compute-intensive loops are performed by NumPy. However, the execution is slow, since it is interpreted. Such implementation serves to develop a proof of concept making use of the Python rapid prototyping and portability, requiring only on a standard Python interpreter. In a further step, the compute-intensive parts of the code can gradually be optimized, taking advantage of the interactive and experimental nature of Python.
+
+%
+%
+%
+%----------------------------------------
+\subsection{Cython serial and parallel (CPU)}
+\label{sec_stencyth}
+%----------------------------------------
+
+The performance of the serial Cython implementation is between F2PY and Numba, and the parallel is close to the ones of F90 and F2PY, from 4 to 64 processes. The serial and parallel versions are based on code that is compiled by Cython. The compute-intensive parts are encapsulated and a Python library is created. This external library is then called from standard Python code. Parallelization is provided by the mpi4py library. In general, Cython is a good choice when F90 code doesn't exist, and we want to use a language relatively close to Python to benefit from readability and maintainability, as well as the fast, iterative development cycle.
+
+%
+%
+%
+%----------------------------------------
+\subsection{Numba serial and parallel (CPU)}
+\label{sec_stennumb}
+%----------------------------------------
+
+Numba's performance was below F90, F2PY, and Cython, but well above standard Python one. The performance of the serial implementation was worse than serial Cython, and in the parallel implementation the performance was close to or equal to Cython from 4 to 81 processes.
+
+Numba uses JIT compilation and the compute-intensive core is placed in a function decorated for Numba. The rest of the code is executed by the Python interpreter, and the parallel implementation uses the mpi4py library. Numba proved to be a good alternative when the F90 code does not exist, or when the Python code exists, and it is intended to make few changes to the code. If applicable, Numba has also the advantage of providing support for GPU execution. Furthermore, since Numba can be JIT-compiled, the machine code is eventually optimized in execution time for a specific architecture, providing portability without the need of a previous AOT compilation. 
+
+%
+%
+%
+%----------------------------------------
+\subsection{Numba-GPU}
+\label{sec_stengpu}
+%----------------------------------------
+
+This section intends to compare the single-node performance of: 
+(i) the serial and parallel versions of the Numba-GPU implementation, running on one or more processor cores (CPU) and one or more GPUs, on B715 nodes or Seq-X nodes; 
+(ii) the serial and parallel versions of the F90 implementation, running on one or more processor cores (CPU) on B715 nodes or Seq-X nodes, without GPU. 
+The Seq-X node is an upgraded computer node with newer processors and GPUs, compared to the B715 node. In addition, the Seq-X node has four GPUs.  
+
+The Numba-GPU implementation was tested on a B715 node using a single CPU/core and a Tesla K40 GPU with an execution time of 9.35~s, which is half the execution time of the F90 serial implementation (\autoref {tab_stsx}). The same Numba-GPU implementation running on a Seq-X node using a single CPU/core and a single Volta V100 GPU only spent 2.25~s, achieving a speedup of 8.57, which is slightly better than the 9-process MPI F90 implementation on a Seq-X node. The Numba-GPU implementation required major code modifications, compared to standard serial Python code. 
+
+    \TABLE [12pt] {Performance (Stencil test case, Seq-X and B715 nodes) as a function of the number of processes for the F90 and Numba-GPU implementations. The execution time of the F90-compiled serial code in the B715 node was taken as the reference for the speedup calculation (highlighted in \fcblue{blue}). Best values for serial or for each number of MPI processes are highlighted in \fcred{red}.} {Author's production.} {tab_stsx}
+
+    \FIGURE {Processing times (seconds) (Stencil test case, Seq-X and B715 nodes) as a function of the number of MPI processes for the F90 and Numba-GPU implementations executed on the Seq-X (\fcred{red} and \fcgreen{green} bars) and on the B715 node (\fcblue{blue} and \fcorange{orange} bars). For convenience, times above 30~s are not fully depicted.} {Author's production.} {fig_stsx}
+
+    \FIGURE {Speedup (Stencil test case, Seq-X and B715 nodes) as a function of the number of MPI processes, for the F90 and Numba-GPU implementations, serial and parallel versions, executed on the Seq-X (dashed lines) and on the B715 (solid lines). The execution time of serial implementation F90 on B715 was taken as reference for speedup calculation. The dotted line \fcgray{gray} is the linear speedup.} {Author's production.} {fig_stsxspee}
+
+    \FIGURE {Parallel efficiencies (Stencil test case, Seq-X and B715 nodes) as a function of the number of MPI processes, for the F90 and Numba-GPU implementations, serial and parallel versions, executed on the Seq-X node (dashed lines) and on the B715 nodes (solid lines).} {Author's production.} {fig_stsxeffi}
+
+The compute-intensive part of the code was encapsulated into a function with a decorator for Numba JIT-compilation and execution in GPU. The block size of $256 = 16 \times 16$ threads has been trial and error optimized for running on V100 (Seq-X node) and K40 (B715 node) GPUs. The remaining code of the implementation, which is not compute-intensive, was executed in an interpreted form by Python using the CPU.
+
+The performances of the F90 serial and parallel implementations for CPU, and the Numba-GPU implementation for a B715 node or a Seq-X node, are shown in \autoref {tab_stsx} and in \autoref {fig_stsx}, \autoref {fig_stsxspee}, and \autoref {fig_stsxeffi}. In the parallel execution of the F90 implementation on the 24-core B715 node, for up to 16 MPI processes a single node was used, and for 36 MPI processes two nodes were used.
+
+Parallel execution of Numba-GPU on B715 nodes was done using 2 MPI processes per node. Each process is executed in a single core of a processor, leaving the remaining 11 cores of the processor in idle, and each process uses one GPU. 
+%
+Therefore, execution with 36 MPI processes demanded 18 nodes B715. However, Numba-GPU parallel execution in Seq-X nodes was restricted to a single Seq-X node with 48 cores and 4 GPUs. Thus, for 1 to 4 MPI processes, each process used an exclusive GPU, while for 9, 16, and 36 processes, GPUs are assigned to processes in a round-robin distribution, compromising the performance. A further improvement to take advantage of Numba ease of programming would be to use a single Seq-X node using 48 MPI processes, assigning 4 processes to be executed using Numba-GPU, leaving the remaining 44 processes executed using CPU (Numba-CPU). Another improvement, assuming many Seq-X nodes available, would be to use 4 MPI processes per node, similarly to the B715 Numba-GPU parallel implementations.
+
+\autoref {tab_stsx} and \autoref {fig_stsx} shows the processing times (seconds) as a function of the number of MPI processes, for the F90 and Numba-GPU implementations executed on B715 and Seq-X nodes. In this table, F90 implementation execution times in nodes B715 were extracted from \autoref {tab_stim}. The Numba-GPU implementation was executed on B715 nodes with 2 MPI processes per node using 2 GPUs, and thus each process is executed on a core/CPU paired with a GPU. Therefore, 1 MPI process uses 1 node, 4 processes uses 2 nodes, 9 processes uses 5 nodes, 16 processes uses 8 nodes, and 36 processes uses 18 nodes. The Numba-GPU implementation was executed on a single Seq-X node with up to 36 processes using 4 GPUs. Therefore, for 1 to 4 MPI processes, each process used an exclusive GPU, while for 9, 16, and 36 processes, GPUs are assigned to processes in a round-robin distribution, compromising the performance.
+
+\autoref {fig_stsxspee} shows the Speedup as a function of the number of MPI processes, for the serial and parallel versions of the F90 and Numba-GPU implementations, executed on Seq-X and B715 nodes. The dotted line represents the linear speedup. Two points should be highlighted: the speedup of 8.57 of the Numba-GPU serial version on the Seq-X node, and the good scalability of F90 parallel on the Seq-X node up to 9 MPI processes. Obviously, the speedup of serial versions of Numba-GPU is only due to GPUs.
+
+\autoref {fig_stsxeffi} shows the parallel efficiencies as a function of the number of MPI processes, for the serial and parallel F90 and Numba-GPU implementations, executed on the Seq-X node and nodes B715. In general, these implementations have very low parallel efficiency.
+
+\autoref {tab_stb5mu} shows the execution times of some parts of the code as a function of the number of MPI processes, for the Numba-GPU implementation executed on Seq-X and B715 nodes. All these times were measured in the Python code using the native Python wall time function. The three selected parts are executed every time step: \textit {Kernel}, \textit {Memory transfer} and \textit {Insertion of energy}. 
+
+    \TABLE [12pt] {Time elapsed (seconds) (Stencil test case, Seq-X and B715 nodes) for selected code snippets, as a function of the number of MPI processes, for the Numba-GPU implementation.} {Author's production.} {tab_stb5mu}
+
+The \textit {Kernel} is the most computationally intensive part of the code, and as it is JIT-compiled, it is slow on the first run because of the build time, and a little faster on later runs because the machine code is stored in memory requiring no additional compilation. \textit {Memory transfer} time measures the 2D array transfer time between host memory and device memory, and vice-versa, at each time step, which accounts for most of the total execution time in the MPI implementations. Please note that such transfer at every time step only exists for the MPI version, even using 1 process, but in the serial version, the 2D array is transferred to the GPU in the first time step, being the remaining time steps performed in the GPU without any transfer, except for the last time step. This explains the huge difference between the transfer times of the serial and 1-process MPI executions. 
+
+This Numba-GPU implementation for the Stencil test case shows that writing HPC code for GPU execution takes some effort, but generally brings some performance, as shown by the serial GPU implementation running on Seq-X node, being 8 times faster than the Serial CPU implementation. However, the performance of the parallel implementation show that it demands further optimizations in order to minimize the overheads of MPI communication and memory transfers between GPU and host, and thus explore the processing power of the GPU. 
+
+%
+%
+%
+%
+%
+%
+%
+%  _____ _____ _____ 
+% |  ___|  ___|_   _|
+% | |_  | |_    | |  
+% |  _| |  _|   | |  
+% |_|   |_|     |_| 
+%----------------------------------------
+\section{FFT test case processing performance}
+\label{sec_analfft}
+%----------------------------------------
+
+This section shows the processing performance of implementations of the Fast Fourier transform test case, running on CPUs, i.e., on one or multiple processor cores of one or more computer nodes, and on GPUs, including an implementation optimized for NUMA. The compute-intensive part of the implementations uses out-of-the-box external libraries, differently from the previous test case.
+
+\autoref {tab_ftim} shows processing times of the test case for the different implementations in one or more SDumont B710 computer nodes. The same table also shows processing times for the serial and for the MPI version with 1, 4, 16, 24, 48, 72, and 96 processes. According to the same table, the F90 implementation achieved the best performance, followed by the F2PY implementation. The shortest time was obtained by the F90 implementation with 48 MPI processes (2.22~s) processes. Numba performed generally better than Cython and Python, but worse than F2PY and F90. The very low performance of the standard Python serial and parallel versions shows the convenience of using other Python-compatible implementations like F2PY or Numba. 
+
+    \TABLE [9.5pt] {Performance (FFT test case, B710 nodes) of the different implementations, depending on the number of MPI processes: processing time, speedup, and parallel efficiencies. Best values are highlighted in \fcred{red}. The execution time of the \textit {F90 serial} implementation was taken as the reference for speedup calculation and is shown in \fcblue{blue}.} {Author's production.} {tab_ftim}
+
+    \FIGURE {Processing times (seconds) (FFT test case, B710 nodes) of the different implementations as a function of the number of MPI processes. For convenience, times above 30~s are not fully depicted.} {Author's production.} {fig_ffttime}
+
+    \FIGURE {Speedups (FFT test case, B710 nodes) of the implementations as a function of the number of MPI processes. Dotted lines denote linear speedup.} {Author's production.} {fig_fftspee}
+
+    \FIGURE {Parallel efficiencies (FFT test case, B710 nodes) as a function of the number of MPI processes depending on the number of MPI processes.} {Author's production.} {fig_ffteffi}
+
+\autoref {fig_ffttime} shows the processing times as a function of the number of MPI processes for the different implementations, \autoref {fig_fftspee} shows the corresponding speedups calculated using as reference to the time of the F90 serial implementation, and \autoref {fig_ffteffi} shows the parallel efficiencies. It can be seen that the parallel scalability is poor for all implementations due to the MPI communication. Only the F90 and F2PY implementations show some parallel scalability, and above 4 MPI processes all implementations presented efficiencies below 50\%.  
+
+%
+%
+%
+%----------------------------------------
+\subsection{F90 serial and parallel (CPU)}
+\label{sec_fftf90}
+%----------------------------------------
+
+The F90 serial and parallel implementations presented the best performance, but with poor parallel scalability, except for 4 processes, with efficiency of 75\%, reaching for 96 processes an efficiency of only 9\%.  
+
+%
+%
+%
+%----------------------------------------
+\subsection{F2PY serial and parallel (CPU)}
+\label{sec_fftf2py}
+%----------------------------------------
+
+F2PY serial and parallel implementations performed slightly worse than F90. Parallel scalability was also poor, except for 4 processes, with efficiency of 65\%, reaching for 96 processes an efficiency of only 4\%.  
+
+%
+%
+%
+%----------------------------------------
+\subsection{Standard Python serial and parallel (CPU)}
+\label{sec_fftpyth}
+%----------------------------------------
+
+Similarly to other test cases, the performance of the standard Python serial and parallel implementations is very poor, but these implementations serve as a starting point to execute making use of Python features, such as portability to execute in different computing environments. In a further step, compute-intensive parts of the code can be replaced by an optimized library, using for instance F2PY, Cython or Numba, as discussed in the next sections.
+
+%
+%
+%
+%----------------------------------------
+\subsection{Cython serial and parallel (CPU)}
+\label{sec_fftcyth}
+%----------------------------------------
+
+In general, the performances of the Cython and Python implementations are the worst, for both serial and parallel implementations. Serial times are high and parallel scalability is very poor. The serial Cython implementation uses some native extensions, pyFFTW library, and creates a Python library which is then used in a main Python code that imports the library and calls the new function. 
+
+%
+%
+%
+%----------------------------------------
+\subsection{Numba serial and parallel (CPU)}
+\label{sec_fftnumb}
+%----------------------------------------
+
+In general, Numba implementation performance was worse than the F90 and F2PY ones, but better than the Python and Cython implementations. The lower time of Numba was 4.33~s for 24 MPI processes, relatively close to F2PY implementation. 
+
+%
+%
+%
+%----------------------------------------
+\subsection{CuPy (GPU)}
+\label{sec_fftngpu}
+%----------------------------------------
+
+Similarly to the tests performed with the Numba-GPU for the Stencil test case in \autoref {sec_stengpu}, this section intends to compare the single-node performance of the serial CuPy implementation, using a single GPU on a B715 or a Seq-X node, to the F90 serial and parallel implementations, up to 24 processes on a B715 or a Seq-X node, but with no GPU. Performance results for both approaches are presented in \autoref {tab_fftsx}. Please note that the F90 implementations uses the FFTW library, while the Python one uses the fftn routine of the CuPy library. The same F90 and CuPy implementations were executed in both B715 and Seq-X nodes, but the latter node is newer, and thus deliver more processing performance.
+
+    \TABLE [10pt] {Performance (FFT test case, Seq-X and B715 nodes) of the serial CuPy implementation and of the F90 implementations, as a function of the  number of MPI processes. The execution time of the serial F90 implementation executed in the B715 node was taken as a reference for the calculation of speedup (highlighted in \fcblue{blue}). } {Author's production.} {tab_fftsx}
+
+    \FIGURE {Processing times (seconds) (FFT test case, Seq-X and B715 nodes) depending on the number of MPI processes for the F90 and CuPy implementations performed on the Seq-X (\fcred{red} and \fcgreen{green} bars) and on the B715 node (\fcblue{blue} and \fcorange{orange} bars).} {Author's production.} {fig_fftsx}
+
+    \FIGURE {Speedups (FFT test case, Seq-X and B715 nodes) of the serial CuPy implementation and of the F90 implementations, as a function of the number of MPI processes, executed on the Seq-X (\fcred{red} triangle and \fcgreen{green} line) and on the B715 node (\fcblue{blue} dot and \fcorange{orange} line). The execution time of the serial F90 implementation executed in the B715 node was taken as a reference for the calculation of speedup (highlighted in \fcblue{blue}). The dotted line indicates the linear speedup.} {Author's production.} {fig_fftsxspee}
+
+    \FIGURE {Parallel efficiencies (FFT test case, Seq-X and B715 nodes) of the serial CuPy implementation and of the F90 implementations, as a function of the number of MPI processes, performed on the Seq-X (\fcred{red} triangle and \fcgreen{green} line) and on the B715 node (\fcblue{blue} dot and \fcorange{orange} line).} {Author's production.} {fig_fftsxeffi}
+
+The CuPy serial implementations (1 processor core and 1 GPU) had a poor performance, compared to the F90 parallel implementations executed with 4 to 24 processes on both the B715 or the Seq-X node. In addition, the parallel F90 implementation executed had acceptable parallel scalability, similar to when it was performed in both nodes, if considered as reference the F90 serial time on the SEQ-X node (12.74~s). As an example, for 24 processes, efficiencies were 40\% and 55\%, executed in nodes B715 and Seq-X, respectively. The corresponding graphs of \autoref {tab_fftsx} are shown in \autoref {tab_fftsx} and \autoref {fig_fftsx}, \autoref {fig_fftsxspee} and \autoref {fig_fftsxeffi}.
+
+The CuPy implementation for GPU didn't require many code modifications compared to the Python implementation for CPU as CuPy doesn't wrap the code in a function like Numba-GPU. The CuPy library is similar to the NumPy library, being used to copy the 3D array to the device memory (GPU), execute the fftn routine, and calculate the checksum of the array elements.
+
+%
+%
+%
+%----------------------------------------
+\subsection{Optimization for NUMA}
+\label{sec_fftnuma}
+%----------------------------------------
+
+In order to check the influence of NUMA optimization (\autoref {sec_opitnuma}), this section show processing performance using always 16 processes for the different implementations. Since executions were performed in 24-core B710 or 48-core Seq-X nodes, such number of processes may be unevenly distributed between the processors. This can be avoided by using the \textit {cpu\_bind} option with (for instance) the \textit {distribution=block:cyclic} attribute in the Slurm script, as described in \autoref {sec_opitnuma}, and referred in this section as ``option Bind''.
+
+\autoref {fig_ftnu} shows the processing times (seconds) and \autoref {tab_ftnu} also shows the speedup and parallel efficiency, of the different implementations of the FFT test case, for 16 MPI processes on B710 and Seq-X nodes, with/without NUMA optimization, respectively Bind/None. The Bind option reduced time by 10\% in average for node B710, and by 21\% in average for node Seq-X. In the latter, Numba had the biggest reduction (32\%).
+
+    \TABLE [18pt] {Processing times (seconds) (FFT test case, B710 and Seq-X nodes), speedups and parallel efficiencies of the different implementations for 16 MPI processes, using or not the Bind option for NUMA optimization. The execution time of F90 without such option (None) on node B710 was taken as reference for speedup calculation (highlighted in \fcblue{blue}). Best values are highlighted in \fcred{red}.} {Author's production.} {tab_ftnu}
+
+    \FIGURE {Processing times (seconds) (FFT test case, B710 and Seq-X nodes) of the different implementations for 16 MPI processes with/without NUMA optimization (respectively Bind/None).} {Author's production.} {fig_ftnu}
+
+    \FIGURE {Speedups (FFT test case, B710 and Seq-X nodes) of the different implementations for 16 MPI processes with/without NUMA optimization (respectively Bind/None).} {Author's production.} {fig_ftnuspee}
+
+    \FIGURE {Parallel efficiencies (FFT test case, B710 and Seq-X nodes) of the different implementations for 16 MPI processes, with/without NUMA optimization (respectively Bind/None).} {Author's production.} {fig_ftnueffi}
+
+\autoref {fig_ftnuspee} shows the speedup of the different FFT test case implementations, speedup and parallel efficiencies for 16 MPI processes, running on nodes B710 and Seq-X with/without NUMA optimization (respectively Bind/None). F90 execution time with 16 processes without optimization was taken as reference for speedup calculation. \autoref {fig_ftnueffi} shows the parallel efficiencies of the different implementations of the FFT test case, speedup and parallel efficiencies for 16 MPI processes running on nodes B710 and Seq-X with/without NUMA optimization (respectively Bind/None).
+
+%
+%
+%
+%
+%
+%
+%
+%  _____                   _   
+% |  ___|__  _ __ ___  ___| |_ 
+% | |_ / _ \| '__/ _ \/ __| __|
+% |  _| (_) | | |  __/\__ \ |_ 
+% |_|  \___/|_|  \___||___/\__|
+%----------------------------------------
+\section{Random Forest test case processing performance}
+\label{sec_analrf}
+%----------------------------------------
+
+This section shows the processing performance of the random forest (RF) test case (\autoref {tab_rfimpl}), which has the compute-intensive part executed by an external library. Python, Numba, and Cython use the Scikit-learn library (\autoref {sec_apprsklr}), while F90 and F2PY use the PARF library (\autoref {sec_apprparf}). Parallelization is done using the MPI library for F90 and F2PY, or the IPP library, for Python, Cython, and Numba. This section shows the serial and parallel processing performance of the CPU implementations, i.e., executed by one or multiple processor cores of one or more computer nodes, with no GPU. 
+
+    \TABLE [8.5pt] {Performance (Random Forest test case, B710 nodes) of the different implementations, depending on the number of processes: processing times, speedups, and parallel efficiencies. Best values for each case are highlighted in \fcred{red}. The execution time of the serial code was taken as a reference for the calculation of speedup, shown in \fcblue{blue}.} {Author's production.} {tab_rfimpl}
+
+    \FIGURE {Processing times (seconds) (Random Forest test case, B710 nodes) for the different implementations as a function of the number of processes. For convenience, times above 40~s are not fully depicted.} {Author's production.} {fig_rftime}
+
+    \FIGURE {Speedups (Random Forest test case, B710 nodes) of implementations as a function of the number of processes. Serial Python time was used as reference for calculation of the speedup. The dotted line denotes linear speedup.} {Author's production.} {fig_rfspee}
+
+    \FIGURE {Parallel efficiencies (Random Forest test case, B710 nodes) of implementations as a function of number of processes.} {Author's production.} {fig_rfeffi}
+
+\autoref {tab_rfimpl} shows the processing times for the different implementations on SDumont B710 execution nodes.  The same table also shows processing times for the serial and parallel versions with 1, 4, 16, 24, 48, 72, and 96 processes. Execution with 1 to 24 processes use 1 node, 48 processes use 2 nodes, 72 processes use 3 nodes, and 96 processes use 4 nodes. \autoref {fig_rftime} also shows the processing times as a function of the number of processes for the different implementations, \autoref {fig_rfspee} shows the corresponding speedups, and \autoref {fig_rfeffi} shows the parallel efficiencies.
+
+According to \autoref {tab_rfimpl}, the lower time was 11~s for the Python implementation with 24 processes, while the higher time was 141.71~s for the parallel F2PY implementation using 1 MPI process. Numba serial obtained a slightly better time than Python serial, however to standardize the analysis, the Python serial time was used as a reference for speedup and efficiency calculations, instead of serial F90, which demanded a higher execution time. 
+
+Serial implementations achieved slightly better time than the corresponding 1-process parallel versions, as the latter add the overhead of parallel execution mechanisms and libraries. In general, the Python implementation have the best performance in all cases, followed by Numba. However, speedups and parallel efficiencies were very low for all implementations. 
+
+Since the compute-intensive part of the code is executed by external libraries, just the serial implementations can be used for an initial performance evaluation. The serial F90 and F2PY implementations, which use the PARF library (\autoref {sec_apprparf}), are much slower than the Python, Numba or Cython implementations, which use the Scikit-learn library. Another aspect is that Numba or Cython implementations did not perform better than the standard Python implementation, indicating that a suitable choice of optimized library was more important, and that the use of Numba or Cython resulted in performance overheads.
+
+Speedups and parallel efficiencies were very low for all implementations. As can be seen in \autoref {tab_rfimpl}, and in \autoref {fig_rftime}, \autoref {fig_rfspee}, and \autoref {fig_rfeffi}, execution times decreased up to 16 (using 1 node), 24 or 48 processes (using 2 nodes), depending on the implementation. Parallel scalability was very poor, since all speedups are below 2.5 and all efficiencies, below 0.5.
+ 
+%
+%
+%
+%----------------------------------------
+\subsection{F90 Serial and parallel (CPU)}
+\label{sec_rff90}
+%----------------------------------------
+
+The F90 implementation requires the PARF library to be configured, and built using the Intel compiler. In the case of the parallel version, it also needs to be configured to use the MPI library. PARF has an interface to the command line, which was used in this implementation. Two different libraries were compiled and generated, one for the sequential version, the other for the parallel version. Once created, the libraries are used directly via command line, using the files containing the datasets as arguments of the library function. 
+
+%
+%
+%
+%----------------------------------------
+\subsection{F2PY Serial and parallel (CPU)}
+\label{sec_rff2py}
+%----------------------------------------
+
+In this implementation, F2PY wrapped the F90 code, which reuses code from the PARF library and executes the compute-intensive part of the code, into a new Python library using F2PY. The remaining Python part of the code is simple, it loads the library, loads the datasets, calls the library, and displays the result. Overall performance of this F2PY implementations is close to that of F90. The F2PY serial version is slightly faster than the F90 version, probably due to optimizations performed in the original F90 code when compiled by F2PY.
+
+There are no major changes in the parallel version, the F90 source code of the PARF library is configured to use the MPI library, and the new parallel version of the library is built by F2PY. The newly created library is then used in the same Python code as the serial version, being the Slurm configuration file written accordingly for MPI execution.
+
+%
+%
+%
+%----------------------------------------
+\subsection{Standard Python Serial and parallel (CPU)}
+\label{sec_ffpyth}
+%----------------------------------------
+
+The standard Python code is more complex than the F90 implementation, which uses the PARF library, since the Scikit-learn library is more general and requires specifying the estimator (Random Forest), the related parameters (for example, the number of trees of the Random Forest), to execute the training phase using the corresponding dataset, and then to perform the test phase using the test dataset. Finally, to calculate the chosen Kappa rank metric. In addition, a small Python code was used to read the original ARFF dataset from disk and to convert it to the Scikit-learn format. The parallel version is similar, requiring only the addition of a Python line of code specifying the IPP library as the parallel backend in the training phase. 
+
+%
+%
+%
+%----------------------------------------
+\subsection{Cython Serial and parallel (CPU)}
+\label{sec_rfcyth}
+%----------------------------------------
+
+The Cython implementation is very similar to the standard Python, with the compute-intensive part of the code executed by the Scikit-learn library. Cython is only used for the remaining part of the code, and thus it was not expected a significant performance improvement. However, the use of the Cython adds a small overhead, and performance was worse than that of standard Python. Parallelization was done using the Scikit-learn library with the IPP backend.
+
+%
+%
+%
+%----------------------------------------
+\subsection{Numba Serial and parallel (CPU)}
+\label{sec_rfnumb}
+%----------------------------------------
+
+Since the compute-intensive part of the Random Forest code is executed using the Scikit-learn library, Numba JIT-compilation was only applied to the remaining part of the code. JIT-compilation makes the execution slightly slower than that of the AOT-compiled Cython. Parallelization was done using the Scikit-learn library with the IPP backend.
+
+%
+%
+% 
+%----------------------------------------
+\subsection{IPP and Loky (CPU)}
+\label{sec_ipploky}
+%----------------------------------------
+
+This section shows the serial and parallel processing performance of loky and IPP implementations running on Seq-X node CPUs. Loky (loky Python library) is limited to a single compute node, while IPP (IPP Python library) has no such limitation, and both are used with the Scikit-learn library. In addition, IPP executions were evaluated for NUMA optimization that evenly distribute the processes among the processor cores, using the \textit {cpu\_bind} option with the attribute \textit {distribution=block:cyclic} in the Slurm script, as described in the \autoref {sec_opitnuma}, and referred below as the Bind option. 
+
+\autoref {tab_rfiln}, \autoref {fig_rfloti}, \autoref {fig_rflosp}, and \autoref {fig_rfsxef} show the Random Forest test case processing times for the different implementations and number of processes (loky is restricted to the 48 cores of a single node) executed on Seq-X nodes. The table shows the processing times for the serial and parallel versions with 1 node (up to 48 processes), 2 nodes (96 processes), 3 nodes (144 processes) and 4 nodes (192 processes). In the table, the best times are shown in red, and the sequential Python implementation used as a reference is shown in blue. The shortest time was 0.62~s for the loky implementation with 40 processes, while the worst time was 10.6~s for the 1-process parallel IPP. The IPP implementation optimized for NUMA did not improve the performance in comparison to its non-optimized version. Even limited to a single computing node, loky implementation achieved a far better performance than the IPP one.
+
+    \TABLE [4pt] {Performance (Random Forest test case, Seq-X nodes) of the IPP, IPP NUMA and locky implementations as a function of the number of processes: processing times, speedups, and parallel efficiencies. The best values for serial or for each number of processes are shown in \fcred{red}. The serial code execution time was taken as a reference for the speedup calculation, shown in \fcblue{blue}.} {Author's production.} {tab_rfiln}
+
+    \FIGURE {Processing times (seconds) (Random Forest test case, Seq-X nodes) of implementations as a function of the number of processes.} {Author's production.} {fig_rfloti}
+
+    \FIGURE {Speedups (Random Forest test case, Seq-X nodes) of implementations as a function of the number of processes. Serial Python time was used as reference for calculations. The dotted line denotes linear speedup.} {Author's production.} {fig_rflosp}
+
+    \FIGURE {Parallel efficiencies (Random Forest test case, Seq-X nodes) of implementations as a function of number of processes.} {Author's production.} {fig_rfsxef}

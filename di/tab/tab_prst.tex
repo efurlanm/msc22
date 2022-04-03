@@ -1,0 +1,26 @@
+\setlength{\tabcolsep}{5pt}																			
+\begin{tabular}{lrrrrrrrrrr}\toprule																			
+	&		&	\multicolumn{8}{c}{\textbf{Number of MPI processes}}															\\
+\cline{3-10}\vspace{-10pt}	&		&		&		&		&		&		&		&		&		\\
+\textbf{Parameter}	&	\textbf{Serial}	&	\textbf{1}	&	\textbf{4}	&	\textbf{9}	&	\textbf{16}	&	\textbf{36}	&	\textbf{49}	&	\textbf{64}	&	\textbf{81}	\vspace{2pt}\\
+\midrule[0.1pt]\vspace{-10pt}	&		&		&		&		&		&		&		&		&		\\
+\textbf{Elapsed Time [s]}	&	\fcblue{22.6}	&	23.3	&	9.1	&	7.9	&	7.5	&	5.0	&	4.8	&	5.4	&	5.7	\\
+\fcorange{NonMPI Time [s]}	&	\fcorange{-}	&	\fcorange{22.8}	&	\fcorange{8.1}	&	\fcorange{6.7}	&	\fcorange{5.5}	&	\fcorange{2.4}	&	\fcorange{2.0}	&	\fcorange{1.8}	&	\fcorange{1.5}	\\
+\fcorange{Speedup}	&	\fcorange{-}	&	\fcorange{1.0}	&	\fcorange{2.5}	&	\fcorange{2.9}	&	\fcorange{3.0}	&	\fcorange{4.5}	&	\fcorange{4.7}	&	\fcorange{4.2}	&	\fcorange{4.0}	\\
+\fcorange{Efficiency}	&	\fcorange{-}	&	\fcorange{1.0}	&	\fcorange{0.6}	&	\fcorange{0.3}	&	\fcorange{0.2}	&	\fcorange{0.1}	&	\fcorange{0.1}	&	\fcorange{0.1}	&	\fcorange{0.0}	\\
+\textbf{MPI Time [s]}	&	-	&	0.5	&	1.0	&	1.2	&	2.0	&	2.6	&	2.8	&	3.6	&	4.2	\\
+\textbf{MPI Time [\%]}	&	-	&	2.1	&	\fcred{10.9}	&	\fcred{15.1}	&	\fcred{27.5}	&	\fcred{52.5}	&	\fcred{59.4}	&	\fcred{68.2}	&	\fcred{74.4}	\\
+\textbf{MPI\_Init [s]}	&	-	&	1.0	&	0.8	&	1.0	&	1.1	&	1.5	&	1.4	&	1.9	&	2.0	\\
+\textbf{MPI\_Wait [s]}	&	-	&	-	&	0.2	&	0.1	&	0.9	&	0.9	&	1.0	&	0.8	&	1.2	\\
+\textbf{MPI\_Bcast [s]}	&	-	&	-	&	0.0	&	0.0	&	0.0	&	0.2	&	0.3	&	0.8	&	0.8	\\
+\textbf{MPI Imbalance [s]}	&	-	&	-	&	0.1	&	0.0	&	0.7	&	0.9	&	1.0	&	1.2	&	1.6	\\
+\textbf{DP [GFlops]}	&	3.8	&	3.6	&	9.6	&	12.4	&	12.0	&	17.2	&	16.4	&	15.4	&	13.6	\\
+\textbf{IPC Rate}	&	1.5	&	1.3	&	\fcred{1.0}	&	\fcred{0.6}	&	\fcred{0.9}	&	1.3	&	1.5	&	1.5	&	1.7	\\
+\fcgreen{Bound}	&	\fcgreen{mem}	&	\fcgreen{mem}	&	\fcgreen{mem}	&	\fcgreen{mem}	&	\fcgreen{mem}	&	\fcgreen{MPI}	&	\fcgreen{MPI}	&	\fcgreen{MPI}	&	\fcgreen{MPI}	\\
+\textbf{Cache Stalls [\%c]}	&	13.0	&	14.4	&	\fcred{23.8}	&	\fcred{32.2}	&	\fcred{26.9}	&	16.2	&	16.3	&	12.6	&	10.2	\\
+\textbf{DRAM Stalls [\%c]}	&	13.3	&	14.3	&	\fcred{29.2}	&	\fcred{33.2}	&	\fcred{27.7}	&	\fcred{24.4}	&	14.0	&	10.6	&	7.1	\\
+\textbf{DRAM [GB/s]}	&	-	&	11.9	&	26.4	&	-	&	28.5	&	20.0	&	12.1	&	12.5	&	8.0	\\
+\textbf{Mem Stalls [\%ps]}	&	\fcred{29.3}	&	\fcred{31.9}	&	\fcred{44.7}	&	\fcred{67.3}	&	\fcred{52.9}	&	\fcred{36.2}	&	\fcred{26.1}	&	\fcred{21.7}	&	14.0	\\
+\textbf{Vectorization [\%]}	&	100.0	&	100.0	&	100.0	&	100.0	&	100.0	&	99.9	&	98.5	&	99.8	&	98.0	\\
+\bottomrule																			
+\end{tabular}																			

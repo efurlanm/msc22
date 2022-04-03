@@ -1,0 +1,2912 @@
+%     _                               _ _        ____  
+%    / \   _ __  _ __   ___ _ __   __| (_)_  __ |  _ \ 
+%   / _ \ | '_ \| '_ \ / _ \ '_ \ / _` | \ \/ / | | | |
+%  / ___ \| |_) | |_) |  __/ | | | (_| | |>  <  | |_| |
+% /_/   \_\ .__/| .__/ \___|_| |_|\__,_|_/_/\_\ |____/ 
+%         |_|   |_| 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand{\thechapter}{D}
+\chapter{APPENDIX D - CODES IMPLEMENTED IN THIS WORK}
+\label{appendixD}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This appendix shows the main codes of the three test cases shown in this work. The full set of codes is available at the repository \url{http://github.com/efurlanm/msc22}.
+
+
+%
+%
+%
+%
+%
+%
+%
+%  ____  _                  _ _ 
+% / ___|| |_ ___ _ __   ___(_) |
+% \___ \| __/ _ \ '_ \ / __| | |
+%  ___) | ||  __/ | | | (__| | |
+% |____/ \__\___|_| |_|\___|_|_|
+%----------------------------------------
+\section{Implementations of the stencil test case}
+%----------------------------------------
+
+
+
+
+%----------------------------------------
+\subsection{Serial F90}
+%----------------------------------------
+\begin{lstlisting}[language=Fortran, caption={Serial F90 implementation of the stencil test case.}]
+program stencil
+    implicit none
+    integer, parameter  :: nsources=3
+    integer             :: n=4800     ! nxn grid (4800)
+    integer             :: energy=1   ! energy to be injected per iteration (1)
+    integer             :: niters=500 ! number of iterations (500)
+    integer             :: iters, i, j, size, sizeStart, sizeEnd
+    integer, dimension(3, 2)        :: sources
+    double precision, allocatable   :: aold(:,:), anew(:,:)
+    double precision    :: t=0.0, t1=0.0, heat=0.0
+            
+    call cpu_time(t1)
+    t = -t1
+    
+    size = n + 2
+    sizeStart = 2
+    sizeEnd = n + 1
+
+    allocate(aold(size, size))
+    allocate(anew(size, size))
+    aold = 0.0
+    anew = 0.0
+
+    sources(1,:) = (/ n/2,   n/2   /)
+    sources(2,:) = (/ n/3,   n/3   /)
+    sources(3,:) = (/ n*4/5, n*8/9 /)
+
+    do iters = 1, niters, 2
+        
+        do j = sizeStart, sizeEnd
+            do i = sizeStart, sizeEnd
+                anew(i,j) = aold(i,j)/2.0 + (aold(i-1,j) + aold(i+1,j) +  &
+                            aold(i,j-1) + aold(i,j+1))/4.0/2.0
+            enddo
+        enddo
+
+        do i = 1, nsources
+            anew(sources(i,1)+1, sources(i,2)+1) =  &
+                anew(sources(i,1)+1, sources(i,2)+1) + energy
+        enddo
+
+        do j = sizeStart, sizeEnd
+            do i = sizeStart, sizeEnd
+                aold(i,j) = anew(i,j)/2.0 + (anew(i-1,j) + anew(i+1,j) +  &
+                            anew(i,j-1) + anew(i,j+1))/4.0/2.0
+            enddo
+        enddo
+        
+        do i = 1, nsources
+            aold(sources(i,1)+1, sources(i,2)+1) =  &
+                aold(sources(i,1)+1, sources(i,2)+1) + energy
+        enddo
+
+    enddo
+   
+    heat = 0.0
+    do j = sizeStart, sizeEnd
+        do i = sizeStart, sizeEnd
+            heat = heat + aold(i,j)
+        end do
+    end do
+
+    deallocate(aold)
+    deallocate(anew)
+
+    call cpu_time(t1)
+    t = t + t1
+
+    write(*, "('Heat = ' f0.4' | ')", advance="no") heat
+    write(*, "('Time = 'f0.4)") t
+
+end
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Parallel F90}
+%----------------------------------------
+\begin{lstlisting}[language=Fortran, caption={Parallel F90 implementation of the stencil test case.}]
+program stencil
+    use MPI
+    implicit none
+    integer :: n=0          ! nxn grid
+    integer :: energy=0     ! energy to be injected per iteration
+    integer :: niters=0     ! number of iterations
+    integer :: iters, i, j, px, py, rx, ry
+    integer :: north, south, west, east, bx, by, offx, offy
+    integer :: nargs=0, iargc
+    integer :: mpirank, mpisize, mpitag=1, mpierror
+    integer, dimension(3) :: args
+    integer, dimension(2) :: pdims=0
+    integer, dimension(4) :: sendrequest, recvrequest
+    double precision :: mpiwtime=0.0, heat=0.0, rheat=0.0
+    double precision, dimension(:), allocatable   :: sendnorthgz, sendsouthgz
+    double precision, dimension(:), allocatable   :: recvnorthgz, recvsouthgz
+    double precision, dimension(:,:), allocatable :: aold, anew
+    character(len=50)                             :: argv
+
+    integer, parameter  :: nsources=3        ! three heat sources
+    ! locnsources = number of sources in my area
+    integer             :: locnsources=0, locx, locy
+    ! locsources = sources local to my rank
+    integer, dimension(nsources, 2) :: locsources=0, sources
+
+    call MPI_Init(mpierror)
+    call MPI_Comm_rank(MPI_COMM_WORLD, mpirank, mpierror)
+    call MPI_Comm_size(MPI_COMM_WORLD, mpisize, mpierror)
+
+    if (mpirank == 0) then                          ! rank 0 argument checking
+        mpiwtime = -MPI_Wtime()
+        nargs = iargc()
+        call getarg(1, argv); read(argv, *) n       ! nxn grid
+        call getarg(2, argv); read(argv, *) energy  ! energy to be injected
+        call getarg(3, argv); read(argv, *) niters  ! number of iterations
+        args = [ n, energy, niters ]                ! distribute arguments
+        call MPI_Bcast(args, 3, MPI_INTEGER, 0, MPI_COMM_WORLD, mpierror)
+    else
+        call MPI_Bcast(args, 3, MPI_INTEGER, 0, MPI_COMM_WORLD, mpierror)
+        n = args(1); energy = args(2); niters  = args(3)
+    endif
+    
+    ! Creates a division of processors in a Cartesian grid
+    ! MPI_DIMS_CREATE(NNODES, NDIMS, DIMS, IERROR)
+    !   NNODES - number of nodes in a grid
+    !   NDIMS - number of Cartesian dimensions 
+    !   DIMS - array specifying the number of nodes in each dimension
+    ! Examples:
+    !   MPI_Dims_create(6, 2, dims)  ->  (3,2)
+    !   MPI_Dims_create(7, 2, dims)  ->  (7,1)
+    call MPI_Dims_create(mpisize, 2, pdims, mpierror)
+
+    ! determine my coordinates (x,y)
+    px = pdims(1)
+    py = pdims(2)
+    rx = mod(mpirank, px)
+    ry = mpirank / px
+
+    ! determine my four neighbors
+    north = (ry - 1) * px + rx; if( (ry - 1) < 0  ) north = MPI_PROC_NULL
+    south = (ry + 1) * px + rx; if( (ry + 1) >= py) south = MPI_PROC_NULL
+    west = ry * px + rx - 1;    if( (rx - 1) < 0  ) west  = MPI_PROC_NULL
+    east = ry * px + rx + 1;    if( (rx + 1) >= px) east  = MPI_PROC_NULL
+
+    ! decompose the domain   
+    bx = n / px             ! block size in x
+    by = n / py             ! block size in y
+    offx = (rx * bx) + 1    ! offset in x
+    offy = (ry * by) + 1    ! offset in y
+
+    ! initialize heat sources
+    sources = reshape( [ n/2,   n/2,        &
+                         n/3,   n/3,        &
+                         n*4/5, n*8/9 ],    &
+              shape(sources), order=[2, 1])
+
+    do i = 1, nsources      ! determine which sources are in my patch
+        locx = sources(i, 1) - offx
+        locy = sources(i, 2) - offy    
+        if(locx >= 0 .and. locx <= bx .and. locy >= 0 .and. locy <= by) then
+            locnsources = locnsources + 1
+            locsources(locnsources, 1) = locx + 2
+            locsources(locnsources, 2) = locy + 2
+        endif
+    enddo
+
+    ! allocate communication buffers
+    allocate(sendnorthgz(bx))   ! send buffers
+    allocate(sendsouthgz(bx))
+    allocate(recvnorthgz(bx))   ! receive buffers
+    allocate(recvsouthgz(bx))
+    ! allocate two work arrays
+    allocate(aold(bx+2, by+2)); aold = 0.0   ! 1-wide halo zones!
+    allocate(anew(bx+2, by+2)); anew = 0.0   ! 1-wide halo zones!
+
+    ! laco principal das iteracoes
+    do iters = 1, niters, 2
+
+        ! --- anew <- stencil(aold) ---
+        if(north /= MPI_PROC_NULL) then 
+            sendnorthgz = aold(2, 2:bx+1)
+            recvnorthgz = 0.0
+            call MPI_IRecv(recvnorthgz, bx, MPI_DOUBLE_PRECISION, north,  &
+                            mpitag, MPI_COMM_WORLD, recvrequest(1), mpierror)
+            call MPI_ISend(sendnorthgz, bx, MPI_DOUBLE_PRECISION, north,  &
+                            mpitag, MPI_COMM_WORLD, sendrequest(1), mpierror)
+        endif   
+        if(south /= MPI_PROC_NULL) then 
+            sendsouthgz = aold(bx+1, 2:bx+1)
+            recvsouthgz(:) = 0.0
+            call MPI_IRecv(recvsouthgz, bx, MPI_DOUBLE_PRECISION, south,  &
+                            mpitag, MPI_COMM_WORLD, recvrequest(2), mpierror)
+            call MPI_ISend(sendsouthgz, bx, MPI_DOUBLE_PRECISION, south,  &
+                            mpitag, MPI_COMM_WORLD, sendrequest(2), mpierror)
+        endif    
+        if(east /= MPI_PROC_NULL) then 
+            call MPI_IRecv(aold(2:bx+1, bx+2), bx, MPI_DOUBLE_PRECISION, east, &
+                            mpitag, MPI_COMM_WORLD, recvrequest(3), mpierror)
+            call MPI_ISend(aold(2:bx+1, bx+1), bx, MPI_DOUBLE_PRECISION, east, &
+                            mpitag, MPI_COMM_WORLD, sendrequest(3), mpierror)
+        endif    
+        if(west /= MPI_PROC_NULL) then 
+            call MPI_IRecv(aold(2:bx+1, 1), bx, MPI_DOUBLE_PRECISION, west, &
+                           mpitag, MPI_COMM_WORLD, recvrequest(4), mpierror)
+            call MPI_ISend(aold(2:bx+1, 2), bx, MPI_DOUBLE_PRECISION, west, &
+                           mpitag, MPI_COMM_WORLD, sendrequest(4), mpierror)
+            endif
+        if(north /= MPI_PROC_NULL) then 
+            call MPI_Wait(recvrequest(1), MPI_STATUS_IGNORE, mpierror)
+            call MPI_Wait(sendrequest(1), MPI_STATUS_IGNORE, mpierror)
+            aold(1, 2:bx+1)=recvnorthgz
+        endif
+        if(south /= MPI_PROC_NULL) then 
+            call MPI_Wait(recvrequest(2), MPI_STATUS_IGNORE, mpierror)
+            call MPI_Wait(sendrequest(2), MPI_STATUS_IGNORE, mpierror)
+            aold(bx+2, 2:bx+1)=recvsouthgz
+        endif
+        if(east /= MPI_PROC_NULL) then 
+            call MPI_Wait(recvrequest(3), MPI_STATUS_IGNORE, mpierror)
+            call MPI_Wait(sendrequest(3), MPI_STATUS_IGNORE, mpierror)
+        endif
+        if(west /= MPI_PROC_NULL) then 
+            call MPI_Wait(recvrequest(4), MPI_STATUS_IGNORE, mpierror)
+            call MPI_Wait(sendrequest(4), MPI_STATUS_IGNORE, mpierror)
+        endif  
+
+        ! update grid points
+        do j = 2, by+1 
+            do i = 2, bx+1
+                anew(i, j) = aold(i, j)/2.0 + (aold(i-1, j) + aold(i+1, j) +  &
+                             aold(i, j-1) + aold(i, j+1)) / 4.0 / 2.0
+            enddo
+        enddo
+
+        do i = 1, locnsources
+            anew(locsources(i, 1), locsources(i, 2)) =   &
+                anew(locsources(i, 1), locsources(i, 2)) + energy
+        enddo
+
+        ! --- aold <- stencil(anew) ---
+        if(north /= MPI_PROC_NULL) then 
+            sendnorthgz=anew(2, 2:bx+1)
+            call MPI_IRecv(recvnorthgz, bx, MPI_DOUBLE_PRECISION, north, mpitag,  &
+                            MPI_COMM_WORLD, recvrequest(1), mpierror)
+            call MPI_ISend(sendnorthgz, bx, MPI_DOUBLE_PRECISION, north, mpitag,  &
+                            MPI_COMM_WORLD, sendrequest(1), mpierror)
+        endif
+        if(south /= MPI_PROC_NULL) then 
+            sendsouthgz=anew(bx+1, 2:bx+1)
+            call MPI_IRecv(recvsouthgz, bx, MPI_DOUBLE_PRECISION, south, mpitag,  &
+                            MPI_COMM_WORLD, recvrequest(2), mpierror)   
+            call MPI_ISend(sendsouthgz, bx, MPI_DOUBLE_PRECISION, south, mpitag,  &
+                            MPI_COMM_WORLD, sendrequest(2), mpierror)
+        endif
+        if(east /= MPI_PROC_NULL) then 
+            call MPI_IRecv(anew(2:bx+1, bx+2), bx, MPI_DOUBLE_PRECISION, east,  &
+                            mpitag, MPI_COMM_WORLD, recvrequest(3), mpierror)
+            call MPI_ISend(anew(2:bx+1, bx+1), bx, MPI_DOUBLE_PRECISION, east,  &
+                            mpitag, MPI_COMM_WORLD, sendrequest(3), mpierror)
+        endif
+        if(west /= MPI_PROC_NULL) then 
+            call MPI_IRecv(anew(2:bx+1, 1), bx, MPI_DOUBLE_PRECISION, west, mpitag,  &
+                            MPI_COMM_WORLD, recvrequest(4), mpierror)
+            call MPI_ISend(anew(2:bx+1, 2), bx, MPI_DOUBLE_PRECISION, west, mpitag,  &
+                            MPI_COMM_WORLD, sendrequest(4), mpierror)
+        endif
+        if(north /= MPI_PROC_NULL) then 
+            call MPI_Wait(recvrequest(1), MPI_STATUS_IGNORE, mpierror)
+            call MPI_Wait(sendrequest(1), MPI_STATUS_IGNORE, mpierror)
+            anew(1, 2:bx+1)=recvnorthgz
+        endif
+        if(south /= MPI_PROC_NULL) then 
+            call MPI_Wait(recvrequest(2), MPI_STATUS_IGNORE, mpierror)
+            call MPI_Wait(sendrequest(2), MPI_STATUS_IGNORE, mpierror)
+            anew(bx+2, 2:bx+1)=recvsouthgz
+        endif
+        if(east /= MPI_PROC_NULL) then 
+            call MPI_Wait(recvrequest(3), MPI_STATUS_IGNORE, mpierror)
+            call MPI_Wait(sendrequest(3), MPI_STATUS_IGNORE, mpierror)
+        endif
+        if(west /= MPI_PROC_NULL) then 
+            call MPI_Wait(recvrequest(4), MPI_STATUS_IGNORE, mpierror)
+            call MPI_Wait(sendrequest(4), MPI_STATUS_IGNORE, mpierror)
+        endif
+
+        ! update grid points
+        do j = 2, by+1 
+            do i = 2, bx+1
+                aold(i, j) = anew(i, j)/2.0 + (anew(i-1, j) + anew(i+1, j) +  &
+                             anew(i, j-1) + anew(i, j+1)) / 4.0 / 2.0
+            enddo
+        enddo
+
+        do i = 1, locnsources
+            aold(locsources(i, 1), locsources(i, 2)) =  &
+                aold(locsources(i, 1), locsources(i, 2)) + energy
+        enddo
+
+    enddo
+   
+    ! ALL REDUCE:
+    heat = 0.0
+    do j = 2, by+1 
+        do i = 2, bx+1
+            heat = heat + aold(i, j)
+        enddo
+    enddo
+    call MPI_Allreduce(heat, rheat, 1, MPI_DOUBLE_PRECISION, MPI_SUM,  &
+                       MPI_COMM_WORLD, mpierror)
+
+    if(mpirank == 0) then
+        mpiwtime = mpiwtime + MPI_Wtime()
+        write(*, "('Heat='     f0.2' | ')", advance="no") rheat
+        write(*, "('Time='    f0.4' | ')", advance="no") mpiwtime
+        write(*, "('MPI_Size=' i0  ' | ')", advance="no") mpisize
+        write(*, "('MPI_Dims=('i0','i0') | ')", advance="no") pdims
+        write(*, "('bx,by=('i0','i0')')") bx,by
+    endif
+
+    call MPI_Finalize(mpierror)
+end
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Serial F2PY}
+%----------------------------------------
+\begin{lstlisting}[language=Fortran, caption={Serial F2PY implementation of the stencil test case - F90 code.}]
+subroutine st(n, energy, niters, heat, t)
+    integer, intent(in) :: n, energy, niters
+    double precision, intent(out) :: heat, t   
+    integer, parameter :: nsources=3
+    integer :: iters, i, j, x, y, size, sizeStart, sizeEnd
+    integer, dimension(3, 2) :: sources
+    double precision, allocatable :: aold(:,:), anew(:,:)
+    double precision :: t1=0.0, t2=0.0
+
+    call cpu_time(t1)
+
+    size = n + 2
+    sizeStart = 2
+    sizeEnd = n + 1
+
+    allocate(aold(size, size))
+    allocate(anew(size, size))
+    aold = 0.0
+    anew = 0.0
+    
+    sources(1,:) = (/ n/2,   n/2   /)
+    sources(2,:) = (/ n/3,   n/3   /)
+    sources(3,:) = (/ n*4/5, n*8/9 /)
+    
+    do iters = 1, niters, 2
+        do j = sizeStart, sizeEnd
+            do i = sizeStart, sizeEnd
+                anew(i,j) = aold(i,j)/2.0 + (aold(i-1,j) + aold(i+1,j) +  &
+                            aold(i,j-1) + aold(i,j+1)) / 4.0 / 2.0
+            enddo
+        enddo
+        do i = 1, nsources
+            x = sources(i,1) + 1
+            y = sources(i,2) + 1
+            anew(x,y) =  anew(x,y) + energy
+        enddo
+        do j = sizeStart, sizeEnd
+            do i = sizeStart, sizeEnd
+                aold(i,j) = anew(i,j)/2.0 + (anew(i-1,j) + anew(i+1,j) +  &
+                            anew(i,j-1) + anew(i,j+1)) / 4.0 / 2.0
+            enddo
+        enddo
+        do i = 1, nsources
+            x = sources(i,1) + 1
+            y = sources(i,2) + 1
+            aold(x,y) = aold(x,y) + energy
+        enddo
+    enddo
+    heat = 0.0
+    do j = sizeStart, sizeEnd
+        do i = sizeStart, sizeEnd
+            heat = heat + aold(i,j)
+        end do
+    end do
+    deallocate(aold)
+    deallocate(anew)
+    call cpu_time(t2)
+    t = t2 - t1
+end subroutine
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Serial F2PY implementation of the stencil test case - Python code.}]
+from time import time
+tp = time()
+import stencil_f2py_seq
+import numpy as np
+
+n            = 4800    # nxn grid; 4800,1,500->1500; 100,1,10->30; [4800]
+energy       = 1       # energy to be injected per iteration; [1]
+niters       = 500     # number of iterations; [500]
+
+heat, t = stencil_f2py_seq.st(n, energy, niters)
+tp = time() - tp
+
+print("Heat = %0.4f | Time = %0.4f | TimePyt = %0.4f" %(heat, t, tp))
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Parallel F2PY}
+%----------------------------------------
+\begin{lstlisting}[language=Fortran, caption={Parallel F2PY implementation of the stencil test case - F90 module code.}]
+subroutine stm(n, energy, niters, oheat, otime, orank)
+    use MPI
+    implicit none
+    integer, intent(in) :: n, energy, niters
+    double precision, intent(out) :: oheat, otime
+    integer, intent(out) :: orank
+    
+    integer :: iters, i, j, px, py, rx, ry
+    integer :: north, south, west, east, bx, by, offx, offy
+    integer :: mpirank, mpisize, mpitag=1, mpierror
+    integer, dimension(2) :: pdims=0
+    integer, dimension(4) :: sendrequest, recvrequest
+    double precision :: mpiwtime=0.0, heat=0.0, rheat=0.0
+    double precision, dimension(:), allocatable   :: sendnorthgz, sendsouthgz
+    double precision, dimension(:), allocatable   :: recvnorthgz, recvsouthgz
+    double precision, dimension(:,:), allocatable :: aold, anew
+
+    integer, parameter  :: nsources=3        ! three heat sources
+    ! locnsources = number of sources in my area
+    integer             :: locnsources=0, locx, locy
+    ! locsources = sources local to my rank
+    integer, dimension(nsources, 2) :: locsources=0, sources
+
+    call MPI_Init(mpierror)
+    call MPI_Comm_rank(MPI_COMM_WORLD, mpirank, mpierror)
+    call MPI_Comm_size(MPI_COMM_WORLD, mpisize, mpierror)
+
+    if (mpirank == 0) then
+        mpiwtime = -MPI_Wtime()     ! inicializa contador de Time
+    endif
+    
+    ! Creates a division of processors in a Cartesian grid
+    ! MPI_DIMS_CREATE(NNODES, NDIMS, DIMS, IERROR)
+    !   NNODES - number of nodes in a grid
+    !   NDIMS - number of Cartesian dimensions 
+    !   DIMS - array specifying the number of nodes in each dimension
+    ! Examples:
+    !   MPI_Dims_create(6, 2, dims)  ->  (3,2)
+    !   MPI_Dims_create(7, 2, dims)  ->  (7,1)
+    call MPI_Dims_create(mpisize, 2, pdims, mpierror)
+
+    ! determine my coordinates (x,y)
+    px = pdims(1)
+    py = pdims(2)
+    rx = mod(mpirank, px)
+    ry = mpirank / px
+
+    ! determine my four neighbors
+    north = (ry - 1) * px + rx; if( (ry - 1) < 0  ) north = MPI_PROC_NULL
+    south = (ry + 1) * px + rx; if( (ry + 1) >= py) south = MPI_PROC_NULL
+    west = ry * px + rx - 1;    if( (rx - 1) < 0  ) west  = MPI_PROC_NULL
+    east = ry * px + rx + 1;    if( (rx + 1) >= px) east  = MPI_PROC_NULL
+
+    ! decompose the domain   
+    bx = n / px             ! block size in x
+    by = n / py             ! block size in y
+    offx = (rx * bx) + 1    ! offset in x
+    offy = (ry * by) + 1    ! offset in y
+
+    ! initialize heat sources
+    sources = reshape( [ n/2,   n/2,        &
+                         n/3,   n/3,        &
+                         n*4/5, n*8/9 ],    &
+              shape(sources), order=[2, 1])
+
+    do i = 1, nsources      ! determine which sources are in my patch
+        locx = sources(i, 1) - offx
+        locy = sources(i, 2) - offy    
+        if(locx >= 0 .and. locx <= bx .and. locy >= 0 .and. locy <= by) then
+            locnsources = locnsources + 1
+            locsources(locnsources, 1) = locx + 2
+            locsources(locnsources, 2) = locy + 2
+        endif
+    enddo
+
+    ! allocate communication buffers
+    allocate(sendnorthgz(bx))   ! send buffers
+    allocate(sendsouthgz(bx))
+    allocate(recvnorthgz(bx))   ! receive buffers
+    allocate(recvsouthgz(bx))
+    ! allocate two work arrays
+    allocate(aold(bx+2, by+2)); aold = 0.0   ! 1-wide halo zones!
+    allocate(anew(bx+2, by+2)); anew = 0.0   ! 1-wide halo zones!
+
+    do iters = 1, niters, 2
+
+        ! --- anew <- stencil(aold) ---
+        if(north /= MPI_PROC_NULL) then 
+            sendnorthgz = aold(2, 2:bx+1)
+            recvnorthgz = 0.0
+            call MPI_IRecv(recvnorthgz, bx, MPI_DOUBLE_PRECISION, north,  &
+                            mpitag, MPI_COMM_WORLD, recvrequest(1), mpierror)
+            call MPI_ISend(sendnorthgz, bx, MPI_DOUBLE_PRECISION, north,  &
+                            mpitag, MPI_COMM_WORLD, sendrequest(1), mpierror)
+        endif   
+        if(south /= MPI_PROC_NULL) then 
+            sendsouthgz = aold(bx+1, 2:bx+1)
+            recvsouthgz(:) = 0.0
+            call MPI_IRecv(recvsouthgz, bx, MPI_DOUBLE_PRECISION, south,  &
+                            mpitag, MPI_COMM_WORLD, recvrequest(2), mpierror)
+            call MPI_ISend(sendsouthgz, bx, MPI_DOUBLE_PRECISION, south,  &
+                            mpitag, MPI_COMM_WORLD, sendrequest(2), mpierror)
+        endif    
+        if(east /= MPI_PROC_NULL) then 
+            call MPI_IRecv(aold(2:bx+1, bx+2), bx, MPI_DOUBLE_PRECISION, east, &
+                            mpitag, MPI_COMM_WORLD, recvrequest(3), mpierror)
+            call MPI_ISend(aold(2:bx+1, bx+1), bx, MPI_DOUBLE_PRECISION, east, &
+                            mpitag, MPI_COMM_WORLD, sendrequest(3), mpierror)
+        endif    
+        if(west /= MPI_PROC_NULL) then 
+            call MPI_IRecv(aold(2:bx+1, 1), bx, MPI_DOUBLE_PRECISION, west, &
+                           mpitag, MPI_COMM_WORLD, recvrequest(4), mpierror)
+            call MPI_ISend(aold(2:bx+1, 2), bx, MPI_DOUBLE_PRECISION, west, &
+                           mpitag, MPI_COMM_WORLD, sendrequest(4), mpierror)
+            endif
+        if(north /= MPI_PROC_NULL) then 
+            call MPI_Wait(recvrequest(1), MPI_STATUS_IGNORE, mpierror)
+            call MPI_Wait(sendrequest(1), MPI_STATUS_IGNORE, mpierror)
+            aold(1, 2:bx+1)=recvnorthgz
+        endif
+        if(south /= MPI_PROC_NULL) then 
+            call MPI_Wait(recvrequest(2), MPI_STATUS_IGNORE, mpierror)
+            call MPI_Wait(sendrequest(2), MPI_STATUS_IGNORE, mpierror)
+            aold(bx+2, 2:bx+1)=recvsouthgz
+        endif
+        if(east /= MPI_PROC_NULL) then 
+            call MPI_Wait(recvrequest(3), MPI_STATUS_IGNORE, mpierror)
+            call MPI_Wait(sendrequest(3), MPI_STATUS_IGNORE, mpierror)
+        endif
+        if(west /= MPI_PROC_NULL) then 
+            call MPI_Wait(recvrequest(4), MPI_STATUS_IGNORE, mpierror)
+            call MPI_Wait(sendrequest(4), MPI_STATUS_IGNORE, mpierror)
+        endif  
+
+        ! update grid points
+        do j = 2, by+1 
+            do i = 2, bx+1
+                anew(i, j) = aold(i, j)/2.0 + (aold(i-1, j) + aold(i+1, j) +  &
+                             aold(i, j-1) + aold(i, j+1)) / 4.0 / 2.0
+            enddo
+        enddo
+
+        do i = 1, locnsources
+            anew(locsources(i, 1), locsources(i, 2)) =   &
+                anew(locsources(i, 1), locsources(i, 2)) + energy
+        enddo
+
+        ! --- aold <- stencil(anew) ---
+        if(north /= MPI_PROC_NULL) then 
+            sendnorthgz=anew(2, 2:bx+1)
+            call MPI_IRecv(recvnorthgz, bx, MPI_DOUBLE_PRECISION, north, mpitag,&
+                            MPI_COMM_WORLD, recvrequest(1), mpierror)
+            call MPI_ISend(sendnorthgz, bx, MPI_DOUBLE_PRECISION, north, mpitag,&
+                            MPI_COMM_WORLD, sendrequest(1), mpierror)
+        endif
+        if(south /= MPI_PROC_NULL) then 
+            sendsouthgz=anew(bx+1, 2:bx+1)
+            call MPI_IRecv(recvsouthgz, bx, MPI_DOUBLE_PRECISION, south, mpitag,&
+                            MPI_COMM_WORLD, recvrequest(2), mpierror)   
+            call MPI_ISend(sendsouthgz, bx, MPI_DOUBLE_PRECISION, south, mpitag,&
+                            MPI_COMM_WORLD, sendrequest(2), mpierror)
+        endif
+        if(east /= MPI_PROC_NULL) then 
+            call MPI_IRecv(anew(2:bx+1, bx+2), bx, MPI_DOUBLE_PRECISION, east,&
+                            mpitag, MPI_COMM_WORLD, recvrequest(3), mpierror)
+            call MPI_ISend(anew(2:bx+1, bx+1), bx, MPI_DOUBLE_PRECISION, east,&
+                            mpitag, MPI_COMM_WORLD, sendrequest(3), mpierror)
+        endif
+        if(west /= MPI_PROC_NULL) then 
+            call MPI_IRecv(anew(2:bx+1, 1), bx, MPI_DOUBLE_PRECISION, west, mpitag,  &
+                            MPI_COMM_WORLD, recvrequest(4), mpierror)
+            call MPI_ISend(anew(2:bx+1, 2), bx, MPI_DOUBLE_PRECISION, west, mpitag,  &
+                            MPI_COMM_WORLD, sendrequest(4), mpierror)
+        endif
+        if(north /= MPI_PROC_NULL) then 
+            call MPI_Wait(recvrequest(1), MPI_STATUS_IGNORE, mpierror)
+            call MPI_Wait(sendrequest(1), MPI_STATUS_IGNORE, mpierror)
+            anew(1, 2:bx+1)=recvnorthgz
+        endif
+        if(south /= MPI_PROC_NULL) then 
+            call MPI_Wait(recvrequest(2), MPI_STATUS_IGNORE, mpierror)
+            call MPI_Wait(sendrequest(2), MPI_STATUS_IGNORE, mpierror)
+            anew(bx+2, 2:bx+1)=recvsouthgz
+        endif
+        if(east /= MPI_PROC_NULL) then 
+            call MPI_Wait(recvrequest(3), MPI_STATUS_IGNORE, mpierror)
+            call MPI_Wait(sendrequest(3), MPI_STATUS_IGNORE, mpierror)
+        endif
+        if(west /= MPI_PROC_NULL) then 
+            call MPI_Wait(recvrequest(4), MPI_STATUS_IGNORE, mpierror)
+            call MPI_Wait(sendrequest(4), MPI_STATUS_IGNORE, mpierror)
+        endif
+
+        ! update grid points
+        do j = 2, by+1 
+            do i = 2, bx+1
+                aold(i, j) = anew(i, j)/2.0 + (anew(i-1, j) + anew(i+1, j) +  &
+                             anew(i, j-1) + anew(i, j+1)) / 4.0 / 2.0
+            enddo
+        enddo
+
+        do i = 1, locnsources
+            aold(locsources(i, 1), locsources(i, 2)) =  &
+                aold(locsources(i, 1), locsources(i, 2)) + energy
+        enddo
+
+    enddo
+   
+    ! ALL REDUCE:
+    heat = 0.0
+    do j = 2, by+1 
+        do i = 2, bx+1
+            heat = heat + aold(i, j)
+        enddo
+    enddo
+    call MPI_Allreduce(heat, rheat, 1, MPI_DOUBLE_PRECISION, MPI_SUM,  &
+                       MPI_COMM_WORLD, mpierror)
+
+    orank = mpirank
+    if(mpirank == 0) then
+        otime = mpiwtime + MPI_Wtime()
+        oheat = rheat
+    endif
+
+    call MPI_Finalize(mpierror)
+end subroutine
+\end{lstlisting}
+
+
+
+
+% ----------------------------------------
+\begin{lstlisting}[language=Python, caption={Parallel F2PY implementation of the stencil test case - Python main code.}]
+from time import time
+from stc_f2p_par import stm
+
+n            = 4800    # nxn grid; 4800,1,500->1500; 100,1,10->30; [4800]
+energy       = 1       # energy to be injected per iteration; [1]
+niters       = 500     # number of iterations; [500]
+heat         = 0.0
+t            = 0.0
+t0           = 0.0
+rank         = 0
+
+t0 = time()
+heat, t, rank = stm(n, energy, niters)
+t0 = time() - t0
+
+if not rank :
+    print("Heat = %0.4f | Time = %0.4f | TimePyt = %0.4f" %(heat, t, t0))
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Serial Python}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Serial Python implementation of the stencil test case.}]
+from time import time
+t = time()
+import numpy as np
+
+n            = 4800    # nxn grid (4800,1,500)=1500
+energy       = 1.0     # energy to be injected per iteration
+niters       = 500     # number of iterations
+
+size         = n + 2
+sizeEnd      = n + 1
+anew = aold  = np.zeros((size,  size), np.float64)
+nsources     = 3       # sources of energy
+sources      = np.empty((nsources, 2), np.int)
+sources[:,:] = [ [n//2, n//2], [n//3, n//3], [n*4//5, n*8//9] ]
+niters       = (niters+1) // 2
+
+for iters in range(niters):
+    anew[1:-1, 1:-1] =  ( aold[1:-1, 1:-1] / 2.0 + 
+                        ( aold[2:  , 1:-1] + aold[ :-2, 1:-1] +
+                          aold[1:-1, 2:  ] + aold[1:-1,  :-2] ) / 8.0 )
+    anew[sources[0:nsources,0], sources[0:nsources,1]] += energy     
+    aold[1:-1, 1:-1] =  ( anew[1:-1, 1:-1] / 2.0 +
+                        ( anew[2:  , 1:-1] + anew[ :-2, 1:-1] +
+                          anew[1:-1, 2:  ] + anew[1:-1,  :-2] ) / 8.0 )
+    aold[sources[0:nsources,0], sources[0:nsources,1]] += energy   
+heat = np.sum( aold[1:sizeEnd, 1:sizeEnd] )  # system total heat
+
+t = time() - t
+print("Heat = %0.4f | Time = %0.4f s" %(heat, t))
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Parallel Python}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Parallel Python implementation of the stencil test case.}]
+from mpi4py import MPI
+import numpy as np
+
+n            = 4800    # nxn grid (4800,1,500)=1500
+energy       = 1.0     # energy to be injected per iteration
+niters       = 500     # number of iterations
+
+nsources     = 3       # sources of energy
+sources      = np.zeros((nsources, 2), np.int)
+sources[:,:] = [ [n//2, n//2], [n//3, n//3], [n*4//5, n*8//9] ]
+locnsources  = locx = locy = 0     # number of sources in my area
+locsources   = np.zeros((nsources, 2), np.int)  # local to my rank
+rheat        = np.zeros(1, np.float64)
+size         = n + 2
+sizeEnd      = n + 1
+
+comm = MPI.COMM_WORLD
+mpirank = comm.rank
+mpisize = comm.size
+if not mpirank : mpiwtime = -MPI.Wtime()
+
+# determine my coordinates (x,y)
+pdims = MPI.Compute_dims(mpisize, 2)
+px = pdims[0]
+py = pdims[1]
+rx = mpirank % px
+ry = mpirank // px
+
+# determine my four neighbors
+north = (ry - 1) * px + rx
+if (ry - 1) < 0 : north = MPI.PROC_NULL
+south = (ry + 1) * px + rx
+if (ry + 1) >= py : south = MPI.PROC_NULL
+west = ry * px + rx - 1
+if (rx - 1) < 0 : west = MPI.PROC_NULL
+east = ry * px + rx + 1
+if (rx + 1) >= px : east = MPI.PROC_NULL
+
+# decompose the domain   
+bx = n // px            # block size in x
+by = n // py            # block size in y
+offx = rx * bx + 1      # offset in x
+offy = ry * by + 1      # offset in y
+
+# determine which sources are in my patch
+for i in range(nsources) :
+    locx = sources[i, 0] - offx
+    locy = sources[i, 1] - offy
+#    if(locx >= 0 and locx <= bx and locy >= 0 and locy <= by) :
+    if(locx >= 0 and locx < bx and locy >= 0 and locy < by) :
+        locsources[locnsources, 0] = locx + 2
+        locsources[locnsources, 1] = locy + 2
+        locnsources += 1
+
+# working arrays with 1-wide halo zones
+anew = np.zeros((bx+2, by+2), np.float64)
+aold = np.zeros((bx+2, by+2), np.float64)
+
+# iterations
+niters = (niters + 1) // 2
+for iters in range(niters) :
+    # exchange data with neighbors
+    if north != MPI.PROC_NULL :
+        r1=comm.irecv(source=north, tag=1)
+        s1=comm.isend(aold[1, 1:bx+1], dest=north, tag=1)
+    if south != MPI.PROC_NULL :
+        r2=comm.irecv(source=south, tag=1)
+        s2=comm.isend(aold[bx, 1:bx+1], dest=south, tag=1)
+    if east != MPI.PROC_NULL :
+        r3 = comm.irecv(source=east, tag=1)
+        s3 = comm.isend(aold[1:bx+1, bx], dest=east, tag=1)
+    if west != MPI.PROC_NULL :
+        r4 = comm.irecv(source=west, tag=1)
+        s4 = comm.isend(aold[1:bx+1, 1], dest=west, tag=1)
+    # wait
+    if north != MPI.PROC_NULL :
+        s1.wait()
+        aold[0, 1:bx+1] = r1.wait()
+    if south != MPI.PROC_NULL :
+        s2.wait()
+        aold[bx+1, 1:bx+1] = r2.wait()
+    if east != MPI.PROC_NULL :
+        s3.wait()
+        aold[1:bx+1, bx+1] = r3.wait()
+    if west != MPI.PROC_NULL :
+        s4.wait
+        aold[1:bx+1, 0] = r4.wait()
+    # update grid
+    anew[1:-1, 1:-1] =  ( aold[1:-1, 1:-1] / 2.0 + 
+                        ( aold[2:  , 1:-1] + aold[ :-2, 1:-1] +
+                          aold[1:-1, 2:  ] + aold[1:-1,  :-2] ) / 8.0 )
+    # refresh heat sources
+    anew[locsources[0:locnsources, 0]-1, locsources[0:locnsources, 1]-1] += energy 
+
+    # exchange data with neighbors
+    if north != MPI.PROC_NULL :
+        r1=comm.irecv(source=north, tag=1)
+        s1=comm.isend(anew[1, 1:bx+1], dest=north, tag=1)
+    if south != MPI.PROC_NULL :
+        r2=comm.irecv(source=south, tag=1)
+        s2=comm.isend(anew[bx, 1:bx+1], dest=south, tag=1)
+    if east != MPI.PROC_NULL :
+        r3 = comm.irecv(source=east, tag=1)
+        s3 = comm.isend(anew[1:bx+1, bx], dest=east, tag=1)
+    if west != MPI.PROC_NULL :
+        r4 = comm.irecv(source=west, tag=1)
+        s4 = comm.isend(anew[1:bx+1, 1], dest=west, tag=1)
+    # wait
+    if north != MPI.PROC_NULL :
+        s1.wait()
+        anew[0, 1:bx+1] = r1.wait()
+    if south != MPI.PROC_NULL :
+        s2.wait()
+        anew[bx+1, 1:bx+1] = r2.wait()
+    if east != MPI.PROC_NULL :
+        s3.wait()
+        anew[1:bx+1, bx+1] = r3.wait()
+    if west != MPI.PROC_NULL :
+        s4.wait
+        anew[1:bx+1, 0] = r4.wait()
+    # update grid
+    aold[1:-1, 1:-1] =  ( anew[1:-1, 1:-1] / 2.0 + 
+                        ( anew[2:  , 1:-1] + anew[ :-2, 1:-1] +
+                          anew[1:-1, 2:  ] + anew[1:-1,  :-2] ) / 8.0 )
+    # refresh heat sources
+    aold[locsources[0:locnsources, 0]-1, locsources[0:locnsources, 1]-1] += energy 
+    
+# get final heat in the system
+comm.Reduce(np.sum(aold[1:bx+1, 1:by+1]), rheat)
+
+# show  
+if not mpirank :
+    print("Heat=%0.4f | Time=%0.4f | MPISize=%0s | Dim=%0s | bx,by=%0s,%0s" 
+          %(rheat, mpiwtime+MPI.Wtime(), mpisize, pdims, bx, by))
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Serial Cython}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Serial Cython implementation of the stencil test case - Cython module code.}]
+#cython: boundscheck=False, wraparound=False, cdivision=True
+#cython: initializedcheck=False, language_level=3, infer_types=True
+
+cpdef st(int n, double energy, int niters):
+    from time import time
+    import numpy as np
+
+    cdef double      heat      = 0.0
+    cdef double      t         = 0.0
+    cdef Py_ssize_t  size      = n + 2
+    cdef Py_ssize_t  sizeStart = 1
+    cdef Py_ssize_t  sizeEnd   = n + 1
+    cdef Py_ssize_t  iters, i, j
+
+    t = time()
+    
+    cdef double[:,::1] mvaold = np.zeros((size, size), np.double)
+    cdef double[:,::1] mvanew = np.zeros((size, size), np.double)
+    cdef Py_ssize_t    nsources  = 3      # qde de fontes
+    cdef    int[:,::1] mvsources = np.empty( (nsources,2), np.intc)
+
+    mvsources[0,0] = mvsources[0,1] = n/2
+    mvsources[1,0] = mvsources[1,1] = n/3
+    mvsources[2,0] = n*4/5
+    mvsources[2,1] = n*8/9
+
+    niters = (niters + 1) // 2
+    for iters in range(niters) :
+        # iteracao impar
+        for i in range(sizeStart, sizeEnd) :
+            for j in range(sizeStart, sizeEnd) :
+                mvanew[i,j] = ( mvaold[i,j] / 2.0 +
+                              ( mvaold[i-1,j] + mvaold[i+1,j] +
+                                mvaold[i,j-1] + mvaold[i,j+1] ) / 8.0 )
+        for i in range(nsources) :
+            mvanew[mvsources[i,0], mvsources[i,1]] += energy
+        # iteracao par
+        for i in range(sizeStart, sizeEnd) :
+            for j in range(sizeStart, sizeEnd) :
+                mvaold[i,j] = ( mvanew[i,j] / 2.0 +
+                              ( mvanew[i-1,j] + mvanew[i+1,j] +
+                                mvanew[i,j-1] + mvanew[i,j+1] ) / 8.0 )
+        for i in range(nsources) :
+            mvaold[mvsources[i,0], mvsources[i,1]] += energy
+    # calcula o total de energia
+    for i in range(sizeStart, sizeEnd) :
+        for j in range(sizeStart, sizeEnd) :
+            heat += mvaold[i,j]
+    t = time() - t
+    return heat, t
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Serial Cython implementation of the stencil test case - Python main code.}]
+from time import time
+tp = time()
+import scs
+
+n            = 4800    # nxn grid; 4800,1,500->1500; 100,1,10->30 [4800]
+energy       = 1.0     # energy to be injected per iteration [1.0]
+niters       = 500     # number of iterations [500]
+
+heat, t = scs.st(n, energy, niters)
+tp = time() - tp
+print("Heat = %0.4f | Time = %0.4f | TimePyt = %0.4f" %(heat, t, tp))
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Parallel Cython}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Parallel Cython implementation of the stencil test case - Cython module.}]
+#cython: language_level=3
+#cython: cdivision=True
+#cython: initializedcheck=False
+#cython: infer_types=True
+#cython: wraparound=False
+#cython: boundscheck=False
+
+import numpy as np
+
+cpdef stp(double[:,::1] anew, double[:,::1] aold, Py_ssize_t by, Py_ssize_t bx) :
+    for i in range(1, bx+1) :
+        for j in range(1, by+1) :
+            anew[i,j] =  ( aold[i,j] / 2.0 + 
+                         ( aold[i-1,j] + aold[i+1,j] + 
+                           aold[i,j-1] + aold[i,j+1] ) / 8.0 )
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Parallel Cython implementation of the stencil test case - Python main code.}]
+import numpy as np
+import time
+from mpi4py import MPI   
+import scp2
+
+n            = 4800    # nxn grid (4800,1,500)=1500; (100,1,10)=30
+energy       = 1.0     # energy to be injected per iteration
+niters       = 500     # number of iterations
+
+nsources     = 3       # sources of energy
+size         = n + 2
+heat         = np.zeros((1), np.float64)     # system total heat
+anew         = np.zeros((size, size), np.float64)
+aold         = np.zeros((size, size), np.float64)
+sources      = np.empty((3,2), np.int32)
+sources[:,:] = [ [n//2, n//2], [n//3, n//3], [n*4//5, n*8//9] ]
+niters       = (niters+1) // 2
+
+comm = MPI.COMM_WORLD
+mpirank = comm.rank
+mpisize = comm.size
+
+nsources = 3
+sources = np.zeros((nsources, 2), np.intc)
+sources[:,:] = [ [n//2, n//2], [n//3, n//3], [n*4//5, n*8//9] ]
+
+# sources in my area, local to my rank
+locnsources = 0
+locsources = np.empty((nsources,2), np.intc)
+
+rheat = np.zeros(1, np.double)
+bheat = np.zeros(1, np.double)
+
+# determine my coordinates (x,y)
+pdims = MPI.Compute_dims(mpisize, 2)
+px    = pdims[0]
+py    = pdims[1]
+rx    = mpirank % px
+ry    = mpirank // px
+
+# determine my four neighbors
+north = (ry - 1) * px + rx
+if (ry - 1) < 0 :
+    north = MPI.PROC_NULL
+south = (ry + 1) * px + rx
+if (ry + 1) >= py :
+    south = MPI.PROC_NULL
+west = ry * px + rx - 1
+if (rx - 1) < 0 :
+    west = MPI.PROC_NULL
+east = ry * px + rx + 1
+if (rx + 1) >= px :
+    east = MPI.PROC_NULL
+
+# decompose the domain
+bx = n // px            # block size in x
+by = n // py            # block size in y
+offx = rx * bx + 1      # offset in x
+offy = ry * by + 1      # offset in y
+
+# determine which sources are in my patch
+for i in range(nsources) :
+    locx = sources[i, 0] - offx
+    locy = sources[i, 1] - offy
+    if(locx >= 0 and locx <= bx and locy >= 0 and locy <= by) :
+        locsources[locnsources, 0] = locx + 2 - 1
+        locsources[locnsources, 1] = locy + 2 - 1
+        locnsources += 1
+
+# working arrays with 1-wide halo zones
+anew = np.zeros((bx+2, by+2), np.double)
+aold = np.zeros((bx+2, by+2), np.double)
+
+if not mpirank : t0 = time.time()
+
+for iters in range(niters) :
+    # exchange data with neighbors
+    if north != MPI.PROC_NULL :
+        r1=comm.irecv(source=north, tag=1)
+        s1=comm.isend(aold[1, 1:bx+1], dest=north, tag=1)
+    if south != MPI.PROC_NULL :
+        r2=comm.irecv(source=south, tag=1)
+        s2=comm.isend(aold[bx, 1:bx+1], dest=south, tag=1)
+    if east != MPI.PROC_NULL :
+        r3 = comm.irecv(source=east, tag=1)
+        s3 = comm.isend(aold[1:bx+1, bx], dest=east, tag=1)
+    if west != MPI.PROC_NULL :
+        r4 = comm.irecv(source=west, tag=1)
+        s4 = comm.isend(aold[1:bx+1, 1], dest=west, tag=1)
+    # wait
+    if north != MPI.PROC_NULL :
+        s1.wait()
+        aold[0, 1:bx+1] = r1.wait()
+    if south != MPI.PROC_NULL :
+        s2.wait()
+        aold[bx+1, 1:bx+1] = r2.wait()
+    if east != MPI.PROC_NULL :
+        s3.wait()
+        aold[1:bx+1, bx+1] = r3.wait()
+    if west != MPI.PROC_NULL :
+        s4.wait
+        aold[1:bx+1, 0] = r4.wait()
+
+    # update grid
+    scp2.stp(anew, aold, bx, by)
+
+    # refresh heat sources
+    for i in range(locnsources) :
+        anew[locsources[i, 0]-1, locsources[i, 1]-1] += energy
+
+    # exchange data with neighbors
+    if north != MPI.PROC_NULL :
+        r1=comm.irecv(source=north, tag=1)
+        s1=comm.isend(anew[1, 1:bx+1], dest=north, tag=1)
+    if south != MPI.PROC_NULL :
+        r2=comm.irecv(source=south, tag=1)
+        s2=comm.isend(anew[bx, 1:bx+1], dest=south, tag=1)
+    if east != MPI.PROC_NULL :
+        r3 = comm.irecv(source=east, tag=1)
+        s3 = comm.isend(anew[1:bx+1, bx], dest=east, tag=1)
+    if west != MPI.PROC_NULL :
+        r4 = comm.irecv(source=west, tag=1)
+        s4 = comm.isend(anew[1:bx+1, 1], dest=west, tag=1)
+    # wait
+    if north != MPI.PROC_NULL :
+        s1.wait()
+        anew[0, 1:bx+1] = r1.wait()
+    if south != MPI.PROC_NULL :
+        s2.wait()
+        anew[bx+1, 1:bx+1] = r2.wait()
+    if east != MPI.PROC_NULL :
+        s3.wait()
+        anew[1:bx+1, bx+1] = r3.wait()
+    if west != MPI.PROC_NULL :
+        s4.wait
+        anew[1:bx+1, 0] = r4.wait()
+
+    # update grid
+    scp2.stp(aold, anew, bx, by)
+
+    # refresh heat sources
+    for i in range(locnsources) :
+        aold[locsources[i, 0]-1, locsources[i, 1]-1] += energy 
+
+# get final heat in the system
+bheat[0] = np.sum(aold[1:-1, 1:-1])
+comm.Reduce(bheat, rheat)
+
+if not mpirank :
+    t1 = MPI.Wtime() - t0
+    print('Heat={:0.4f} | Time={:0.4f} | MPISize={:d} | Dim={:d},{:d} | bx,by={:d},{:d}'
+          .format(rheat[0], t1, mpisize, pdims[0], pdims[1], bx, by))
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Serial Numba-CPU}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Serial Numba-CPU implementation of the stencil test case.}]
+import numpy as np
+from numba import jit, config, prange
+from time import time
+
+config.DUMP_ASSEMBLY = 0
+config.NUMBA_ENABLE_AVX = 1
+config.NUMBA_NUM_THREADS = 1
+
+@jit('(float64[:,:],float64[:,:])', nopython=True, parallel=True, nogil=True) 
+def kernel_seq(anew, aold) :
+    anew[1:-1, 1:-1] = ( aold[1:-1, 1:-1] * 0.5 + 
+                       ( aold[2:  , 1:-1] + aold[ :-2, 1:-1] +
+                         aold[1:-1, 2:  ] + aold[1:-1,  :-2] ) * 0.125 )
+
+n            = 4800    # nxn grid (4800,1,500)=1500; (4800,1,5)=12
+energy       = 1.0     # energy to be injected per iteration
+niters       = 500     # number of iterations
+nsources     = 3       # sources of energy
+size         = n + 2
+sizeEnd      = n + 1
+heat         = np.zeros((1), np.float64)     # system total heat
+anew         = np.zeros((size,  size), np.float64)
+aold         = np.zeros((size,  size), np.float64)
+sources      = np.empty((nsources, 2), np.int16)
+sources[:,:] = [ [n//2, n//2], [n//3, n//3], [n*4//5, n*8//9] ]
+niters       = (niters + 1) // 2
+
+t0 = time()
+for iters in range(niters) :
+    kernel_seq(anew, aold)
+    for i in range(nsources) :
+        anew[sources[i, 0], sources[i, 1]] += energy
+    kernel_seq(aold, anew)
+    for i in range(nsources) :
+        aold[sources[i, 0], sources[i, 1]] += energy
+
+heat[0] = np.sum( aold[1:-1, 1:-1] )  # system total heat
+t0 = time() - t0
+
+print("Heat = %0.4f | Time = %0.4f | Thread count = %s" %
+      (heat[0], t0, config.NUMBA_NUM_THREADS))
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Parallel Numba-CPU}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Parallel Numba-CPU implementation of the stencil test case.}]
+import numpy as np
+import time
+from mpi4py import MPI   
+
+from numba import jit, prange, config
+config.DUMP_ASSEMBLY = 0
+config.NUMBA_ENABLE_AVX = 1
+config.NUMBA_NUM_THREADS = 1
+
+@jit('(float64[:,:],float64[:,:])', nopython=True, parallel=True, nogil=True) 
+def kernel1(anew, aold) :
+    anew[1:-1, 1:-1] = ( aold[1:-1, 1:-1] * 0.5 + 
+                       ( aold[2:  , 1:-1] + aold[ :-2, 1:-1] +
+                         aold[1:-1, 2:  ] + aold[1:-1,  :-2] ) * 0.125 )
+
+n            = 4800    # nxn grid (4800,1,500)=1500; (100,1,10)=30
+energy       = 1.0     # energy to be injected per iteration
+niters       = 500     # number of iterations
+
+nsources     = 3       # sources of energy
+size         = n + 2
+heat         = np.zeros((1), np.float64)     # system total heat
+anew         = np.zeros((size, size), np.float64)
+aold         = np.zeros((size, size), np.float64)
+sources      = np.empty((3,2), np.int32)
+sources[:,:] = [ [n//2, n//2], [n//3, n//3], [n*4//5, n*8//9] ]
+niters       = (niters+1) // 2
+
+comm = MPI.COMM_WORLD
+mpirank = comm.rank
+mpisize = comm.size
+
+nsources = 3
+sources = np.zeros((nsources, 2), np.intc)
+sources[:,:] = [ [n//2, n//2], [n//3, n//3], [n*4//5, n*8//9] ]
+
+# sources in my area, local to my rank
+locnsources = 0
+locsources = np.empty((nsources,2), np.intc)
+
+rheat = np.zeros(1, np.double)
+bheat = np.zeros(1, np.double)
+
+# determine my coordinates (x,y)
+pdims = MPI.Compute_dims(mpisize, 2)
+px    = pdims[0]
+py    = pdims[1]
+rx    = mpirank % px
+ry    = mpirank // px
+
+# determine my four neighbors
+north = (ry - 1) * px + rx
+if (ry - 1) < 0 :
+    north = MPI.PROC_NULL
+south = (ry + 1) * px + rx
+if (ry + 1) >= py :
+    south = MPI.PROC_NULL
+west = ry * px + rx - 1
+if (rx - 1) < 0 :
+    west = MPI.PROC_NULL
+east = ry * px + rx + 1
+if (rx + 1) >= px :
+    east = MPI.PROC_NULL
+
+# decompose the domain
+bx = n // px            # block size in x
+by = n // py            # block size in y
+offx = rx * bx + 1      # offset in x
+offy = ry * by + 1      # offset in y
+
+# determine which sources are in my patch
+for i in range(nsources) :
+    locx = sources[i, 0] - offx
+    locy = sources[i, 1] - offy
+    if(locx >= 0 and locx <= bx and locy >= 0 and locy <= by) :
+        locsources[locnsources, 0] = locx + 2 - 1
+        locsources[locnsources, 1] = locy + 2 - 1
+        locnsources += 1
+
+# working arrays with 1-wide halo zones
+anew = np.zeros((bx+2, by+2), np.double)
+aold = np.zeros((bx+2, by+2), np.double)
+
+if not mpirank : t0 = time.time()
+
+for iters in range(niters) :
+    # exchange data with neighbors
+    if north != MPI.PROC_NULL :
+        r1=comm.irecv(source=north, tag=1)
+        s1=comm.isend(aold[1, 1:bx+1], dest=north, tag=1)
+    if south != MPI.PROC_NULL :
+        r2=comm.irecv(source=south, tag=1)
+        s2=comm.isend(aold[bx, 1:bx+1], dest=south, tag=1)
+    if east != MPI.PROC_NULL :
+        r3 = comm.irecv(source=east, tag=1)
+        s3 = comm.isend(aold[1:bx+1, bx], dest=east, tag=1)
+    if west != MPI.PROC_NULL :
+        r4 = comm.irecv(source=west, tag=1)
+        s4 = comm.isend(aold[1:bx+1, 1], dest=west, tag=1)
+    # wait
+    if north != MPI.PROC_NULL :
+        s1.wait()
+        aold[0, 1:bx+1] = r1.wait()
+    if south != MPI.PROC_NULL :
+        s2.wait()
+        aold[bx+1, 1:bx+1] = r2.wait()
+    if east != MPI.PROC_NULL :
+        s3.wait()
+        aold[1:bx+1, bx+1] = r3.wait()
+    if west != MPI.PROC_NULL :
+        s4.wait
+        aold[1:bx+1, 0] = r4.wait()
+
+    # update grid
+    kernel1(anew, aold)
+
+    # refresh heat sources
+    for i in range(locnsources) :
+        anew[locsources[i, 0]-1, locsources[i, 1]-1] += energy
+
+    # exchange data with neighbors
+    if north != MPI.PROC_NULL :
+        r1=comm.irecv(source=north, tag=1)
+        s1=comm.isend(anew[1, 1:bx+1], dest=north, tag=1)
+    if south != MPI.PROC_NULL :
+        r2=comm.irecv(source=south, tag=1)
+        s2=comm.isend(anew[bx, 1:bx+1], dest=south, tag=1)
+    if east != MPI.PROC_NULL :
+        r3 = comm.irecv(source=east, tag=1)
+        s3 = comm.isend(anew[1:bx+1, bx], dest=east, tag=1)
+    if west != MPI.PROC_NULL :
+        r4 = comm.irecv(source=west, tag=1)
+        s4 = comm.isend(anew[1:bx+1, 1], dest=west, tag=1)
+    # wait
+    if north != MPI.PROC_NULL :
+        s1.wait()
+        anew[0, 1:bx+1] = r1.wait()
+    if south != MPI.PROC_NULL :
+        s2.wait()
+        anew[bx+1, 1:bx+1] = r2.wait()
+    if east != MPI.PROC_NULL :
+        s3.wait()
+        anew[1:bx+1, bx+1] = r3.wait()
+    if west != MPI.PROC_NULL :
+        s4.wait
+        anew[1:bx+1, 0] = r4.wait()
+
+    # update grid
+    kernel1(aold, anew)
+
+    # refresh heat sources
+    for i in range(locnsources) :
+        aold[locsources[i, 0]-1, locsources[i, 1]-1] += energy 
+
+# get final heat in the system
+bheat[0] = np.sum(aold[1:-1, 1:-1])
+comm.Reduce(bheat, rheat)
+
+if not mpirank :
+    t1 = MPI.Wtime() - t0
+    print('Heat={:0.4f} | Time={:0.4f} | MPISize={:d} | Dim={:d},{:d} | bx,by={:d},{:d}'
+          .format(rheat[0], t1, mpisize, pdims[0], pdims[1], bx, by))
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Numba-GPU}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Numba-GPU implementation of the stencil test case.}]
+import math
+from time import time
+import numpy as np
+from numba import cuda, jit, prange
+
+@cuda.jit
+def st3(a1, a2):
+    n = a1.shape[0] - 1
+    i, j = cuda.grid(2)
+    if (i > 0 and j > 0) and (i < n and j < n) :
+        a1[i,j] = a2[i,j]/2.0+(a2[i-1,j]+a2[i+1,j]+a2[i,j-1]+a2[i,j+1])/8.0
+
+def calc3(anew, aold, heat, sizeEnd, niters, nsources, sources, energy,
+          blocks_per_grid, threads_per_block):
+    for iters in range(0, niters, 2):
+        st3[blocks_per_grid, threads_per_block](anew, aold)
+        for i in range(0, nsources) :
+            anew[sources[i,0], sources[i,1]] += energy    # heat source
+        st3[blocks_per_grid, threads_per_block](aold, anew)
+        for i in range(0, nsources):  
+            aold[sources[i,0], sources[i,1]] += energy    # heat source        
+
+#def par_cuda():
+n            = 4800    # nxn grid
+energy       = 1       # energy to be injected per iteration
+niters       = 500     # number of iterations
+nsources     = 3       # sources of energy
+size         = n + 2   # plus the ghost zone
+sizeEnd      = n + 1
+
+# initialize the data arrays
+anew         = np.zeros((size, size), np.float64)
+aold         = np.zeros((size, size), np.float64)
+# initialize three heat sources
+sources      = np.empty((3,2), np.int32)
+sources[:,:] = [ [n//2, n//2], [n//3, n//3], [n*4//5, n*8//9] ]
+heat         = 0       # system total heat sum
+
+# copy the arrays to the device
+anew_global_mem = cuda.to_device(anew)
+aold_global_mem = cuda.to_device(aold)
+
+# configure blocks & grids
+# set the number of threads in a block
+threads_per_block = (32, 32)
+# calculate the number of thread blocks in the grid
+blocks_per_grid_x = math.ceil(aold.shape[0] / threads_per_block[0])
+blocks_per_grid_y = math.ceil(aold.shape[1] / threads_per_block[1])
+blocks_per_grid   = (blocks_per_grid_x, blocks_per_grid_y)
+
+t = time()
+# main calc
+calc3(anew_global_mem, aold_global_mem, heat,
+    sizeEnd, niters, nsources, sources, energy,
+    blocks_per_grid, threads_per_block)
+
+# copy the result back to the host
+aold = aold_global_mem.copy_to_host()
+
+for j in range(1, sizeEnd):
+    for i in range(1, sizeEnd):
+        heat = heat + aold[i,j]
+t = time() - t
+
+# show the result if desired
+print("Heat=%.4f | Time=%.4f" % (heat, t))
+\end{lstlisting}
+
+
+
+
+
+
+%
+%
+%
+%
+%
+%
+%
+%  _____ _____ _____ 
+% |  ___|  ___|_   _|
+% | |_  | |_    | |  
+% |  _| |  _|   | |  
+% |_|   |_|     |_| 
+%----------------------------------------
+\section{Implementations of the FFT test case}
+%----------------------------------------
+
+
+
+
+%----------------------------------------
+\subsection{Serial F90}
+%----------------------------------------
+\begin{lstlisting}[language=Fortran, caption={Serial F90 implementation of the FFT test case.}]
+program main
+    use, intrinsic :: iso_c_binding
+    implicit none
+    include "fftw3.f03"
+    integer, parameter :: L = 576, M = 576, N = 576
+    type(C_PTR) :: plan, cdata
+    complex(C_DOUBLE_COMPLEX), pointer :: data(:,:,:)
+    complex(C_DOUBLE_COMPLEX) :: s
+    integer :: i, j, k
+    double precision :: t0, t1, t2
+    
+    call cpu_time(t0)    ! time measurement
+           
+    ! in-place transform (note dimension reversal)
+    cdata = fftw_alloc_complex(int(L * M * N, C_SIZE_T))
+    call c_f_pointer(cdata, data, [L, M, N])
+
+    ! create plan for in-place forward DFT (note dimension reversal)   
+    plan = fftw_plan_dft_3d(N, M, L, data, data, &
+                            FFTW_FORWARD, FFTW_ESTIMATE)
+
+    ! fills the array with complex values
+    do k = 1, N
+        do j = 1, M
+            do i = 1, L
+                data(i, j, k) = sin( real(i + j + k) )
+            enddo
+        enddo
+    enddo
+    data = dcmplx( real(data) , 0 )
+    
+    call cpu_time(t1)    ! time measurement
+
+    ! compute transform (as many times as desired)  
+    call fftw_execute_dft(plan, data, data)   
+    ! checksum
+    s = sum(data)
+    
+    call cpu_time(t2)    ! time measurement
+    
+    call fftw_destroy_plan(plan)
+    call fftw_free(cdata)
+    
+    ! result
+    write(*, "('S: 'spf0.0spf0.0'j')", advance="no") s * 1e-5
+    write(*, "(' | L: 'g0)", advance="no") L
+    write(*, "(' | T1: 'sf0.4)", advance="no") t1-t0
+    write(*, "(' | TF: 'sf0.4)", advance="no") t2-t1
+    write(*, "(' | TT: 'sf0.4)") t2-t0
+    
+end
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Parallel F90}
+%----------------------------------------
+\begin{lstlisting}[language=Fortran, caption={Parallel F90 implementation of the FFT test case.}]
+program main
+    use, intrinsic :: iso_c_binding
+    use MPI
+    implicit none
+    include 'fftw3-mpi.f03'
+    integer :: mpirank, mpisize, mpierror, i, j, k
+    integer(C_INTPTR_T), parameter :: L = 576, M = 576, N = 576
+    type(C_PTR) :: plan, cdata
+    complex(C_DOUBLE_COMPLEX), pointer :: data(:,:,:)
+    integer(C_INTPTR_T) :: alloc_local, local_N, local_start
+    complex(C_DOUBLE_COMPLEX) :: s, rs
+    double precision :: t0, t1, t2
+
+    call cpu_time(t0)    ! time measurement
+
+    call MPI_Init(mpierror)
+    call MPI_Comm_rank(MPI_COMM_WORLD, mpirank, mpierror)
+    call MPI_Comm_size(MPI_COMM_WORLD, mpisize, mpierror)
+
+    ! init
+    call fftw_mpi_init()    
+
+    ! get local data size and allocate (note dimension reversal)
+    alloc_local = fftw_mpi_local_size_3d(N, M, L,  &
+                 MPI_COMM_WORLD, local_N, local_start)
+    cdata = fftw_alloc_complex(alloc_local)
+    call c_f_pointer(cdata, data, [L, M, local_N])
+
+    ! create MPI plan for in-place forward DFT (note dimension reversal)
+    plan = fftw_mpi_plan_dft_3d(N, M, L, data, data,  &
+                MPI_COMM_WORLD, FFTW_FORWARD, FFTW_ESTIMATE)
+
+    ! Fills the array with complex values
+    do k = 1, int(local_N)
+        do j = 1, M
+            do i = 1, L
+                data(i, j, k) = dcmplx( sin( real(i + j + (k + local_start)) ) , 0)
+            enddo
+        enddo
+    enddo
+
+    call cpu_time(t1)    ! time measurement
+
+    ! Compute transform (as many times as desired)
+    call fftw_mpi_execute_dft(plan, data, data)
+
+    ! Checksum
+    s = sum(data)
+    call MPI_Reduce(s,                   &! send data
+                    rs,                  &! recv data
+                    1,                   &! count
+                    MPI_DOUBLE_COMPLEX,  &! data type
+                    MPI_SUM,             &! operation
+                    0,                   &! rank of root process
+                    MPI_COMM_WORLD, mpierror)
+    
+    ! clean
+
+    call cpu_time(t2)    ! time measurement
+
+    call fftw_destroy_plan(plan)
+    call fftw_free(cdata)
+    call fftw_mpi_cleanup()
+    call mpi_finalize(mpierror)
+    
+    ! show the result
+    if (mpirank == 0) then
+        write(*, "('S: 'spf0.0spf0.0'j')", advance="no") rs * 1e-5
+        write(*, "(' | L: 'g0)", advance="no") L
+        write(*, "(' | N: 'g0)", advance="no") mpisize
+        write(*, "(' | T1: 'sf0.4)", advance="no") t1-t0
+        write(*, "(' | TF: 'sf0.4)", advance="no") t2-t1
+        write(*, "(' | TT: 'sf0.4)") t2-t0
+    endif
+
+end
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Serial F2PY}
+%----------------------------------------
+\begin{lstlisting}[language=Fortran, caption={Serial F2PY implementation of the FFT test case - F90 module code.}]
+subroutine fs(ss, ll, ts, tf, tt)
+    use, intrinsic :: iso_c_binding
+    include "fftw3.f03"
+    double complex, intent(out) :: ss
+    integer, intent(out) :: ll
+    double precision, intent(out) :: ts, tf, tt
+    integer, parameter :: L = 576, M = 576, N = 576
+    type(C_PTR) :: plan, cdata
+    complex(C_DOUBLE_COMPLEX), pointer :: data(:,:,:)
+    complex(C_DOUBLE_COMPLEX) :: s
+    integer :: i, j, k
+    double precision :: t0, t1, t2
+    
+    call cpu_time(t0)    ! time measurement
+           
+    ! in-place transform (note dimension reversal)
+    cdata = fftw_alloc_complex(int(L * M * N, C_SIZE_T))
+    call c_f_pointer(cdata, data, [L, M, N])
+
+    ! create plan for in-place forward DFT (note dimension reversal)   
+    plan = fftw_plan_dft_3d(N, M, L, data, data, &
+                            FFTW_FORWARD, FFTW_ESTIMATE)
+
+    ! fills the array with complex values
+    do k = 1, N
+        do j = 1, M
+            do i = 1, L
+                data(i, j, k) = sin( real(i + j + k) )
+            enddo
+        enddo
+    enddo
+    data = dcmplx( real(data), 0 )
+
+    call cpu_time(t1)    ! time measurement
+    
+    ! compute transform (as many times as desired)    
+    call fftw_execute_dft(plan, data, data)
+    ! checksum
+    s = sum(data)
+
+    call cpu_time(t2)    ! time measurement
+               
+    call fftw_destroy_plan(plan)
+    call fftw_free(cdata)
+     
+    ! result
+    ss = s * 1e-5
+    ll = L
+    ts = t1 - t0
+    tf = t2 - t1
+    tt = t2 - t0
+    
+end subroutine
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Serial F2PY implementation of the FFT test case - Python main code.}]
+import nc2cs
+import time as tm
+t2 = tm.time()    # time measurement
+S, L, ts, tf, tt = nc2cs.fs()
+t3 = tm.time()    # time measurement
+print(f"S:{S:.0f}", end='')
+print(f" | L:{L:0g}", end='')
+print(f" | T1:{ts:.4f}", end='')
+print(f" | TF:{tf:.4f}", end='')
+print(f" | TT:{tt:.4f}", end='')
+print(f" | TO:{t3-t2:.4f}")
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Parallel F2PY}
+%----------------------------------------
+\begin{lstlisting}[language=Fortran, caption={Parallel F2PY implementation of the FFT test case - F90 module code.}]
+subroutine fs(ss, ll, ts, tf, tt, mr, ms)
+    use, intrinsic :: iso_c_binding
+    use MPI
+    implicit none
+    include 'fftw3-mpi.f03'
+    integer, intent(out) :: mr, ms, ll
+    double complex, intent(out) :: ss
+    double precision, intent(out) :: ts, tf, tt
+    integer :: mpirank, mpisize, mpierror, i, j, k
+    integer(C_INTPTR_T), parameter :: L = 576, M = 576, N = 576
+    type(C_PTR) :: plan, cdata
+    complex(C_DOUBLE_COMPLEX), pointer :: data(:,:,:)
+    integer(C_INTPTR_T) :: alloc_local, local_N, local_start
+    complex(C_DOUBLE_COMPLEX) :: s, rs
+    real(C_DOUBLE) :: t0, t1, t2
+
+    call cpu_time(t0)    ! time measurement
+    
+    call MPI_Init(mpierror)
+    call MPI_Comm_rank(MPI_COMM_WORLD, mpirank, mpierror)
+    call MPI_Comm_size(MPI_COMM_WORLD, mpisize, mpierror)
+
+    ! init
+    call fftw_mpi_init()    
+
+    ! get local data size and allocate (note dimension reversal)
+    alloc_local = fftw_mpi_local_size_3d(N, M, L,  &
+                 MPI_COMM_WORLD, local_N, local_start)
+    cdata = fftw_alloc_complex(alloc_local)
+    call c_f_pointer(cdata, data, [L, M, local_N])
+
+    ! create MPI plan for in-place forward DFT (note dimension reversal)
+    plan = fftw_mpi_plan_dft_3d(N, M, L, data, data,  &
+                MPI_COMM_WORLD, FFTW_FORWARD, FFTW_ESTIMATE)
+
+    ! fill array with complex values
+    do k = 1, int(local_N)
+        do j = 1, M
+            do i = 1, L
+                data(i, j, k) = sin( real(i + j + (k + local_start)) )
+            enddo
+        enddo
+    enddo
+    data = dcmplx( real(data), 0 )
+    
+    call cpu_time(t1)    ! time measurement
+
+    ! compute transform (as many times as desired)
+    call fftw_mpi_execute_dft(plan, data, data)
+
+    ! compute the checksum of processes
+    s = sum(data)
+    call MPI_Reduce(s,                   &! send data
+                    rs,                  &! recv data
+                    1,                   &! count
+                    MPI_DOUBLE_COMPLEX,  &! data type
+                    MPI_SUM,             &! operation
+                    0,                   &! rank of root process
+                    MPI_COMM_WORLD, mpierror)
+    
+    ! clean
+    call fftw_destroy_plan(plan)
+    call fftw_free(cdata)
+    call fftw_mpi_cleanup()
+    call mpi_finalize(mpierror)
+       
+    call cpu_time(t2)    ! time measurement        
+    
+    ! result
+    ss = rs * 1e-5
+    ll = L
+    ts = t1 - t0
+    tf = t2 - t1   
+    tt = t2 - t0
+    mr = mpirank
+    ms = mpisize
+    
+end subroutine
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Parallel F2PY implementation of the FFT test case - Python main code.}]
+import nc2cp
+import time as tm
+t2 = tm.time()    # time measurement
+ss, ll, ts, tf, tt, mr, ms = nc2cp.fs()
+t3 = tm.time()    # time measurement
+if mr == 0 :
+    print(f"S:{ss:.0f}", end='')
+    print(f", L:{ll:0g}", end='')
+    print(f", N:{ms:0g}", end='')
+    print(f", T1:{ts:.4f}", end='')
+    print(f", TF:{tf:.4f}", end='')
+    print(f", TT:{tt:.4f}", end='')
+    print(f", TO:{t3-t2:.4f}")
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Serial Python}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Serial Python implementation of the FFT test case.}]
+import numpy as np, pyfftw as pf, time as tm
+
+t0 = tm.time()    # time measurement
+
+# data
+L = M = N = 576
+u = pf.empty_aligned( (N, M, L), dtype=np.complex128 )
+for k in range (u.shape[2]) :
+    for j in range(u.shape[1]) :
+        for i in range(u.shape[0]) :
+            u[i, j, k] = i + j + k + 3
+u.real = np.sin ( u.real )
+u.imag = 0
+
+t1 = tm.time()    # time measurement
+
+# FFT
+uf = pf.interfaces.numpy_fft.fftn(u,
+        overwrite_input=True, auto_contiguous=False,
+        auto_align_input=False)
+# checksum
+S = np.sum(uf)
+
+t2 = tm.time()    # time measurement
+
+print(f"S: {S*1E-5:.0f}", end='')
+print(f" | L: {L:0g}", end='')
+print(f" | T1: {t1-t0:.4f}", end='')
+print(f" | TF: {t2-t1:.4f}", end='')
+print(f" | TT: {t2-t0:.4f}")
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Parallel Python}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Parallel Python implementation of the FFT test case.}]
+import numpy as np, time as tm
+from mpi4py_fft import PFFT, newDistArray
+from mpi4py import MPI
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
+
+t0 = tm.time()    # time measurement
+
+# data
+L = M = N = 576
+NA = np.array([N, M, L], dtype=int)
+f = PFFT(comm, NA, dtype=np.complex128, backend='pyfftw')
+u = newDistArray(f, False)
+for k in range (u.shape[2]) :
+    for j in range(u.shape[1]) :
+        for i in range(u.shape[0]) :
+            u[i, j, k] = i + j + k + 3
+u.real = np.sin ( u.real )
+u.imag = 0
+
+t1 = tm.time()    # time measurement
+
+# FFT
+uf = f.forward(u, normalize=False)
+
+# checksum
+S  = np.array(0, dtype=np.complex128)
+Sn = np.array(np.sum(uf), dtype=np.complex128)
+comm.Reduce([Sn, MPI.DOUBLE_COMPLEX], [S, MPI.DOUBLE_COMPLEX],
+            op=MPI.SUM, root=0)
+
+t2 = tm.time()    # time measurement
+
+if rank == 0 :
+    print(f"S: {S*1E-5:.0f}", end='')
+    print(f" | L: {L:0g}", end='')
+    print(f" | N: {size:0g}", end='')
+    print(f" | TS: {t1-t0:.4f}", end='')
+    print(f" | TP: {t2-t1:.4f}", end='')
+    print(f" | TT: {t2-t0:.4f}")
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Serial Cython}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Serial Cython implementation of the FFT test case - Cython module.}]
+#cython: boundscheck=False, wraparound=False, cdivision=True
+#cython: initializedcheck=False, language_level=3, infer_types=True
+def ff():
+    import numpy as np, pyfftw as pf, time as tm
+    
+    t0 = tm.time()    # time measurement
+
+    # data
+    L = M = N = 576
+    u = pf.empty_aligned( (N, M, L), dtype=np.complex128 )
+    for k in range (u.shape[2]) :
+        for j in range(u.shape[1]) :
+            for i in range(u.shape[0]) :
+                u[i, j, k] = i + j + k + 3
+    u.real = np.sin ( u.real )
+    u.imag = 0
+    
+    t1 = tm.time()    # time measurement
+
+    # FFT
+    uf = pf.interfaces.numpy_fft.fftn(u,
+            overwrite_input=True, auto_contiguous=False,
+            auto_align_input=False)
+    # checksum
+    s = np.sum(uf)
+    
+    t2 = tm.time()    # time measurement
+    
+    return s, L, t0, t1, t2
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Serial Cython implementation of the FFT test case - Python main code.}]
+import numpy as np
+import time as tm
+import cc2cs
+
+t3 = tm.time()    # time measurement
+
+s, L, t0, t1, t2 = cc2cs.ff()
+
+t4 = tm.time()    # time measurement
+
+print(f"S:{s*1E-5:.0f}", end='')
+print(f" | L:{L:0g}", end='')
+print(f" | T1:{t1-t0:.4f}", end='')
+print(f" | TF:{t2-t1:.4f}", end='')
+print(f" | TT:{t2-t0:.4f}", end='')
+print(f" | TO:{t4-t3:.4f}")
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Parallel Cython}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Parallel implementation of the FFT test case - Cython module.}]
+#cython: boundscheck=False, wraparound=False, cdivision=True
+#cython: initializedcheck=False, language_level=3, infer_types=True
+import numpy as np, time as tm
+from mpi4py_fft import PFFT, newDistArray
+from mpi4py import MPI
+
+def ffp():
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
+
+    t0 = tm.time()    # time measurement
+
+    # data
+    L = M = N = 576
+    NA = np.array([N, M, L], dtype=int)
+    f = PFFT(comm, NA, dtype=np.complex128, backend='pyfftw')
+    u = newDistArray(f, False)
+    for k in range (u.shape[2]) :
+        for j in range(u.shape[1]) :
+            for i in range(u.shape[0]) :
+                u[i, j, k] = i + j + k + 3
+    u.real = np.sin ( u.real )
+    u.imag = 0
+
+    t1 = tm.time()    # time measurement
+    
+    # FFT
+    u_hat = f.forward(u, normalize=False)
+    # checksum
+    rs = np.array(0, dtype=np.complex128)
+    s = np.array(np.sum(u_hat), dtype=np.complex128)
+    comm.Reduce([s, MPI.DOUBLE_COMPLEX], [rs, MPI.DOUBLE_COMPLEX],
+                op=MPI.SUM, root=0)
+    
+    t2 = tm.time()    # time measurement
+    
+    return rs, L, size, rank, t0, t1, t2
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Parallel implementation of the FFT test case - Python main code.}]
+import numpy as np
+import time as tm
+import cc2cp
+
+t3 = tm.time()    # time measurement
+
+s, l, n, r, t0, t1, t2 = cc2cp.ffp()
+
+t4 = tm.time()    # time measurement
+
+if r == 0 :
+    print(f"S:{s*1E-5:.0f}", end='')
+    print(f", L:{l:0g}", end='')
+    print(f", N:{n:0g}", end='')
+    print(f", T1:{t1-t0:.4f}", end='')
+    print(f", TF:{t2-t1:.4f}", end='')
+    print(f", TT:{t2-t0:.4f}", end='')
+    print(f", TO:{t4-t3:.4f}")
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Serial Numba-CPU}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Serial Numba-CPU implementation of the FFT test case.}]
+import numpy as np, pyfftw as pf, time as tm
+from numba import njit, objmode
+
+t3 = tm.time()    # time measurement
+
+@njit
+def ff() :
+    with objmode(t0 = 'f8') :
+        t0 = tm.time()    # time measurement
+    
+    # data
+    L = M = N = 576
+    with objmode(u = 'complex128[:,:,:]') :  # annotate return type
+        u = pf.empty_aligned( (N, M, L), dtype=np.complex128 )
+    for k in range (u.shape[2]) :
+        for j in range(u.shape[1]) :
+            for i in range(u.shape[0]) :
+                u[i, j, k] = complex( np.sin ( i + j + k + 3 ), 0 )
+    
+    with objmode(t1 = 'f8') :
+        t1 = tm.time()    # time measurement
+    
+    # FFT
+    with objmode(u = 'complex128[:,:,:]') :  # annotate return type
+        u = pf.interfaces.numpy_fft.fftn(u)
+    # checksum
+    s = np.sum(u)
+    
+    with objmode(t2 = 'f8') :
+        t2 = tm.time()    # time measurement
+    
+    return s, L, t0, t1, t2
+
+# main
+s, l, t0, t1, t2 = ff()
+
+t4 = tm.time()    # time measurement
+
+print(f"S:{s*1E-5:.0f}", end='')
+print(f" | L:{l:0g}", end='')
+print(f" | T1:{t1-t0:.4f}", end='')
+print(f" | TF:{t2-t1:.4f}", end='')
+print(f" | TT:{t2-t0:.4f}", end='')
+print(f" | TO:{t4-t3:.4f}")
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Parallel Numba-CPU}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Parallel Numba-CPU implementation of the FFT test case.}]
+import numpy as np, time as tm
+from numba import njit, objmode
+from mpi4py_fft import PFFT, newDistArray
+from mpi4py import MPI
+
+t3 = tm.time()    # time measurement
+
+def uu() : 
+    return newDistArray(f, False)
+def uf(u) :
+    return f.forward(u, normalize=False)    
+@njit
+def ff() :
+    with objmode(t0 = 'f8') :
+        t0 = tm.time()    # time measurement
+    
+    # data
+    with objmode(u = 'complex128[:,:,:]') :  # annotate return type
+        u = uu()
+    for k in range (u.shape[2]) :
+        for j in range(u.shape[1]) :
+            for i in range(u.shape[0]) :
+                u[i, j, k] = complex( np.sin ( i + j + k + 3 ), 0 )
+
+    with objmode(t1 = 'f8') :
+        t1 = tm.time()    # time measurement
+
+    # FFT
+    with objmode(u_hat = 'complex128[:,:,:]') :  # annotate return type
+        u_hat = uf(u)
+    # checksum
+    s = np.array(np.sum(u_hat), dtype=np.complex128)
+    rs = np.array(0, dtype=np.complex128)
+    with objmode() :
+        MPI.COMM_WORLD.Reduce([s, MPI.DOUBLE_COMPLEX],
+            [rs, MPI.DOUBLE_COMPLEX], op=MPI.SUM, root=0)
+
+    with objmode(t2 = 'f8') :
+        t2 = tm.time()    # time measurement
+
+    return rs, t0, t1, t2
+
+# main
+ms = MPI.COMM_WORLD.Get_size()
+mr = MPI.COMM_WORLD.Get_rank()
+L = M = N = 576
+# PFFT should be outside the numba function due to the "class" return
+f = PFFT(MPI.COMM_WORLD, [N, M, L], dtype=np.complex128,
+         backend='pyfftw')
+# numba function
+s, t0, t1, t2 = ff()
+
+t4 = tm.time()    # time measurement
+
+if not mr :
+    print(f"S:{s*1E-5:.0f}", end='')
+    print(f", L:{L:0g}", end='')
+    print(f", N:{ms:0g}", end='')
+    print(f", T1:{t1-t0:.4f}", end='')
+    print(f", TF:{t2-t1:.4f}", end='')
+    print(f", TT:{t2-t0:.4f}", end='')
+    print(f", TO:{t4-t3:.4f}")
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{CuPY}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={CuPY implementation of the FFT test case.}]
+import numpy as np, cupy as cp, time as tm
+def f() :
+    t0 = -tm.time()    # <--- time measurement
+    L = M = N = 576
+    a = np.fromfunction( lambda i, j, k:
+            np.sin ( i + j + k + 3 ), (N, M, L), dtype=cp.complex128 )
+    f = cp.asarray(a)
+    fft = cp.fft.fftn(f)
+    s = complex(cp.sum(fft))
+    t0 += tm.time()    # <--- time measurement
+    print(f"S:{s*1e-5:.0f}", end='')
+    print(f" | T:{t0:.4f}")
+\end{lstlisting}
+
+
+
+
+
+
+
+
+%
+%
+%
+%
+%
+%
+%
+%  _____                   _   
+% |  ___|__  _ __ ___  ___| |_ 
+% | |_ / _ \| '__/ _ \/ __| __|
+% |  _| (_) | | |  __/\__ \ |_ 
+% |_|  \___/|_|  \___||___/\__|
+%----------------------------------------
+\section{Implementations of the random forest test case}
+%----------------------------------------
+
+
+
+
+%----------------------------------------
+\subsection{Serial and parallel F90}
+%----------------------------------------
+
+The code of the F90 implementation of the RF case study reuses the code from the PARF library, and below are just the modifications made to the library, both in the serial and parallel versions, which basically consists of measuring the processing time using the wall time, and in the case of the parallel version also show the number of MPI processes used.
+
+\begin{lstlisting}[language=Fortran, caption={Serial F90 implementation of the RF test case.}]
+PROGRAM random_forest
+
+... original code at the beginning of PARF F90 code ...
+
+  !=[ added code ]------------------------
+  real :: t0, t1
+  call cpu_time(t0)  ! time measurement
+  !---------------------------------------
+
+... original main PARF F90 code ...
+
+  !=[ added code ]------------------------
+  call cpu_time(t1)  ! time measurement
+  if (par_rank == 0) then       
+    write(6, "('T: 'sf0.4'  |  N: 'g0)" ) t1-t0, par_processes
+  endif
+  !---------------------------------------
+
+END PROGRAM random_forest
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Serial and parallel F2PY}
+%----------------------------------------
+
+As with the F90 implementation, the F90 code from PARF is reused. Below are just the changed parts. Existing F90 code is repurposed and inserted into a subroutine as per the F2PY API specification. Basically library code changes are to make outputs or input values to be placed in main subroutine call parameters. It also implies that other internal subroutines are changed to include passing parameters that must reach the main subroutine.
+
+\begin{lstlisting}[language=Fortran, caption={Serial F2PY implementation of the RF test case - F90 module code.}]
+! the existing F90 code is repurposed and inserted into a subroutine.
+!-[ changed ]----------------------------
+! PROGRAM random_forest
+SUBROUTINE random_forest(p_trainset, p_testset, &
+                p_error_count, p_oob_count, p_kappa_value, &
+                p_instance_count, p_error, p_testset_kappa_value, &
+                p_time, p_rank, p_size)
+!---------------------------------------
+
+... inital PARF F90 code ...
+
+!-[ changed ]----------------------------
+
+! files
+character(len=256), intent(in) :: p_trainset, p_testset
+
+! Trainset
+integer, intent(out) :: p_error_count, p_oob_count
+real,    intent(out) :: p_kappa_value
+
+! Testset
+integer, intent(out) :: p_instance_count
+real,    intent(out) :: p_error, p_testset_kappa_value
+
+! Proc, time
+integer, intent(out) :: p_rank, p_size
+real,    intent(out) :: p_time
+
+real :: t0, t1
+
+p_error_count = 0
+p_oob_count = 0
+p_instance_count = 0
+p_kappa_value = 0
+p_error = 0 
+p_testset_kappa_value = 0
+
+call cpu_time(t0)  ! time measurement
+!----------------------------------------
+
+... PARF F90 code ...
+
+! Basically library code changes are to make outputs or input values to 
+! be placed in main subroutine call parameters. It also implies that 
+! other internal subroutines are changed to include passing parameters 
+! that must reach the main subroutine.
+!-[ changed ]----------------------------
+        CALL classify_instanceset(testset, rfptr, p_error, &
+                    p_instance_count, p_testset_kappa_value)
+!---------------------------------------
+
+... PARF F90 code ...
+
+!-[ changed ]----------------------------
+            CALL calc_training_error(trainset, p_error_count, &
+                        p_oob_count, p_kappa_value)
+!----------------------------------------
+
+... PARF F90 code ...
+
+!-[ changed ]----------------------------
+              CALL classify_instanceset(testset, rfptr, p_error, &
+                        p_instance_count, p_testset_kappa_value)
+!---------------------------------------
+
+... PARF F90 code ...
+
+!-[ changed ]----------------------------
+        CALL classify_instanceset(protoset, rfptr, p_error, &
+                    p_instance_count, p_testset_kappa_value)
+!---------------------------------------
+
+... PARF F90 code ...
+
+!-[ changed ]----------------------------
+call cpu_time(t1)  ! time measurement
+p_size = par_processes
+p_rank = par_rank
+p_time = t1 - t0
+!---------------------------------------
+
+... PARF F90 code ...
+
+! the existing F90 code is repurposed and inserted into a subroutine.
+!-[ changed ]----------------------------
+! END PROGRAM random_forest
+END SUBROUTINE
+!---------------------------------------
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Serial F2PY implementation of the RF test case - Python main code.}]
+import time as tm, parf003ser
+
+t0 = tm.time()    # time measurement
+
+resu = parf003ser.random_forest(
+    "datasets/asteroid-train-66k.arff",
+    "datasets/asteroid-test-34k.arff"
+)
+p_error_count = resu[0]
+p_oob_count = resu[1]
+p_kappa_value = resu[2]
+p_instance_count = resu[3]
+p_error = resu[4]
+p_testset_kappa_value = resu[5]
+p_time = resu[6]
+p_rank = resu[7]
+p_size = resu[8]
+
+t1 = tm.time()    # time measurement
+
+if p_rank == 0 :
+    print(f'Trainset classification error is',
+          f'{p_error_count * 100 / p_oob_count :.2f}%',
+          f'of {p_oob_count} (kappa: {p_kappa_value :.4f})')
+    print(f' Testset classification error is {p_error * 100 :.2f}%',
+          f'of {p_instance_count} (kappa: {p_testset_kappa_value :.4f})')
+    print(f'T: {p_time :.4f}  |  N: {p_size :0g}')
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Parallel F2PY}
+%----------------------------------------
+
+The parallel F90 version reuses the code from the PARF library which is built in two different ways, one for the serial version and one for the parallel, changing settings in the library before the build, and F2PY builds two Python libraries, one for the serial version and another for the parallel version. This Python library is then used in the main Python code of the F2PY implementation.
+
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Parallel F2PY implementation of the RF test case - Python main code.}]
+import time as tm, parf003mpi
+
+t0 = tm.time()    # time measurement
+
+resu = parf003mpi.random_forest(
+    "datasets/asteroid-train-66k.arff",
+    "datasets/asteroid-test-34k.arff"
+)
+p_error_count = resu[0]
+p_oob_count = resu[1]
+p_kappa_value = resu[2]
+p_instance_count = resu[3]
+p_error = resu[4]
+p_testset_kappa_value = resu[5]
+p_time = resu[6]
+p_rank = resu[7]
+p_size = resu[8]
+
+t1 = tm.time()    # time measurement
+
+if p_rank == 0 :
+    print(f'Trainset classification error is',
+          f'{p_error_count * 100 / p_oob_count :.2f}%',
+          f'of {p_oob_count} (kappa: {p_kappa_value :.4f})')
+    print(f' Testset classification error is {p_error * 100 :.2f}%',
+          f'of {p_instance_count} (kappa: {p_testset_kappa_value :.4f})')
+    print(f'T: {p_time :.4f}  |  N: {p_size :0g}')
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Serial Python}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Serial Python implementation of the RF test case.}]
+import pandas as pd
+import numpy as np
+import sys
+from scipy.io import arff
+from sklearn.impute import SimpleImputer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import metrics
+from time import time
+t = time()
+
+data = arff.loadarff(sys.argv[1])
+df = pd.DataFrame(data[0])
+df = df.replace(b'N', 0)
+df = df.replace(b'Y', 1)
+df['class'] = df['class'].str.decode('utf-8').fillna(df['class'])
+y_train = df['class']
+X_train = df.drop(columns=['class'])
+imp = SimpleImputer(missing_values = np.nan, strategy = 'mean')
+df2 = pd.DataFrame(imp.fit_transform(X_train))
+df2.columns = X_train.columns
+df2.index = X_train.index
+X_train = df2
+
+datat = arff.loadarff(sys.argv[2])
+df = pd.DataFrame(datat[0])
+df = df.replace(b'N', 0)
+df = df.replace(b'Y', 1)
+df['class'] = df['class'].str.decode('utf-8').fillna(df['class'])
+y_test = df['class']
+X_test = df.drop(columns = ['class'])
+imp = SimpleImputer(missing_values = np.nan, strategy = 'mean')
+df2 = pd.DataFrame(imp.fit_transform(X_test))
+df2.columns = X_test.columns
+df2.index = X_test.index
+X_test = df2
+
+clf = RandomForestClassifier(n_estimators = 100)
+clf.fit(X_train, y_train)
+y_pred_test  = clf.predict(X_test)
+y_pred_train = clf.predict(X_train)
+accu = metrics.accuracy_score(y_train, y_pred_train, normalize = False)
+trsi = y_train.size
+perr = ((trsi - accu) / (trsi)) * 100
+kapp = metrics.cohen_kappa_score(y_train, y_pred_train)
+print(f'Trainset classification error is {perr:.2f}% ',
+      f'of {trsi} (kappa: {kapp:.4f})')
+accu = metrics.accuracy_score(y_test, y_pred_test, normalize = False)
+trsi = y_test.size
+perr = ((trsi - accu) / (trsi)) * 100
+kapp = metrics.cohen_kappa_score(y_test, y_pred_test)
+print(f' Testset classification error is {perr:.2f}% ',
+      f'of {trsi} (kappa: {kapp:.4f})')
+
+t = time() - t
+print(f"T: {t:.4f} s")
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Parallel Python}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Parallel Python implementation of the RF test case.}]
+import argparse, logging, os, sys, datetime, pandas as pd, numpy as np
+from joblib import Parallel, parallel_backend, register_parallel_backend
+from joblib import delayed, cpu_count
+from sklearn.impute import SimpleImputer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import metrics
+from scipy.io import arff
+import ipyparallel as ipp
+from ipyparallel.joblib import IPythonParallelBackend
+from time import time
+t = time()
+
+# Prepare the engines
+c = ipp.Client(profile = sys.argv[3])
+ncli = len(c.ids)
+bview = c.load_balanced_view()
+register_parallel_backend(
+    'ipyparallel',
+    lambda : IPythonParallelBackend(view = bview))
+
+# Get & prepare data
+data = arff.loadarff(sys.argv[1])
+df = pd.DataFrame(data[0])
+df = df.replace(b'N', 0)
+df = df.replace(b'Y', 1)
+df['class'] = df['class'].str.decode('utf-8').fillna(df['class'])
+y_train = df['class']
+X_train = df.drop(columns=['class'])
+imp = SimpleImputer(missing_values = np.nan, strategy = 'mean')
+df2 = pd.DataFrame(imp.fit_transform(X_train))
+df2.columns = X_train.columns
+df2.index = X_train.index
+X_train = df2
+
+datat = arff.loadarff(sys.argv[2])
+df = pd.DataFrame(datat[0])
+df = df.replace(b'N', 0)
+df = df.replace(b'Y', 1)
+df['class'] = df['class'].str.decode('utf-8').fillna(df['class'])
+y_test = df['class']
+X_test = df.drop(columns = ['class'])
+imp = SimpleImputer(missing_values = np.nan, strategy = 'mean')
+df2 = pd.DataFrame(imp.fit_transform(X_test))
+df2.columns = X_test.columns
+df2.index = X_test.index
+X_test = df2
+
+clf = RandomForestClassifier(n_estimators = 100)
+with parallel_backend('ipyparallel') :
+    clf.fit(X_train, y_train)
+
+y_pred_test  = clf.predict(X_test)
+y_pred_train = clf.predict(X_train)
+accu = metrics.accuracy_score(y_train, y_pred_train, normalize = False)
+trsi = y_train.size
+perr = ((trsi - accu) / (trsi)) * 100
+kapp = metrics.cohen_kappa_score(y_train, y_pred_train)
+print(f'Trainset classification error is {perr:.2f}% ',
+      f'of {trsi} (kappa: {kapp:.4f})')
+accu = metrics.accuracy_score(y_test, y_pred_test, normalize = False)
+trsi = y_test.size
+perr = ((trsi - accu) / (trsi)) * 100
+kapp = metrics.cohen_kappa_score(y_test, y_pred_test)
+print(f' Testset classification error is {perr:.2f}% ',
+      f'of {trsi} (kappa: {kapp:.4f})')
+
+t = time() - t
+print(f"T: {t:.4f}  |  N: {ncli:0g}")
+
+c.shutdown(hub=True, block=False)
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Serial Cython}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Serial Cython implementation of the RF test case - Cython module code.}]
+#cython: boundscheck=False, wraparound=False, cdivision=True
+#cython: initializedcheck=False, language_level=3, infer_types=True
+def rfcsf(trainset, testset) :
+    import pandas as pd
+    import numpy as np
+    import sys
+    from scipy.io import arff
+    from sklearn.impute import SimpleImputer
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn import metrics
+
+    data = arff.loadarff(trainset)
+    df = pd.DataFrame(data[0])
+    df = df.replace(b'N', 0)
+    df = df.replace(b'Y', 1)
+    df['class'] = df['class'].str.decode('utf-8').fillna(df['class'])
+    y_train = df['class']
+    X_train = df.drop(columns=['class'])
+    imp = SimpleImputer(missing_values = np.nan, strategy = 'mean')
+    df2 = pd.DataFrame(imp.fit_transform(X_train))
+    df2.columns = X_train.columns
+    df2.index = X_train.index
+    X_train = df2
+
+    datat = arff.loadarff(testset)
+    df = pd.DataFrame(datat[0])
+    df = df.replace(b'N', 0)
+    df = df.replace(b'Y', 1)
+    df['class'] = df['class'].str.decode('utf-8').fillna(df['class'])
+    y_test = df['class']
+    X_test = df.drop(columns = ['class'])
+    imp = SimpleImputer(missing_values = np.nan, strategy = 'mean')
+    df2 = pd.DataFrame(imp.fit_transform(X_test))
+    df2.columns = X_test.columns
+    df2.index = X_test.index
+    X_test = df2
+
+    clf = RandomForestClassifier(n_estimators = 100)
+    clf.fit(X_train, y_train)
+    y_pred_test  = clf.predict(X_test)
+    y_pred_train = clf.predict(X_train)
+    accu = metrics.accuracy_score(y_train, y_pred_train, normalize = False)
+    trtrsi = y_train.size
+    trperr = ((trtrsi - accu) / (trtrsi)) * 100
+    trkapp = metrics.cohen_kappa_score(y_train, y_pred_train)
+    
+    accu = metrics.accuracy_score(y_test, y_pred_test, normalize = False)
+    tetrsi = y_test.size
+    teperr = ((tetrsi - accu) / (tetrsi)) * 100
+    tekapp = metrics.cohen_kappa_score(y_test, y_pred_test)
+    
+    return trtrsi, trperr, trkapp, tetrsi, teperr, tekapp
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Serial Cython implementation of the RF test case - Python main code.}]
+from time import time
+from rfcs import rfcsf
+
+t0 = time()
+trainset = "datasets/asteroid-train-66k.arff"
+testset  = "datasets/asteroid-test-34k.arff"
+trtrsi, trperr, trkapp, tetrsi, teperr, tekapp = rfcsf(trainset, testset)
+t1 = time() - t0
+print(f'Trainset classification error is {trperr:.2f}% ',
+      f'of {trtrsi} (kappa: {trkapp:.4f})')
+print(f' Testset classification error is {teperr:.2f}% ',
+      f'of {tetrsi} (kappa: {tekapp:.4f})')
+print(f"T: {t1:.4f}")
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Parallel Cython}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Parallel Cython implementation of the RF test case - Cython module.}]
+#cython: boundscheck=False, wraparound=False, cdivision=True
+#cython: initializedcheck=False, language_level=3, infer_types=True
+def rfcmf(trainset, testset) :
+    import logging, os, sys, datetime
+    import pandas as pd, numpy as np
+    from sklearn.impute import SimpleImputer
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn import metrics
+    from scipy.io import arff
+    import ipyparallel as ipp
+    from ipyparallel.joblib import IPythonParallelBackend
+    from joblib import Parallel, parallel_backend
+    from joblib import register_parallel_backend
+    from joblib import delayed, cpu_count
+    from time import time
+    t = time()
+
+    # Get & prepare data
+    data = arff.loadarff(trainset)
+    df = pd.DataFrame(data[0])
+    df = df.replace(b'N', 0)
+    df = df.replace(b'Y', 1)
+    df['class'] = df['class'].str.decode('utf-8').fillna(df['class'])
+    y_train = df['class']
+    X_train = df.drop(columns=['class'])
+    imp = SimpleImputer(missing_values = np.nan, strategy = 'mean')
+    df2 = pd.DataFrame(imp.fit_transform(X_train))
+    df2.columns = X_train.columns
+    df2.index = X_train.index
+    X_train = df2
+
+    datat = arff.loadarff(testset)
+    df = pd.DataFrame(datat[0])
+    df = df.replace(b'N', 0)
+    df = df.replace(b'Y', 1)
+    df['class'] = df['class'].str.decode('utf-8').fillna(df['class'])
+    y_test = df['class']
+    X_test = df.drop(columns = ['class'])
+    imp = SimpleImputer(missing_values = np.nan, strategy = 'mean')
+    df2 = pd.DataFrame(imp.fit_transform(X_test))
+    df2.columns = X_test.columns
+    df2.index = X_test.index
+    X_test = df2
+
+    clf = RandomForestClassifier(n_estimators = 100)
+    with parallel_backend('ipyparallel') :
+        clf.fit(X_train, y_train)
+    y_pred_test  = clf.predict(X_test)
+    y_pred_train = clf.predict(X_train)
+    accu = metrics.accuracy_score(y_train, y_pred_train,
+                                  normalize = False)
+    trtrsi = y_train.size
+    trperr = ((trtrsi - accu) / (trtrsi)) * 100
+    trkapp = metrics.cohen_kappa_score(y_train, y_pred_train)
+    
+    accu = metrics.accuracy_score(y_test, y_pred_test, 
+                                  normalize = False)
+    tetrsi = y_test.size
+    teperr = ((tetrsi - accu) / (tetrsi)) * 100
+    tekapp = metrics.cohen_kappa_score(y_test, y_pred_test)
+
+    return trtrsi, trperr, trkapp, tetrsi, teperr, tekapp
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Parallel Cython implementation of the RF test case - Python main code.}]
+import argparse
+from time import time
+from rfcm import rfcmf
+import ipyparallel as ipp
+from ipyparallel.joblib import IPythonParallelBackend
+from joblib import Parallel, parallel_backend
+from joblib import register_parallel_backend
+from joblib import delayed, cpu_count
+
+t0 = time()
+trainset = "datasets/asteroid-train-66k.arff"
+testset  = "datasets/asteroid-test-34k.arff"
+parser = argparse.ArgumentParser()
+parser.add_argument("-p", "--profile", required=True,
+    help="Name of IPython profile to use")
+profile = parser.parse_args().profile
+
+# Prepare the engines
+c = ipp.Client(profile = profile)
+ncli = len(c.ids)
+bview = c.load_balanced_view()
+register_parallel_backend('ipyparallel',
+    lambda : IPythonParallelBackend(view = bview) )
+
+( trtrsi, trperr, trkapp, tetrsi, teperr, tekapp
+    ) = rfcmf(trainset, testset)
+
+# Shutdown the engines
+c.shutdown(hub=True, block=False)
+
+# Result
+t1 = time() - t0
+print(f'Trainset classification error is {trperr:.2f}% ',
+      f'of {trtrsi} (kappa: {trkapp:.4f})')
+print(f' Testset classification error is {teperr:.2f}% ',
+      f'of {tetrsi} (kappa: {tekapp:.4f})')
+print(f"T: {t1:.4f}  |  N: {ncli:0g}")
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Serial Numba-CPU}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Serial Numba-CPU implementation of the RF test case.}]
+import pandas as pd
+import numpy as np
+import sys
+from scipy.io import arff
+from sklearn.impute import SimpleImputer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import metrics    
+from numba import jit, objmode
+from time import time
+t0 = time()
+
+@jit(forceobj=True)
+def rfcsf(trainset, testset) :
+    data = arff.loadarff(trainset)
+    df = pd.DataFrame(data[0])
+    df = df.replace(b'N', 0)
+    df = df.replace(b'Y', 1)
+    df['class'] = df['class'].str.decode('utf-8').fillna(df['class'])
+    y_train = df['class']
+    X_train = df.drop(columns=['class'])
+    imp = SimpleImputer(missing_values = np.nan, strategy = 'mean')
+    df2 = pd.DataFrame(imp.fit_transform(X_train))
+    df2.columns = X_train.columns
+    df2.index = X_train.index
+    X_train = df2
+
+    datat = arff.loadarff(testset)
+    df = pd.DataFrame(datat[0])
+    df = df.replace(b'N', 0)
+    df = df.replace(b'Y', 1)
+    df['class'] = df['class'].str.decode('utf-8').fillna(df['class'])
+    y_test = df['class']
+    X_test = df.drop(columns = ['class'])
+    imp = SimpleImputer(missing_values = np.nan, strategy = 'mean')
+    df2 = pd.DataFrame(imp.fit_transform(X_test))
+    df2.columns = X_test.columns
+    df2.index = X_test.index
+    X_test = df2
+
+    clf = RandomForestClassifier(n_estimators = 100)
+    clf.fit(X_train, y_train)
+    y_pred_test  = clf.predict(X_test)
+    y_pred_train = clf.predict(X_train)
+    accu = metrics.accuracy_score(y_train, y_pred_train, normalize = False)
+    trtrsi = y_train.size
+    trperr = ((trtrsi - accu) / (trtrsi)) * 100
+    trkapp = metrics.cohen_kappa_score(y_train, y_pred_train)
+    
+    accu = metrics.accuracy_score(y_test, y_pred_test, normalize = False)
+    tetrsi = y_test.size
+    teperr = ((tetrsi - accu) / (tetrsi)) * 100
+    tekapp = metrics.cohen_kappa_score(y_test, y_pred_test)
+    
+    return trtrsi, trperr, trkapp, tetrsi, teperr, tekapp
+
+# main
+trainset = "datasets/asteroid-train-66k.arff"
+testset  = "datasets/asteroid-test-34k.arff"
+trtrsi, trperr, trkapp, tetrsi, teperr, tekapp = rfcsf(trainset, testset)
+t1 = time() - t0
+print(f'Trainset classification error is {trperr:.2f}% ',
+      f'of {trtrsi} (kappa: {trkapp:.4f})')
+print(f' Testset classification error is {teperr:.2f}% ',
+      f'of {tetrsi} (kappa: {tekapp:.4f})')
+print(f"T: {t1:.4f}")
+\end{lstlisting}
+
+
+
+
+%----------------------------------------
+\subsection{Parallel Numba-CPU}
+%----------------------------------------
+\begin{lstlisting}[language=Python, caption={Parallel Numba-CPU implementation of the RF test case.}]
+import argparse, logging, os, sys, datetime
+import pandas as pd, numpy as np
+from joblib import ( Parallel, parallel_backend, 
+                     register_parallel_backend )
+from joblib import delayed, cpu_count
+from sklearn.impute import SimpleImputer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import metrics
+from scipy.io import arff
+import ipyparallel as ipp
+from ipyparallel.joblib import IPythonParallelBackend
+from numba import jit, objmode
+from time import time
+t0 = time()
+
+def eng01(clf, X_train, y_train) :
+    with parallel_backend('ipyparallel') :
+        clf.fit(X_train, y_train)
+    return clf
+
+@jit(forceobj=True)
+def rfamf(trainset, testset) :
+
+    # Get & prepare data
+    data = arff.loadarff(trainset)
+    df = pd.DataFrame(data[0])
+    df = df.replace(b'N', 0)
+    df = df.replace(b'Y', 1)
+    df['class'] = df['class'].str.decode('utf-8').fillna(df['class'])
+    y_train = df['class']
+    X_train = df.drop(columns=['class'])
+    imp = SimpleImputer(missing_values = np.nan, strategy = 'mean')
+    df2 = pd.DataFrame(imp.fit_transform(X_train))
+    df2.columns = X_train.columns
+    df2.index = X_train.index
+    X_train = df2
+
+    datat = arff.loadarff(testset)
+    df = pd.DataFrame(datat[0])
+    df = df.replace(b'N', 0)
+    df = df.replace(b'Y', 1)
+    df['class'] = df['class'].str.decode('utf-8').fillna(df['class'])
+    y_test = df['class']
+    X_test = df.drop(columns = ['class'])
+    imp = SimpleImputer(missing_values = np.nan, strategy = 'mean')
+    df2 = pd.DataFrame(imp.fit_transform(X_test))
+    df2.columns = X_test.columns
+    df2.index = X_test.index
+    X_test = df2
+
+    clf = RandomForestClassifier(n_estimators = 100)
+    clf = eng01(clf, X_train, y_train)
+    y_pred_test  = clf.predict(X_test)
+    y_pred_train = clf.predict(X_train)
+    accu = metrics.accuracy_score(y_train, y_pred_train,
+                                  normalize = False)
+    trtrsi = y_train.size
+    trperr = ((trtrsi - accu) / (trtrsi)) * 100
+    trkapp = metrics.cohen_kappa_score(y_train, y_pred_train)
+    
+    accu = metrics.accuracy_score(y_test, y_pred_test, 
+                                  normalize = False)
+    tetrsi = y_test.size
+    teperr = ((tetrsi - accu) / (tetrsi)) * 100
+    tekapp = metrics.cohen_kappa_score(y_test, y_pred_test)
+
+    return trtrsi, trperr, trkapp, tetrsi, teperr, tekapp
+
+# Main
+trainset = "datasets/asteroid-train-66k.arff"
+testset  = "datasets/asteroid-test-34k.arff"
+parser = argparse.ArgumentParser()
+parser.add_argument("-p", "--profile", required=True,
+    help="Name of IPython profile to use")
+profile = parser.parse_args().profile
+
+# Prepare the engines
+c = ipp.Client(profile = profile)
+ncli = len(c.ids)
+bview = c.load_balanced_view()
+register_parallel_backend('ipyparallel',
+    lambda : IPythonParallelBackend(view = bview) )
+
+# Call Numba Code
+( trtrsi, trperr, trkapp, tetrsi, teperr, tekapp,
+     ) = rfamf(trainset, testset)
+
+# Shutdown the engines
+c.shutdown(hub=True, block=False)
+
+# Result
+t1 = time() - t0
+print(f'Trainset classification error is {trperr:.2f}% ',
+      f'of {trtrsi} (kappa: {trkapp:.4f})')
+print(f' Testset classification error is {teperr:.2f}% ',
+      f'of {tetrsi} (kappa: {tekapp:.4f})')
+print(f"T: {t1:.4f}  |  N: {ncli:0g}")
+\end{lstlisting}

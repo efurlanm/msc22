@@ -1,0 +1,220 @@
+%     _                               _ _         ____ 
+%    / \   _ __  _ __   ___ _ __   __| (_)_  __  / ___|
+%   / _ \ | '_ \| '_ \ / _ \ '_ \ / _` | \ \/ / | |    
+%  / ___ \| |_) | |_) |  __/ | | | (_| | |>  <  | |___ 
+% /_/   \_\ .__/| .__/ \___|_| |_|\__,_|_/_/\_\  \____|
+%         |_|   |_| 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand{\thechapter}{C}
+\chapter{APPENDIX C - OTHER PYTHON HPC APPROACHES}
+\label{appendixC}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This appendix briefly describes other approaches that were not directly used in this work, but are somehow related, or were used as a reference. Perhaps the most employed of these approaches is PyTorch. Most of these solutions are actively being developed and offer some form of high-performance or parallel processing, multi-processing, or interfacing capabilities with C or F90. Furthermore, it does not include cloud computing, grid computing and related projects such as distributed file systems.
+
+
+
+
+%----------------------------------------
+\section{PyTorch}
+\label{sec_apprpyto}
+%----------------------------------------
+
+PyTorch is an open source machine learning library based on the Torch library, which provides resources for parallel execution on multi-core processors or GPU \cite{Ketkar2017, Imambi2021}. Torch is an open source library for machine learning that provides a programming environment for scientific computing and uses the Lua programming language, from script, in its compiled implementation just-in-time, which is based on the C language. It is important to note that Torch supports operations with multidimensional arrays and tensors. Although the development of Torch has been stalled since 2018, PyTorch continues to be developed and updated, being used for applications such as computer vision and natural language processing. PyTorch has interfaces for Python and C++ languages and provides scalable and distributed training, optimizing development, features supported by Torch \cite{Collobert2002}. PyTorch's main developer is Facebook, which uses mainly for translations and natural language processing (NLP), processing approximately 6 million translations per day, which include distributed and multitasking training for multiple complex models at the same time \cite{Ketkar2017} . PyTorch allows immediate execution of calculations with tensors by means of computational graphs generated dynamically, and in each, the vertices correspond to the tasks to be performed and the edges define the order of execution of these tasks. Each task can be performed independently, using parallel processing, for example with GPU \cite{Fey2019}.
+
+
+
+
+%----------------------------------------
+\section{PyCuda}
+\label{sec_apprpycu}
+%----------------------------------------
+
+PyCuda is a Python library and programming environment, which works as an interface to the CUDA parallel programming API, written in C++, with features and resources such as comprehensive implementation, guarantee of resources between class initialization and completion, dependency control for allocated memory control, abstractions to facilitate CUDA programming, automatic translation of CUDA errors for Python exceptions, JIT compilation using LNCC / NVCC, has little or no overhead from wrapping, comes with library optimized for GPU for linear algebra, reduction, search, and additional packages for FFT (fast Fourier transform) and LAPACK, in addition to complete documentation. PyCuda also supports threading with different contexts for each thread, albeit with limitations on the freeing of dynamically allocated memory. It is also possible to use the CUDA-GDB debugging tool to debug Python / PyCuda scripts, and the CUDA profiling tool to view information such as routines or functions and tree runtimes of calls that shows which ones called or were called by others, either to run on CPU or GPU \cite{Klockner2012}. \autoref {fig_pycuda} shows the JIT PyCuda interpretation and compilation diagram, which includes an interpreted phase for tests and execution on the CPU, and a compilation phase for the GPU that uses a temporary storage of binary codes, to avoid repeated compilations at each run.
+
+\FIGURE [0.8] [0mm] {PyCuda JIT interpretation and compilation diagram.} {Adapted from \citeonline{Klockner2012b}.} {fig_pycuda}
+
+
+
+
+%----------------------------------------
+\section{Other Nvidia GPU supports for Python}
+%----------------------------------------
+
+Nvidia's GPUs are used in several HPC \cite{Holm2020} projects and are also present in 100 systems on the TOP500 list (ranking of the 500 supercomputers). A simple search for the word ``Python'' on Nvidia's site, returns 5,230 results. Python is used in the Nvidia DIGITS environment for \textit{deep learning}, composed of the cuBLAS, cuDNN, NCCL, NVCaffe, Torch, and TensorFlow \cite{Yeager2015} libraries. It is also used in the Nvidia DALI library (\textit{Data Loading Library}) to speed up data preprocessing for \textit{deep learning} \cite{Gayer2019} applications. Another library is Nvidia Theano, for definition, optimization, and analysis of mathematical expressions involving multidimensional arrays \cite{Bergstra2010}. The Python TensorFlow module is a machine learning library, which runs on CPUs and GPUs \cite{Brownlee2016}. Nvidia also contributes to the design of the LLVM compiler, allowing, for example, the F90 LLVM compiler to generate code for GPU \cite{Osmialowski2017}. Using Python and Numba is one of the easiest ways to use GPU for computing \cite{Oden2020}.
+
+
+
+
+%----------------------------------------
+\section{Dask for Python}
+\label{sec_apprdask}
+%----------------------------------------
+
+Dask is a programming environment that optimizes the parallel execution of Python programs. Dask integrates with other libraries such as NumPy, Pandas, and Scikit Learn, and has a scheduler (scheduler) capable of providing parallelization in the execution of programs, whether on a simple laptop multi-core, cluster, or even on a supercomputer. Dask integrates well with the Python environment, requiring few code changes. In addition, it provides the automation of parallelization by dividing the processing into independent tasks and scheduling them for execution according to the available computational resources (shared memory node, processors, cores, GPU, etc.). Dask is installed automatically when installing the Anaconda distribution, thus allowing efficient parallelization to be used. The Anaconda distribution is the most popular of the Python versions for Data Science. Some notable features of Dask are the support for multidimensional arrays, the low level interface to allow optimizations, and the full integration with Python. Perhaps the main feature of Dask is its declarative programming, resembling Python. The Dask scheduler is based on the generation of a graph, in which the nodes represent Python functions and the lines, the flow of Python objects between the nodes, as illustrated in \autoref {fig_dask}. This allows to identify independent tasks, which correspond to the functions of each node, and which allow to efficiently process large collections of data. After the graph is generated, the Dask task scheduler distributes them for execution, with two options: the \textit{single machine scheduler}, which is simpler and applies to a local shared memory machine, and the \textit{distributed scheduler}, more complex, as it applies to a distributed memory machine, such as a cluster
+\cite{Rocklin2015,Rocklin2021}.
+
+
+\FIGURE [0.8] [0mm] {Diagram of the task graph and Dask schedulers.} {Adapted from dask.org (2022).} {fig_dask}
+
+
+
+
+%----------------------------------------
+\section{Parallel Python}
+%----------------------------------------
+
+Module that provides code parallelization mechanisms in multiprocessor systems or in clusters, using processes and inter-process communication. Features include dynamic allocation of processes and resources at runtime, load balancing, fault tolerance, and cross-platform operation \cite{Palach2014}.
+
+
+
+
+%----------------------------------------
+\section{FEniCS}
+%----------------------------------------
+
+Computing platform for solving partial differential equations. It has resources to work with finite elements efficiently. Scalable for high-performance clusters is designed for parallel processing, and allows rapid prototyping, in addition to scaling the same code for HPC. As an example, a thermomechanical simulation can be initially developed on a \textit{desktop} computer, and then the same code can run on a larger scale using 24,000 parallel processes \cite{Alnaes2015}.
+
+
+
+
+%----------------------------------------
+\section{dispy}
+%----------------------------------------
+
+Structure for creating and using clusters for parallel and distributed computing, including multiprocessing, and processing in cluster, grid, and cloud. It fits well in the paradigm of parallel data processing, and has resources for communication between tasks, client and server modules, and scheduler for shared execution. It is a generic and comprehensive environment for creating and using clusters to perform parallel computing between multiple processors. It has features for data parallelization, and communication of tasks in a concurrent, asynchronous, or distributed manner \cite{Agius2019}.
+
+
+
+
+%----------------------------------------
+\section{Ray}
+%----------------------------------------
+
+System for building and running distributed applications, supporting GPU, multiprocessing, and cluster execution. It includes libraries to speed up machine learning, and can be used in conjunction with libraries like PyTorch, TensorFlow, Keras, and others \cite{Moritz2018}.
+
+
+
+
+%----------------------------------------
+\section{Celery}
+%----------------------------------------
+
+Environment for distributed applications, consisting of asynchronous (background) or synchronous (waiting until they are ready) task execution queues, based on parameter passing, with support for scheduled or real-time execution, written in Python. Tasks can be executed concurrently on one or more execution nodes (CPUs), using multiprocessing, or co-routines. Celery is used, for example, in services like Instagram to process millions of tasks \cite{Mcleod2015}.
+
+
+
+
+%----------------------------------------
+\section{Charm4py}
+%----------------------------------------
+
+Environment for distributed computing and parallel programming, built on top of Charm ++ which is a programming language and environment for parallel programming supported by an adaptive execution environment. Charm4py supports migrable objects and calling remote methods asynchronously \cite{Choi2021}.
+
+
+
+
+%----------------------------------------
+\section{Deap}
+%----------------------------------------
+
+Computational environment for rapid prototyping and testing of ideas. It also works with multiprocessing mechanisms and SCOOP (seen in the following item). It allows the creation of new types, customization of initializers, intelligent choice of operators, and writing of algorithms \cite{Rainville2012}.
+
+
+
+
+%----------------------------------------
+\section{SCOOP}
+%----------------------------------------
+
+Module for distributed tasks, allowing concurrent parallel programming in various environments, from heterogeneous \textit{grids} to supercomputers. Features include working with multiple computers on a network, creating multiple tasks within a task, easily paralleling serial code, and efficient load balancing \cite{Hold2014}.
+
+
+
+
+%----------------------------------------
+\section{Pyro}
+%----------------------------------------
+
+Library that allows to easily build applications where objects on a network can communicate with each other. Common Python methods can be used for calling objects on other machines, including call and return parameters. Pyro is in charge of locating the object and the machine, to execute it \cite{Blank2003}.
+
+
+
+
+%----------------------------------------
+\section{PySpark}
+%----------------------------------------
+
+High-level library and interface and engine optimized for the Spark environment, which is a unified analysis engine for large-scale data processing. It offers more than 80 high-level operators for building parallel applications. It consists of libraries that include a database interface, machine learning, and graphics production. It also allows to work with systems like Hadoop (distributed computing) and cloud computing, among others \cite{Drabas2017}.
+
+
+
+
+%----------------------------------------
+\section{PyPy}
+%----------------------------------------
+
+Alternative Python implementation that uses JIT crawled compilation, and is compatible with the Python reference implementation, with the exception of its \textit{extensions}. It has tracking of frequently performed operations, in order to compile for machine code only those parts of the code that require greater processing capacity, making the execution mixed, one part interpreted and the other native \cite{Biham2006}.
+
+
+
+
+%----------------------------------------
+\section{Python Multiprocessing}
+%----------------------------------------
+
+The \textit{multiprocessing} module, which is part of the standard Python library, allows parallelism for the concurrent execution of processes, executed in the multiple cores of the processors of a shared memory machine. Thus, it cannot be used on a distributed memory machine, such as a cluster or a supercomputer. It is accessed through its API that allows to easily use the data parallelism paradigm \cite{Singh2013}.
+
+
+
+
+%----------------------------------------
+\section{Python Threading}
+%----------------------------------------
+
+Module \textit{threading}, which is part of the standard Python library, allows parallelism for the concurrent execution of threads executed on the multiple processor cores of a shared memory machine, with all threads are part of a single process and everyone has access to the memory of that process \cite{Marowka2018b}.
+
+
+
+%----------------------------------------
+\section{Pythran}
+%----------------------------------------
+
+Similar to Cython, Pythran is a \textit{ahead of time} compiler for a subset of the Python language, with a focus on scientific computing (like Numba), which takes a Python module containing \textit{annotations} and some interface descriptions, and generate a native module from optimized high-level constructions, requiring only \textit{annotations} of type for exported functions. It is also possible to generate calls to OpenMP (library for shared memory multi-process programming), and use SIMD instructions \cite {Guelton2015, Guelton2018}.
+
+
+
+
+%----------------------------------------
+\section{Nutika}
+%----------------------------------------
+
+Another project similar to Cython, with a focus on compatibility and simplicity, which supports all Python language, does not require \textit{annotations}, and uses calls to the \textit{libpython} library. It's a compiler written in Python that compiles Python source code to C source code, applying some compile-time optimizations in the process, compatible with all Python libraries and modules and has an interface for programs compiled in C \cite{Van2007}.
+
+
+
+
+%----------------------------------------
+\section{Pyrex}
+%----------------------------------------
+
+Project with some similarity to Cython, with a focus on helping to write Python extension modules, making it easy to create code required to interface modules, using a language with syntax similar to Python, which allows writing code that mixes Python and data types C, and compile in an extension module for Python \cite{Oliphant2007}.
+
+
+
+
+%----------------------------------------
+\section{Boost.MPI}
+%----------------------------------------
+
+It provides \textit{links} (\textit{bindings}) Python built on top of the C++ library \textit{Boost.MPI}, which is a C++ interface for MPI, through the \textit{Boost.Python} library, as a alternative interface for MPI. Using Python with \textit{Boost.MPI} has some advantages such as the Python fast development environment, and also writing a simpler code, since using \textit{Boost.Python} it is not necessary to write the initialization code, as in C++, as this is already done automatically when loading the \textit{Boost.MPI} module in Python code. To transmit Python objects, it is possible to do so in several ways, for example, using \textit{pickling} (preparing sequentially, suitable for transmission) in the sending process, and then \textit{unpickling} in the receiving process \cite{Abrahams2003}.
+
+
+
+
+%----------------------------------------
+\section{PyOpenCL}
+%----------------------------------------
+
+PyOpenCL works as a wrapper for OpenCL which is a framework for writing code for heterogeneous platforms consisting of CPUs, GPUs, DSPs, FPGAs and other processors or hardware accelerators. It is a library API to allow Python to access it. OpenCL was developed in C++ and allows to perform tasks in parallel on multi-core processors and on different processing accelerators, such as GPGPU (General-Purpose Graphics Processing Units), DSP (Digital Signal Processors), FPGA (Field Programmable Gate Array), and others. OpenCL was initially developed by Apple, and collaborates with AMD, IBM, Qualcomm, Intel, and Nvidia, who seek to provide a common API to the different existing processing accelerators. Some implementations of OpenCL use the LLVM compiler \cite{Klockner2012}.
+

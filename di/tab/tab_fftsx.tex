@@ -1,0 +1,27 @@
+\begin{tabular}{lrrrrrrr}\toprule
+\textbf{Implemen-} & & &\multicolumn{4}{c}{\textbf{Number of MPI processes}} \\
+\cline{4-7}\vspace{-10pt} & &\textbf{} &\textbf{} &\textbf{} &\textbf{} &\textbf{} \\
+\textbf{tation} &\textbf{GPU} &\textbf{Serial} &\textbf{1} &\textbf{4} &\textbf{16} &\textbf{24}\vspace{2pt} \\
+\toprule\vspace{-11pt} & & & & & & \\
+\multicolumn{7}{c}{\textbf{\textit{Processing time (seconds)}}} \\
+\midrule[0.1pt]\vspace{-10pt} & & & & & & \\
+\textbf{F90/B715} & &\fcblue{23.77} &23.41 &6.48 &2.73 &2.48 \\
+\textbf{F90/Seq-X} & &\fcred{12.74} &\fcred{14.85} &\fcred{4.06} &\fcred{1.37} &\fcred{0.96} \\
+\textbf{CuPy(GPU)/B715} &38.16 & & & & & \\
+\textbf{CuPy(GPU)/Seq-X} &\fcred{19.62} & & & & & \\
+\toprule\vspace{-11pt} & & & & & & \\
+\multicolumn{7}{c}{\textbf{\textit{Speedup}}} \\
+\midrule[0.1pt]\vspace{-10pt} & & & & & & \\
+\textbf{F90/B715} & &1.00 &1.02 &3.67 &8.71 &9.59 \\
+\textbf{F90/Seq-X} & &\fcred{1.87} &\fcred{1.60} &\fcred{5.85} &\fcred{17.32} &\fcred{24.74} \\
+\textbf{CuPy(GPU)/B715} &0.62 & & & & & \\
+\textbf{CuPy(GPU)/Seq-X} &\fcred{1.21} & & & & & \\
+\toprule\vspace{-11pt} & & & & & & \\
+\multicolumn{7}{c}{\textbf{\textit{Parallel efficiency}}} \\
+\midrule[0.1pt]\vspace{-10pt} & & & & & & \\
+\textbf{F90/B715} & &1.00 &1.02 &0.92 &0.54 &0.40 \\
+\textbf{F90/Seq-X} & &\fcred{1.87} &\fcred{1.60} &\fcred{1.46} &\fcred{1.08} &\fcred{1.03} \\
+\textbf{CuPy(GPU)/B715} &0.62 & &\textbf{} &\textbf{} &\textbf{} &\textbf{} \\
+\textbf{CuPy(GPU)/Seq-X} &\fcred{1.21} & &\textbf{} &\textbf{} &\textbf{} &\textbf{} \\
+\bottomrule
+\end{tabular}

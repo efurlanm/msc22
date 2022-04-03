@@ -1,0 +1,67 @@
+%   ____ _                 _               __   
+%  / ___| |__   __ _ _ __ | |_ ___ _ __   / /_  
+% | |   | '_ \ / _` | '_ \| __/ _ \ '__| | '_ \ 
+% | |___| | | | (_| | |_) | ||  __/ |    | (_) |
+%  \____|_| |_|\__,_| .__/ \__\___|_|     \___/ 
+%                   |_|  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{FINAL REMARKS}
+\label{ch_final}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The Python environment provides fast prototyping of computer code in a high level of abstraction, including Python and third-part libraries. However, the straightforward use of Python is usually slow, since it is an interpreted language, requiring the use of Python HPC approaches. This work presents the most common of HPC approaches applied to three selected test cases, mostly using MPI, which were also implemented in F90/MPI for the purpose of comparison. Some test cases were implemented in the \textit {Scikit-learn} that uses the IPython Parallel library. All implementations were developed and executed on the LNCC Santos Dumont supercomputer using its available resources. The considered three test cases were:
+
+\begin{itemize}
+
+\item Stencil test case: a five-point stencil finite difference method to solve partial differential equations resulting from Poisson equations, applied to a 2D heat transfer problem on a finite surface;
+
+\item Fast Fourier Transform (FFT) test case: an algorithm that computes the multidimensional Fourier transform of an 3D array of synthetic data; 
+
+\item Random Forest test case: a random forest algorithm applied for the classification of asteroid orbits of a NASA dataset.
+
+\end{itemize}
+
+The serial and parallel implementations in F90 of the test cases were taken as a reference to compare their performance with some serial and parallel implementations of the same algorithms using approaches available in the Python environment of the supercomputer: F2PY, Cython, Numba, Numba-GPU, and the standard Python itself. Except for some implementations, parallel code was generated using the MPI library and executed in one or more nodes of the supercomputer using multicore processors. Processing times, speedups and parallel efficiencies were presented and discussed for these implementations considering a specific problem size for each test cases. Profiling was performed only for the F90 and F2PY implementations of the stencil and the FFT test cases. For convenience, JupyterLab notebooks were used, providing a web-based environment that facilitates the exchange, development and execution of code in different environments, and thus improving code documentation, portability and reproducibility.  
+
+This work may represent a small primer for using MPI-based HPC features in the Python programming environment, considering execution in multicore processors, but there is a full set of Python alternatives for execution in GPUs. For instance, this work presented a few implementations in Numba-GPU. 
+
+It is important to note that there is not a standard approach for achieving HPC in Python, it depends on the available choices in terms of the programming environment and computer hardware, the programmer knowledge or experience, etc. In general, Python code can be optimized by performing timing and profiling in order to identify compute-intensive parts of the code, and then replacing them by more efficient library routines. Python modular approach facilitates such approach. The following section provides some general recommendations. 
+
+%
+%
+%
+%----------------------------------------
+\section{Some general recommendations for HPC Python}
+\label{sec_analalt}
+%----------------------------------------
+
+This section lists below some general recommendations for using HPC resources in Python. However, some of these recommendations may be specific for the test cases employed in this work. Different algorithms or application problems may require different Python HPC approaches. 
+
+\begin{itemize}
+
+\item In general, in the case of non pre-existing F90 or C code, Python allows rapid prototyping and wide portability. However, since Python is an interpreted language, it is slow. Consequently, compute-intensive parts like loops may compromise processing performance. Therefore, in order to optimize the Python program, these parts must be replaced by calls to more efficient library routines, or re-written in F90 or Cython. The optimization process can be performed in a progressive way, taking advantage of Python interactive and modular nature. 
+
+\item When starting to write a new Python program, or when only minor changes are intended in an existing Python program, the easier alternative to aim processing performance is Numba, due to its portability and ability to generate code for both CPU and GPU execution, although Numba supports only a subset of Python. Since Numba is compiled JIT, the code can eventually be optimized at execution time for the employed architecture, and thus ensuring portability. 
+
+\item In the case of existing F90 code, it can be reused and wrapped as a function/routine into a Python library using F2PY, a resource of the NumPy library. Most of the original F90 code can be left unchanged, including the eventual calls to the MPI library. 
+
+\item In the case of existing F90 code with a known compute-intensive part(s), it is possible to port most of the original F90 code to the Python language, except for that part(s) that may be wrapped into a function/subroutine using F2PY and called from the Python program. This approach  takes more time than the former one, but Python resources allow making the new library available for other programs or users in a user-friendly way. 
+
+\item When there is not an F90 code, Cython is usually a good choice for obtaining processing performance while having a Python-like syntax and advantages similar to those of Python. Cython supports both Python and Cython languages, allowing to integrate Python code. On the other way, compute-intensive parts of a Python code can be ported to Cython to improve processing performance. Similarly to F2PY, Cython builds a standard Python library that can be called from the Python program.
+
+\item When writing a Python program to be executed on a GPU, Numba is the best choice, although major code changes are required to obtain maximum GPU performance. In addition, Numba JIT compilation allows the generation of code optimized for the architecture employed for execution.
+
+\item As a general rule, the best approach for HPC is to write a standard Python program from scratch, but using off-the-shelf optimized libraries for known compute-intensive parts. Environments like JupyterLab provide documentation, resulting in a code easy to understand, maintain, and reuse. In a second step, profiling may allow optimizing the remaining not-known compute-intensive parts.
+
+\item Another general rule is to search for highly optimized libraries for specific classes of algorithms, that may be tailored for CPU or GPU execution (this is not the case of this work).
+
+\end{itemize}
+
+%
+%
+%
+%----------------------------------------
+\section{Future work}
+%----------------------------------------
+
+Future work foresees a more detailed analysis of profiling data in order to improve the MPI parallel performance of the test case implementations. This can be achieved by optimizing the existing Python and F90 codes, or by exploring different, more optimized, libraries. It is also foreseen the development of new implementations of these test cases aimed for execution in GPUs, also available in the Santos Dumont supercomputer. 

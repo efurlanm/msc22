@@ -1,0 +1,39 @@
+\babel@toc {english}{}
+\babel@toc {portuguese}{}
+\babel@toc {english}{}
+\babel@toc {portuguese}{}
+\babel@toc {english}{}
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Ranking of most popular programming languages, according to the \textit {IEEE Spectrum ranking}.}}{1}{figure.1.1}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Diagram of Numba JIT interpretation and compilation phases.}}{14}{figure.3.1}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Diagram of the task graph and Dask schedulers.}}{15}{figure.3.2}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces PyCuda JIT interpretation and compilation diagram.}}{17}{figure.3.3}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Initial and final temperature distribution over a finite surface.}}{28}{figure.4.1}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Discretized 2D domain of the heat transfer case (red cross denotes the five-point stencil).}}{29}{figure.4.2}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Execution illustrating blocks of 15 threads}}{35}{figure.4.3}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces GPU processing flow}}{36}{figure.4.4}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Randon Forest}}{45}{figure.4.5}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Processing times (s) of the different implementations of the stencil test case, depending on the number of processes (for convenience, times above 30~s were not fully depicted).}}{59}{figure.5.1}%
+\contentsline {figure}{\numberline {5.2}{\ignorespaces Speedups of the different implementations of the stencil test case, depending on the number of processes. The execution time of the GNU-Fortran compiled serial code was taken as the reference for speedup calculation. Dashed line denotes the linear speedup.}}{60}{figure.5.2}%
+\contentsline {figure}{\numberline {5.3}{\ignorespaces Parallel efficiencies of the different implementations of the stencil test case, depending on the number of processes.}}{61}{figure.5.3}%
+\contentsline {figure}{\numberline {5.4}{\ignorespaces Processing times (s) as a function of the number of processes for the F90 and Numba-GPU implementations of the stencil test case executed on the Bull Sequana-X (blue and purple bars) and on the Bull B715 node (red and green bars).}}{65}{figure.5.4}%
+\contentsline {figure}{\numberline {5.5}{\ignorespaces Speedups as a function of the number of processes for the F90 and Numba-GPU implementations of the stencil test case executed on the Bull Sequana-X (blue triangle and purple line) and on the Bull B715 node (red dot and green line). The execution time of the F90-compiled serial code in the Bull B715 node was taken as the reference for the speedup calculation. Dashed line denotes the linear speedup.}}{66}{figure.5.5}%
+\contentsline {figure}{\numberline {5.6}{\ignorespaces Parallel efficiencies as a function of the number of processes for the F90 and Numba-GPU implementations of the stencil test case executed on the Bull Sequana-X (blue triangle and purple line) and on the Bull B715 node (red dot and green line).}}{67}{figure.5.6}%
+\contentsline {figure}{\numberline {5.7}{\ignorespaces Processing times, without seconds, for the different implementations of the FFT test case, depending on the number of processes (for convenience, times above 30~s do not appear on the graph)}}{70}{figure.5.7}%
+\contentsline {figure}{\numberline {5.8}{\ignorespaces Speedups of the FFT test case implementations as a function of the number of processes. The runtime of the compiled serial GNU-Fortran code was used as a reference for the calculation. Dotted lines denote linear speedup}}{71}{figure.5.8}%
+\contentsline {figure}{\numberline {5.9}{\ignorespaces Parallel efficiency of FFT test case implementations, depending on the number of processes}}{72}{figure.5.9}%
+\contentsline {figure}{\numberline {5.10}{\ignorespaces Processing time (s) depending on the number of processes for the F90 and Numba-GPU implementations performed on the Bull Sequana-X (blue and purple bars) and on the Bull B715 node (red and green bars).}}{75}{figure.5.10}%
+\contentsline {figure}{\numberline {5.11}{\ignorespaces Speedups depending on the number of processes for the F90 and Numba-GPU implementations executed on the Bull Sequana-X (blue triangle and purple line) and on the Bull B715 node (red point and green line). The execution time of the serial code compiled F90 in the Bull B715 node was taken as a reference for the calculation of speedup. The dashed line indicates the linear speedup.}}{76}{figure.5.11}%
+\contentsline {figure}{\numberline {5.12}{\ignorespaces Parallel efficiencies depending on the number of processes for the F90 and Numba-GPU implementations performed on the Bull Sequana-X (blue triangle and purple line) and on the Bull B715 node (red dot and green line).}}{77}{figure.5.12}%
+\contentsline {figure}{\numberline {5.13}{\ignorespaces Processing times for the different implementations of the random forest test case as a function of the number of processes (for convenience, times above 40~s do not appear in the graph)}}{80}{figure.5.13}%
+\contentsline {figure}{\numberline {5.14}{\ignorespaces Speedups of random forest test case implementations as a function of the number of processes. Serial Python time was used as reference for calculations. The dotted line denotes linear speedup}}{81}{figure.5.14}%
+\contentsline {figure}{\numberline {5.15}{\ignorespaces Parallel efficiencies of random forest test case implementations as a function of number of processes}}{82}{figure.5.15}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsfinish 

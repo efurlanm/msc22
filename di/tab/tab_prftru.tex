@@ -1,0 +1,22 @@
+%----------------------------------------
+\setlength{\tabcolsep}{7pt}
+%----------------------------------------
+\begin{tabular}{lrrrrrrrrr}\toprule
+\textbf{Implemen-} & &\multicolumn{7}{c}{\textbf{Number of MPI processes}} \\
+\cline{3-9}\vspace{-10pt} &\textbf{} &\textbf{} &\textbf{} &\textbf{} &\textbf{} &\textbf{} &\textbf{} &\textbf{} \\
+\textbf{tation} &\textbf{Serial} &\textbf{1} &\textbf{4} &\textbf{16} &\textbf{24} &\textbf{48} &\textbf{72} &\textbf{96}\vspace{2pt} \\
+\toprule\vspace{-11pt} & & & & & & & & \\
+\multicolumn{9}{c}{\fcblue{\textbf{\textit{F90}}}} \\
+\midrule[0.1pt]\vspace{-10pt} & & & & & & & & \\
+\textbf{OS time command} &18.76 &20.13 &6.42 &3.22 &3.55 &3.22 &4.22 &4.27 \\
+\textbf{F90 wall time call} &\fcred{18.57} &\fcred{19.70} &\fcred{5.62} &\fcred{2.22} &\fcred{1.76} &\fcred{1.23} &\fcred{1.88} &\fcred{1.97} \\
+\toprule\vspace{-11pt} & & & & & & & & \\
+\multicolumn{9}{c}{\fcblue{\textbf{\textit{F2PY}}}} \\
+\midrule[0.1pt]\vspace{-10pt} & & & & & & & & \\
+\textbf{OS time command} &20.36 &20.85 &6.82 &4.08 &4.28 &4.12 &4.76 &5.42 \\
+\textbf{Python wall time call} &19.77 &20.29 &6.23 &3.36 &3.48 &3.37 &3.91 &4.64 \\
+\textbf{F90 wall time call} &19.76 &19.88 &5.78 &2.35 &1.99 &1.64 &1.93 &2.03 \\
+\textbf{cProfile tottime} &19.78 &20.29 &6.23 &3.36 &3.47 &3.39 &3.90 &4.64 \\
+\textbf{cProfile cumtime} &20.20 &20.70 &6.66 &3.88 &4.06 &3.90 &4.52 &5.21 \\
+\bottomrule
+\end{tabular}

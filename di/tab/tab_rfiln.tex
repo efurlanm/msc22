@@ -1,0 +1,24 @@
+\begin{tabular}{lrrrrrrrrrrrr}\toprule																							
+\textbf{Implemen-}	&		&	\multicolumn{10}{c}{\textbf{Number of processes}}																			\\
+\cline{3-12}\vspace{-10pt}	&		&		&		&		&		&		&		&		&		&		&		\\
+\textbf{tation}	&	\textbf{Seq.}	&	\textbf{1}	&	\textbf{8}	&	\textbf{16}	&	\textbf{24}	&	\textbf{32}	&	\textbf{40}	&	\textbf{48}	&	\textbf{96}	&	\textbf{144}	&	\textbf{192}	\vspace{2pt}\\
+\midrule[0.1pt]\vspace{-10pt}	&		&		&		&		&		&		&		&		&		&		&		\\
+\multicolumn{12}{c}{\textit{\textbf{Processing times [s]}}}																							\\
+\midrule[0.1pt]\vspace{-10pt}	&		&		&		&		&		&		&		&		&		&		&		\\
+\textbf{IPP}	&	\fcblue{8.99}	&	10.62	&	5.71	&	5.53	&	5.60	&	5.97	&	6.14	&	6.64	&	\fcred{7.99}	&	\fcred{7.21}	&	\fcred{6.87}	\\
+\textbf{IPP NUMA}	&		&		&	5.77	&	5.43	&	5.62	&	6.02	&	6.17	&		&		&		&		\\
+\textbf{Loky}	&		&	\fcred{5.96}	&	\fcred{1.24}	&	\fcred{0.72}	&	\fcred{0.67}	&	\fcred{0.62}	&	\fcred{0.62}	&	\fcred{0.64}	&		&		&		\\
+\midrule[0.1pt]\vspace{-10pt}	&		&		&		&		&		&		&		&		&		&		&		\\
+\multicolumn{12}{c}{\textit{\textbf{Speedup}}}																							\\
+\midrule[0.1pt]\vspace{-10pt}	&		&		&		&		&		&		&		&		&		&		&		\\
+\textbf{IPP}	&	\fcred{1.00}	&	0.85	&	1.57	&	1.62	&	1.60	&	1.51	&	1.46	&	1.35	&	\fcred{1.12}	&	\fcred{1.25}	&	\fcred{1.31}	\\
+\textbf{IPP NUMA}	&		&		&	1.56	&	1.66	&	1.60	&	1.49	&	1.46	&		&		&		&		\\
+\textbf{Loky}	&		&	\fcred{1.51}	&	\fcred{7.26}	&	\fcred{12.56}	&	\fcred{13.51}	&	\fcred{14.47}	&	\fcred{14.50}	&	\fcred{14.12}	&		&		&		\\
+\midrule[0.1pt]\vspace{-10pt}	&		&		&		&		&		&		&		&		&		&		&		\\
+\multicolumn{12}{c}{\textit{\textbf{Parallel efficiency}}}																							\\
+\midrule[0.1pt]\vspace{-10pt}	&		&		&		&		&		&		&		&		&		&		&		\\
+\textbf{IPP}	&	\fcred{1.00}	&	0.85	&	0.20	&	0.10	&	0.07	&	0.05	&	0.04	&	0.03	&	\fcred{0.01}	&	\fcred{0.01}	&	\fcred{0.01}	\\
+\textbf{IPP NUMA}	&		&		&	0.19	&	0.10	&	0.07	&	0.05	&	0.04	&		&		&		&		\\
+\textbf{Loky}	&		&	\fcred{1.51}	&	\fcred{0.91}	&	\fcred{0.79}	&	\fcred{0.56}	&	\fcred{0.45}	&	\fcred{0.36}	&	\fcred{0.29}	&		&		&		\\
+\bottomrule																							
+\end{tabular}																							

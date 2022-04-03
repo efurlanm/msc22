@@ -1,0 +1,30 @@
+\begin{tabular}{lrrrrrrrrrr}\toprule
+\textbf{Implemen-} & &\multicolumn{8}{c}{\textbf{Number of MPI processes}} \\
+\cline{3-10}\vspace{-10pt} & & & & & & & & & \\
+\textbf{tation} &\textbf{Serial} &\textbf{1} &\textbf{4} &\textbf{9} &\textbf{16} &\textbf{36} &\textbf{49} &\textbf{64} &\textbf{81}\vspace{2pt} \\
+\toprule\vspace{-11pt} & & & & & & & & & \\
+\multicolumn{10}{c}{\textbf{\textit{Processing time (seconds)}}} \\
+\midrule[0.1pt]\vspace{-10pt} & & & & & & & & & \\
+\textbf{F90} &\fcblue{19.25} &\fcred{21.91} &\fcred{7.34} &\fcred{6.15} &4.68 &\fcred{2.13} &1.89 &\fcred{1.23} &1.69 \\
+\textbf{F2Py} &\fcred{18.94} &23.60 &7.45 &6.17 &\fcred{4.62} &2.15 &\fcred{1.63} &1.27 &\fcred{1.01} \\
+\textbf{Cython} &23.97 &23.98 &7.46 &6.29 &4.69 &2.23 &1.67 &1.31 &2.06 \\
+\textbf{Numba} &30.48 &30.53 &8.18 &6.33 &5.86 &3.22 &2.68 &1.79 &2.07 \\
+\textbf{Python} &212.43 &227.19 &64.74 &44.78 &33.46 &15.21 &10.43 &7.85 &6.70 \\
+\toprule\vspace{-11pt} & & & & & & & & & \\
+\multicolumn{10}{c}{\textbf{\textit{Speedup}}} \\
+\midrule[0.1pt]\vspace{-10pt} & & & & & & & & & \\
+\textbf{F90} &1.00 &\fcred{0.88} &\fcred{2.62} &\fcred{3.13} &4.11 &\fcred{9.04} &10.21 &\fcred{15.67} &11.42 \\
+\textbf{F2Py} &\fcred{1.02} &0.82 &2.58 &3.12 &\fcred{4.16} &8.96 &\fcred{11.83} &15.14 &\fcred{19.03} \\
+\textbf{Cython} &0.80 &0.80 &2.58 &3.06 &4.10 &8.64 &11.55 &14.74 &9.36 \\
+\textbf{Numba} &0.63 &0.63 &2.35 &3.04 &3.29 &5.98 &7.19 &10.75 &9.32 \\
+\textbf{Python} &0.09 &0.08 &0.30 &0.43 &0.58 &1.27 &1.85 &2.45 &2.87 \\
+\toprule\vspace{-11pt} & & & & & & & & & \\
+\multicolumn{10}{c}{\textbf{\textit{Parallel efficiency}}} \\
+\midrule[0.1pt]\vspace{-10pt} & & & & & & & & & \\
+\textbf{F90} &1.00 &\fcred{0.88} &\fcred{0.66} &\fcred{0.35} &0.26 &\fcred{0.25} &0.21 &\fcred{0.24} &0.14 \\
+\textbf{F2Py} &\fcred{1.02} &0.82 &0.65 &0.35 &\fcred{0.26} &0.25 &\fcred{0.24} &0.24 &\fcred{0.23} \\
+\textbf{Cython} &0.80 &0.80 &0.65 &0.34 &0.26 &0.24 &0.24 &0.23 &0.12 \\
+\textbf{Numba} &0.63 &0.63 &0.59 &0.34 &0.21 &0.17 &0.15 &0.17 &0.12 \\
+\textbf{Python} &0.09 &0.08 &0.07 &0.05 &0.04 &0.04 &0.04 &0.04 &0.04 \\
+\bottomrule
+\end{tabular}

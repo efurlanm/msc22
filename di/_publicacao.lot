@@ -1,0 +1,21 @@
+\babel@toc {english}{}
+\babel@toc {portuguese}{}
+\babel@toc {english}{}
+\babel@toc {portuguese}{}
+\babel@toc {english}{}
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {5.1}{\ignorespaces Processing times as a function of the number of processes in the F90 implementation on a single computer node (Bull B710 or Sequana-X) for the versions compiled with GNU/gfortran (OpenMPI) and Intel/ifort (Intel MPI).}}{55}{table.5.1}%
+\contentsline {table}{\numberline {5.2}{\ignorespaces Performance of the different implementations of the stencil test case, depending on the number of MPI processes: processing times (seconds), speedups and parallel efficiencies. Best values for serial or for each number of MPI processes are highlighted in \textbf {\color {red}red}. The execution time of the GNU-Fortran compiled serial code was taken as a reference for the calculation of speedup (highlighted in \textbf {\color {blue}blue}).}}{58}{table.5.2}%
+\contentsline {table}{\numberline {5.3}{\ignorespaces Performance as a function of the number of processes for the F90 and Numba-GPU implementations of the stencil test case executed on the Bull Sequana-X and on the Bull B715 node. The execution time of the F90-compiled serial code in the Bull B715 node was taken as the reference for the speedup calculation (highlighted in \textbf {\color {blue}blue}).}}{64}{table.5.3}%
+\contentsline {table}{\numberline {5.4}{\ignorespaces Performance of the different implementations of the FFT test case described, depending on the number of MPI processes: processing times (seconds), accelerations and parallel efficiencies. The best values for serial or for each number of MPI processes are highlighted in \textbf {\color {red}red}. The execution time of the serial code compiled with GNU-Fortran was taken as a reference for the calculation of speedup (in \textbf {\color {blue}blue}).}}{69}{table.5.4}%
+\contentsline {table}{\numberline {5.5}{\ignorespaces Performance based on the number of processes for the F90 and Numba-GPU implementations performed on Bull Sequana-X and Bull B715. The execution time of the serial code compiled F90 in the Bull B715 node was taken as a reference for the calculation of speedup (highlighted in \textbf {\color {blue}blue}).}}{74}{table.5.5}%
+\contentsline {table}{\numberline {5.6}{\ignorespaces Performance of the different implementations of the random forest test case described, depending on the number of MPI processes: processing times (seconds), accelerations and parallel efficiencies. The best values for serial or for each number of MPI processes are highlighted in \textbf {\color {red}red}. The execution time of the serial code compiled with GNU-Fortran was taken as a reference for the calculation of speedup (in \textbf {\color {blue}blue}).}}{79}{table.5.6}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsfinish 

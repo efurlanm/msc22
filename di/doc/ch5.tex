@@ -1,0 +1,169 @@
+%   ____ _                 _              ____  
+%  / ___| |__   __ _ _ __ | |_ ___ _ __  | ___| 
+% | |   | '_ \ / _` | '_ \| __/ _ \ '__| |___ \ 
+% | |___| | | | (_| | |_) | ||  __/ |     ___) |
+%  \____|_| |_|\__,_| .__/ \__\___|_|    |____/ 
+%                   |_|  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{SOME PROFILING RESULTS}
+\label{ch_profiling}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This chapter shows profiling results only for the stencil and the FFT test cases for both the F90 and F2PY implementations. For convenience, two profilers available in the SDumont programming environment were chosen, the Intel APS and the Python cProfile, both shown in the following sections. Obviously, there are many other profilers that can be applied to the different implementations shown in this work. For instance, Intel APS can be used for Cython, or Numba-GPU may use the Nvidia profiler. However, considering the SDumont programming environment, profiling schemes for some Python implementations may require a careful planning. One example is the batch job submission provided by Slurm that may limit profiling to the post-processing data of the job. Another issue is the code optimization cycle (performing profiling, code optimization and profiling again) may be very limited due to the waiting time in the SDumont Slurm submission queues. Therefore, if possible, such experiments can be performed in a laptop, in order to speed-up eventual optimizations of the code.
+
+All results shown in this chapter are for the stencil and FFT F90 and F2PY implementations generated using the Intel F90 compiler and Intel Python to be compatible to the employed Intel profiling tools.   
+
+Performance optimization of serial or parallel software is based on an analysis of execution times and how these times are divided among the several parts or subroutines/functions of the software, or even to identify compute-intensive parts inside specific programs or subroutines/functions. This is usually referred to as performing the timing and profiling of the software. Serial and parallel performance results shown in \autoref {ch_analysis} were based on timing information, while this chapter shows mainly profiling results.
+
+The profiling of a program comprehends to instrument and run it in order to obtain information about its execution, such as execution time, breakdown of the execution times of the program components (functions, routines, etc.), memory usage, graph of the program call tree, optimizations performed on the source code by the compiler, etc.
+
+Profiling can be performed by the compiler profiling options, which require to recompile the code, by accessing CPU or GPU hardware counters, by adding calls to operational system routines in the original code or by linking the program to a profiling library or program. The resulting profile information allows to analyse performance bottlenecks in the code and thus to optimize its processing performance in terms of time or memory. Usually, it is possible to refer to these profiling approaches as being performed by profilers that may include tools for generating statistics or visualizing profile data. 
+
+Except for the use of hardware counters, profiling increases the execution time, since it requires additional calls to time and profiling routines. The original code is then said to be instrumented, and the resulting profiling may be slightly different from the (unknown) real one. Another point is to perform the profiling of the code for problem size and input data similar to those employed for the intended use of the program. In this work, a few profiling tools or profilers were used according to the implementation, all of them available on the SDumont computing environment. It is not intended to provide an overview of all existing profilers, but just to present examples of profiling for some of the implementations.
+
+%
+%
+%
+%----------------------------------------
+\section{The Intel Application Performance Snapshot (APS)}
+\label{sec_tiap}
+%----------------------------------------
+
+The Intel Application Performance Snapshot (APS) was the profiler employed in this work for all F90 implementations. It is a lightweight profiling tool that supports programs parallelized with using MPI and/or OpenMP libraries (\autoref {fig_intelaps}). The APS requires compilation using the Intel suite of compilers and tools, which include the APS tool. Some specific options must be specified in the compilation, like the option to use the PAPI library, while the program execution is triggered by the APS command with options to specify the output wanted by the user. During the execution of the program, APS stores profile data in disk, being such data available to be read as plain text or by an HTML browser. \autoref {tab_praps} shows the performance metrics provided by APS.
+
+    \TABLE {Intel APS summary of performance metrics.} {Adapted from Intel APS (2022).} {tab_praps}
+
+    \FIGURE [.6] {Intel APS profiling.} {Adapted from Intel APS (2022).} {fig_intelaps}
+
+Intel provides a wide range of tools, including a more comprehensive set of profilers. For instance, the APS full set includes the Intel VTune Amplifier, to provide more detailed profile data or the Intel Advisor which provides optimization hints. 
+
+Even called as a lightweight profiler, Intel APS provides much performance data, as can be seen in Section 6.3 for the stencil and FFT test case F90 implementations. Besides usual timing and profiling data, cache stalls are expressed in percentage of cycles [\%c], and (pipeline) memory stalls, in percentage of pipeline slots [\%ps]. The \textit {Bound} feature of the profiler indicates if the program is memory-bound or MPI-bound, i.e., limited by memory performance or by the MPI performance, and thus could have its performance improved by optimizing memory access or by the MPI optimization, respectively. These hints are based on a set of specific thresholds, as follows:  MPI\% (10\%), IPC (instructions per cycle per core, 1), 20\% for Cache\%, DRAM\%, and Mem Stalls\%, and Vectorization\% (70\%). Poor MPI parallel performance can be due to wait times within the MPI library, sending and receiving messages that are out of sync, imbalance between processes, misconfigurations, etc.
+
+The Intel APS profiler outputs some normalized values, calculated in function of their nominal maximum values. In the case of SDumont B710 nodes, nominal maximum values are: IPC = 4 (according to Intel APS); DP = 19.2 GFlops/sec per core (2.4 GHz $\times$ 8 DP/cycle considering vectorization with E5-2695v2 Ivy Bridge AVX-256 instructions); and DRAM = 59.7 GB/s (for DDR3-1866). 
+
+In general, increasing the number of MPI processes, there is a tendency of the program shifting from memory-bound to MPI-bound. This can be expected since the higher the number of processes, the lower the memory demand per process. In addition, increasing the number of processes, the MPI\% time also increases, but DP instruction rate typically decreases, since MPI communication and synchronization times increase. In other words, program granularity worsen, since there is less calculation and more communication per process. DP GFlop/sec value per core increases with the number of processes since each process tends to be less constrained by the memory (less memory stalls in the pipelines, less cache misses, etc.). IPC rate tends to be relatively for the serial program, lower for a small number of MPI processes, but tends to increase for higher number of processes, since there is a higher number of instructions required by calls to the MPI library.
+
+%
+%
+%
+%----------------------------------------
+\section{The Intel Python Profiler}
+%----------------------------------------
+
+Python standard library provides the \textit {cProfile}. This Python tool profiles only the part of the Python code, without internally profiling the eventual C/F90 compiled code that may be part of the Python program. It yields the same profile data provided by the standard \textit {gprof} profiler. The Python environment also provides the \texttt {timeit} tool to measure the elapsed time based on the system wall clock. It was also employed in this work, but it is worth to note that the profiling performed by the \textit {cProfile} is restricted to the top layer of the Python program, i.e., the Python interpreter.
+
+%
+%
+%
+%----------------------------------------
+\section{Profiling results}
+\label{sec_analprof}
+%----------------------------------------
+
+Profiling results for the stencil and the FFT test cases for both the F90 and F2PY serial and parallel implementations follow. Intel APS was used for the F90 implementations, and the Python cProfile library was used for the F2PY ones. 
+
+%
+%
+%
+%----------------------------------------
+\subsection{Stencil test case profiling for the F90 code}
+\label{sec_analprofsten}
+%----------------------------------------
+
+The Intel APS profiler was used to analyze the F90 serial and parallel (MPI) implementations of the Stencil test case (4800 × 4800 point grid, 500 iterations, and 1 energy unit). Code is compiled by the Intel F90 compiler with the APS compilation options, then is executed by using the APS command with the specific options for the program execution, and then APS executed again to generate the profiling reports. In particular, JupyterLab was used in all these steps to allow easy reproducibility and documentation. The stencil F90 code was executed in a SDumont B710 node, being compiled with the Intel Parallel Studio XE 2020 (PSXE). The related PSXE module includes the Intel MPI library.
+
+\autoref {tab_prst} shows selected profiling results for the Stencil test case generated by the Intel APS (speedup and parallel efficiency were calculated apart). The serial execution time used as a reference for the speedup calculations is highlighted in \fcblue{blue}. \fcorange{Orange} values represent manually calculated values. Some values in the table are void, since they are not applicable, or for some reason, the profiler was not able to calculate them. This table shows that above 16 MPI processes, the \textit {Bound} hint (highlighted in \fcgreen{green}) shifts from memory-bound to MPI-bound. It is also worth to note the amount of time demanded by the  MPI\_Init function, reaching 35\% of the elapsed time (or 48\% of the MPI time) for 81 processes. 
+
+    \TABLE {APS-generated profiling results (Stencil test case, B710 nodes) for the F90 implementation as a function of the number of MPI processes. Manually calculated values are highlighted in \fcorange{orange}. The serial execution time used as a reference for the speedup calculations is highlighted in \fcblue{blue}. Performance results that have room to be improved are highlighted in \fcred{red}. \textit {Bound} hint is highlighted in \fcgreen{green}.} {Author's production.} {tab_prst}
+
+    \FIGURE {Profiling values (Stencil test case, B710 nodes) for the F90 implementation as a function of the number of MPI processes. Except for MPI\% and Mem Stalls\% (continuous lines), percentage values (dotted lines) result from normalization taking the corresponding maximum values of each variable.} {Author's production.} {fig_prstev}
+
+    \FIGURE {Processing times (seconds) (Stencil test case, B710 nodes) for the F90 implementation as a function of the number of MPI processes.} {Author's production.} {fig_prstpt}
+
+It is important to note that times, speedups and parallel efficiencies shown in \autoref {tab_prst} are different to the corresponding performance results shown in \autoref {ch_analysis}, since the results shown in this table were obtained using the Intel F90 compiler, not the GNU F90 compiler used in that chapter. However, performance results in the table are worst mainly due to the profiler overhead, which tends to increase with the number of MPI processes. In the same table, performance results that have room to be improved are indicated by APS, and are highlighted in \fcred{red} in this table. 
+
+\autoref {fig_prstev} shows profiling results obtained for the Stencil test case F90 implementation as a function of MPI processes, generated by the Intel APS profiler, according to the definitions shown in the \autoref {sec_tiap}. This figure shows a decrease of the normalized DP GFlop/sec (total) value with the increase of the number of MPI processes, since the nominal DP GFlop/sec total value tends to increase much more. The profiling information can be further employed to optimize the code or to investigate some kind of performance anomaly. For instance, in the same figure, results for 9 MPI processes presented the highest percentage of memory stalls and the lowest IPC rate.
+
+\autoref {fig_prstpt} shows the processing times for the F90 Stencil test case as a function of the number of MPI processes. As expected, the increase of the number of MPI processes decreases the elapsed time, while increasing the MPI time and decreasing the difference between these times.
+
+%
+%
+%
+%----------------------------------------
+\subsection{FFT test case profiling for the F90 code}
+%----------------------------------------
+
+Similarly to the previous section, the Intel APS profiler was used to analyze the F90 serial and parallel (MPI) implementations of the FFT test case (3D array of complex numbers with dimension 576 × 576 × 576). Code was compiled by the Intel F90 compiler with the APS compilation options, then is executed by using the APS command with the specific options for the program execution, and then APS executed again to generate the profiling reports. In particular, JupyterLab was used in all these steps to allow easy reproducibility and documentation. The FFT F90 code was executed in a SDumont B710 node, being compiled with the Intel Parallel Studio XE 2020 (PSXE). The related PSXE module includes the Intel MPI library.
+
+\autoref {tab_prft} shows the profiling results selected for the FFT F90 test case generated  by the Intel APS (speedup and parallel efficiency were calculated apart). The serial execution time used as a reference for the speedup calculations is highlighted in blue. Some values in the table are void, since they are not applicable, or for some reason, the profiler was not able to calculate them.  This table shows that above 4 MPI processes, the \textit {Bound} hint shifts from memory-bound to MPI-bound. It is also worth to note the amount of time demanded by the MPI\_Init function, reaching 47\% of the elapsed time (or 63\% of the MPI time) for 96 processes. 
+
+    \TABLE {APS-generated profiling results (FFT test case, B710 nodes) for the F90 implementation as a function of the number of MPI processes. Manually calculated values are highlighted in \fcorange{orange}. The serial execution time used as a reference for the speedup calculations is highlighted in \fcblue{blue}. Performance results that have room to be improved are highlighted in \fcred{red}. \textit {Bound} hint is highlighted in \fcgreen{green}.} {Author's production.} {tab_prft}
+
+    \FIGURE {Profiling values (FFT test case, B710 nodes) for the F90 implementation as a function of the number of MPI processes. Except for MPI\% and Mem Stalls\%ps (continuous lines), percentage values (dotted lines) result from normalization taking the corresponding maximum values of each variable.} {Author's production.} {fig_prftev}
+
+    \FIGURE {Processing times (seconds) (FFT test case, B710 nodes) for the F90 implementation as a function of the number of MPI processes.} {Author's production.} {fig_prftpt}
+
+It is important to note that times, speedups and parallel efficiencies shown in \autoref {tab_prft} are different to the corresponding performance results shown in \autoref {ch_analysis}, since the results shown in this table were obtained using the Intel F90 compiler, not the GNU F90 compiler used in that chapter. However, performance results in \autoref {tab_prft} are worst mainly due to the profiler overhead, which tends to increase with the number of MPI processes. In the same table, performance results that have room to be improved are indicated by APS, and are highlighted in \fcred{red} in this table. \autoref {fig_prftev} shows profiling results obtained for the FFT test case F90 implementation as a function of MPI processes, generated by the Intel APS profiler, according to the definitions shown in the \autoref {sec_tiap}. This figure shows a decrease of the normalized DP GFlop/sec (total) value with the increase of the number of MPI processes, since the nominal DP GFlop/sec total value tends to increase much more. The profiling information can be further employed to optimize the code or to investigate some kind of performance anomaly. For instance, in the same figure, results for 16 MPI processes presented the highest percentage of memory stalls, while the lowest IPC rate occurred for 24 processes. 
+
+\autoref {fig_prftpt} shows the processing times for the F90 FFT test case as a function of the number of MPI processes. As expected, the increase of the number of MPI processes decreases the elapsed time, while increasing the MPI time and decreasing the difference between these times.
+
+%
+%
+%
+%----------------------------------------
+\section{Overhead due to the APS Profiler in the F90 codes}
+%----------------------------------------
+
+Any profiler incorporate in the original code calls for functions or routines that perform timing and profiling. As a consequence, the resulting instrumented code will have an overhead of execution time, the profiling code-instrumentation overhead. This section shows the instrumentation overhead of the Intel APS profiler for both the stencil and FFT serial and parallel implementations in F90 with and without the profiler. These implementations were compiled with the Intel F90 compiler using the optimization flag -O3, and execution time values are given by the average of 3 runs in the SDumont B710 nodes.
+
+\autoref {fig_prstsp} compares the speedups for the F90 Stencil test case with and without the Intel APS profiler as a function of the number of MPI processes. As already commented, the profiler overhead can much affect the speedup of the MPI program, tending to increase with the number of MPI processes. In this case, the profiler overhead peaks at 81 processes, reducing the original speedup from 15.7 to 8.8 (44\% reduction). 
+
+    \FIGURE {Comparison of the speedups (Stencil test case, B710 nodes) for the F90 implementation with and without the Intel APS profiler as a function of the number of MPI processes.} {Author's production.} {fig_prstsp}
+
+    \FIGURE {Speedups (FFT test case, B710 nodes) as a function of the number of MPI processes, including the serial version, for the F90 implementations, built with and without the Intel APS.} {Author's production.} {fig_prftsp}
+
+\autoref {fig_prftsp} shows the comparison of speedups with Intel APS (in red) and without Intel APS (in blue), as a function of number of MPI processes, including serial version, for the F90 implementation, running on B710 nodes, and using Intel tools. The comparison shows the effect of using the Intel APS library on the results of the F90 implementation. As the number of MPI processes increases, the influence of Intel APS increases, and in 72 processes the speedup was reduced from 10 to 7 (30\% reduction), making the analysis of profiling results non-trivial, needing to consider deviations, and possibly using other profiling tools when there is a desire to get results close to the result of the implementation that does not use profiling.
+
+%
+%
+%
+%----------------------------------------
+\section{The overhead due to the use of Python in the F2PY codes}
+\label{sec_ovhd}
+%----------------------------------------
+
+A question that arises is how much the performance is affected when using a Python program in comparison to the straightforward use of a C/F90 compiled program. The overhead due to the use of Python is expected, since a Python program may reuse a C/F90 compiled program or library, for instance. Obviously, the use of Python adds an extra level of programming due to the Python commands. On the contrary, such overhead may be acceptable, since Python programming is typically easier and allows a modular approach. 
+
+In this work, the Python overhead was evaluated for the F2PY implementations of both the stencil and FFT test cases. This overhead is depicted for F2PY in \autoref {fig_overhead}. F2PY is a feature of the NumPy library that reuses one or more original F90 subroutines, which are then incorporated as functions from a standard Python library. However, each F90 routine must be called as a Python function and thus a F2PY wrapper is required to generate the APIs that maps Python function calls to the corresponding F90 subroutines embedded in the related library. The execution of the standard Python code is done in an interpreted way by the Python virtual machine, while the execution of the function of F2PY-generated Python library is done by the compiled F90 native code.
+
+    \FIGURE [.8] [1mm] {Python overhead when using F2PY.} {Author's production.} {fig_overhead}
+
+These Python overhead measures were performed using different execution time data, generated by calls to the system wall time, use of the Python cProfile, and calls to F90 CPU\_TIME routine in the original code. Each measure of the Python overhead is assumed as given by the difference between the F2PY and F90 implementations. 
+
+Even considering only timing information, values of execution time may be different according to the employed tool. \autoref {tab_prstru} and \autoref {tab_prftru} show, respectively, the execution times of the F90 and F2PY implementations for the stencil and FFT test cases in function of the number of MPI processes. These tables compare execution times obtained by different tools. The Intel Python cProfile was used only for timing, while Intel APS profiler was not employed. Each profiling value is the average of 3 runs of each implementation. The shortest execution times for each number of MPI processes are highlighted in \fcred{red}. The different timing tools employed here follow. Except for the last two cProfile tools, the desired elapsed time is yielded by the difference between two successive wall time values.
+
+    \TABLE {Processing times (seconds) (Stencil test case, B710 nodes) for the F90 (without the Intel APS profiler) and F2PY (with timing information of the Intel cProfiler) implementations as a function of the number of MPI processes.} {Author's production.} {tab_prstru}
+
+    \TABLE {Processing times (seconds) (FFT test case, B710 nodes) for the F90 (without the Intel APS profiler) and F2PY (with timing information of the Intel cProfiler) implementations as a function of the number of MPI processes.} {Author's production.} {tab_prftru}
+
+\begin{itemize}
+
+\item \textbf{OS time command}: uses only the wall time value (CPU time, etc. was not used);  
+
+\item \textbf{F90 wall time call (F90 code alone)}: calls embedded in the F90 code; 
+
+\item \textbf{Python wall time call}: analogous to the OS time command; 
+
+\item \textbf{F90 wall time call (F90 code wrapped by F2PY)}: calls embedded in the wrapped F90 code;
+
+\item \textbf{cProfile tottime}: elapsed time calculated using Python library wall time calls to F90 routines wrapped into Python library functions;
+
+\item \textbf{cProfile cumtime}: idem, but adding time due to the Python overhead.
+
+\end{itemize}
+
+\autoref {fig_prstet} shows the processing times (seconds) of the F90 and F2PY implementations of the Stencil test case as a function of the number of MPI processes, using the values already shown in \autoref {tab_prstru}. \autoref {fig_prftet} shows the processing times (seconds) of the F90 and F2PY implementations of the FFT test case as a function of the number of MPI processes, using the values already shown in \autoref {tab_prftru}.
+
+    \FIGURE {Processing times (seconds) (Stencil test case, B710 nodes) as a function of the number of MPI processes for the F90 and F2PY implementations.} {Author's production.} {fig_prstet}
+
+    \FIGURE {Processing times (seconds) (FFT test case, B710 nodes) as a function of the number of MPI processes for the F90 and F2PY implementations.} {Author's production.} {fig_prftet}

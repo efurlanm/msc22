@@ -1,0 +1,102 @@
+%     _                               _ _        ____  
+%    / \   _ __  _ __   ___ _ __   __| (_)_  __ | __ ) 
+%   / _ \ | '_ \| '_ \ / _ \ '_ \ / _` | \ \/ / |  _ \ 
+%  / ___ \| |_) | |_) |  __/ | | | (_| | |>  <  | |_) |
+% /_/   \_\ .__/| .__/ \___|_| |_|\__,_|_/_/\_\ |____/ 
+%         |_|   |_|
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand{\thechapter}{B}
+\chapter{APPENDIX B - PYTHON ENVIRONMENT RESOURCES}
+\label{appendixB}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Python is a high-level, general-purpose, interactive language, with dynamic typing and automatic memory management, supporting the imperative, functional, and object-oriented programming paradigms, and in combination with its libraries allows two ways of execution, interpreted and compiled. Among the supported paradigms, the functional with division of processing in independent tasks allows a more efficient parallelization. It is one of the most widely used languages, easy to learn, easy to read and maintain, it is portable across platforms, extensible, scalable, and has support, among others, for databases, and GUI programming \cite {Sanner1999}.
+
+%
+%
+%
+%----------------------------------------
+\section{Programming paradigms}
+%\label{sec_XXXX}
+%----------------------------------------
+
+There are several taxonomies proposed for programming paradigms; one can try to summarize, in general, imperative, declarative and object-oriented. The imperative paradigm consists of a sequence of commands that has an explicit implementation, that is, explaining \textit {how to do it} to execute an algorithm. In this paradigm, the source code, for example in C or F90, is usually compiled by generating code in machine language, which is subsequently executed. Generally, in these languages, the imperative programming paradigm is used with compilation ahead-of-time (AOT). The declarative programming paradigm, on the other hand, enumerates tasks to be performed, leaving its implementation implicit, that is, showing what the \textit {algorithm should do}. The declarative paradigm can be subdivided into functional, logical programming, or directed to a database \cite {Sebesta2016}.
+
+The Python language allows to write code following a functional declarative programming paradigm when in combination with the user standard library or with external libraries. This paradigm is based on the application of functions to data passed as arguments, which allows the interpreter to generate the intermediate representation composed of independent tasks corresponding to each function call, which simplify the parallelization \cite {Singh2010}.
+
+%
+%
+%
+%----------------------------------------
+\section{Compiled and interpreted languages}
+%\label{sec_XXXX}
+%----------------------------------------
+
+In addition to the taxonomy of programming paradigms, programming languages can be divided and grouped according to the way they are executed or implemented, in two large groups: compiled languages and interpreted languages, with the first group generally corresponding to imperative programming, but not necessarily from the second group with declarative programming. For example, Python and C++, depending on the implementation employed, may fall into one group or another. The compiled languages imply the compilation of the entire program, generating object code in machine language and requiring memory for this, but allowing a quick execution thanks to the optimizations of the compiler and not requiring new compilation in repeated executions in the same architecture. On the other hand, the interpreted languages execute instruction by instruction, without generating native object code, requiring less memory, but with slower execution and possibly requiring a new compilation for an intermediate representation at each repetition. It should be noted that Python can reuse the generated intermediate format, avoiding the recompilation of already compiled code. In addition, while machine code generation does not require less memory, the full programming environment requires a virtual machine that requires a lot of memory. The use of less memory is even more evident for extensive Python code, despite the memory required by the Python virtual machine. Note, however, that these definitions are general, as it is possible to implement interpreters for compiled languages, as well as compilers for interpreted languages. A good example of this is the C++ interpreter from CERN \cite {Vasilev2012}.
+
+Python, because the standard implementation is an interpreted language, requires an interpreter which is a program that executes instruction-by-instruction Python code or in instruction blocks grouped in a script. An interpreter usually translates the original language into an intermediate representation, which is performed by the associated virtual machine. It is possible to have different virtual machines for the same interpreter, each associated with a specific processor architecture. There are several interpreters available, which may or may not support all the features of the Python language, and the reference implementation, CPython, translates the source code of the language into an efficient intermediate representation (bytecode), which is then executed using a Python virtual machine. In the case of libraries used with Python, the interpreter accesses the functions or routines of these libraries in intermediate representation to be executed by the virtual machine, or less frequently, in machine language, to be executed directly by the processor \cite {Sanner1999}.
+
+More recently, the so-called runtime compilation, or just-in-time (JIT), was introduced, in which the interpreter compiles the intermediate representation at runtime, generating code in machine language for execution in the processor. Thus, at runtime, the identification of the types of variables is done, allowing the appropriate optimizations. Thus, using Python with libraries that allow JIT compilation combines the advantages of both languages, namely the readable syntax of a modern interpreted language with the better performance of a compiled language. An example of a JIT interpreter for Python is Pypy \cite {Biham2006}.
+
+%
+%
+%
+%----------------------------------------
+\section{Python intermediate representation}
+%\label{sec_XXXX}
+%----------------------------------------
+
+During the executing of Python code, the Python reference implementation CPython first compiles the source code to an intermediate representation (called bytecode) and then, in a second step, executes it in an interpreted form. After the compilation, which is done transparently, the bytecode is then sent to be executed by a Python Virtual Machine (PVM), which is part of the Python system, and which would be the interpreter itself. The intermediate representation has the advantage of being platform independent, and once the bytecode is generated, it can be executed without changes on a different platform that has a specific PVM for the target machine. The intermediate representation is generated through the analysis of the Python source code, and some optimizations are made, however many of the language analyzes, such as type checking and other characteristics of dynamic languages, are done at runtime by the interpreter.
+Depending on the resources used, bytecode is stored in an external file, and can be reused in later executions, saving compilation time. In this case, if the source code does not change, there is no longer a need for the compilation step, and for execution bytecode and the virtual machine are enough. All of these steps are automatically managed by Python and are transparent to the user. Python bytecode is also used by other system components, as is the case with the Numba compiler, which uses it during runtime to compile certain machine code snippets into machine code, making hybrid execution, part interpreted using bytecode, and part executing native code \cite {Lam2015}.
+
+%
+%
+%
+%----------------------------------------
+\section{Python decorators}
+%\label{sec_XXXX}
+%----------------------------------------
+
+Python treats classes and functions as objects, allowing to pass classes or functions as an argument to other functions. The Python language incorporated in its more recent versions the use of the so-called decorators, which improves the syntax for passing a function as an argument of another function, without explicitly modifying it, but extending its behavior. Also, a function can return another function. As an example, decorators, combined with the Numba JIT compiler, allow the definition of functions that must be compiled only at runtime. In this case, the interpreter, instead of using its representation of the function, uses the machine language code generated by Numba. Thus, the Python user has the impression of executing commands in an interpreted language, but taking advantage of the performance obtained by compiling just-in-time \cite {Lam2015}.
+
+%
+%
+%
+%----------------------------------------
+\section{Python libraries}
+%\label{sec_XXXX}
+%----------------------------------------
+
+Python's flexibility allows the user to choose from several parallelization and optimization features through libraries or different implementations in imperative languages like C or F90. As an example, the library for scientific computing NumPy, which uses code implemented in C/C++ and F90 \cite {Walt2011}, has a tool called F2PY that generates an F90 program interface for Python \cite {Peterson2009}. Python libraries are not necessarily written using the Python language, and in fact the interfacing and extension capability is used to create libraries from various sources, and within the library there can be optimized native code that is executed directly by the processor without being interpreted, making the library as fast as a compiled language. Consequently, one of the ways to get performance in Python is to use optimized libraries, especially in computationally intensive parts.
+
+There are also compilers, such as Cython, that can create standard Python libraries by compiling the source code into C code, which in turn is built by a C compiler to generate optimized native code, and the end result is a library \cite {Behnel2010}. Another example is the Numba compiler and library, which allows to compile just-in-time (during runtime) a subset of the Python language and the NumPy library \cite {Lam2015}. \textit {mpi4py} is a library, as its name suggests, that allows parallelization using the Message Passing Interface (MPI) standard, for execution using multiple processes \cite {Dalcin2008}. On the other hand, Dask is a library for parallel processing that integrates with specific libraries that allow more efficient parallelization by dividing processing into independent tasks \cite {Rocklin2015}. In addition to these, there are several other libraries and HPC solutions for Python, such as libraries related to SMD, Cluster, Cloud, Grid, and Distributed Computing \cite {Palach2014}. Another example of this is PyTorch, which is an open source machine learning library based on the Torch library, used for applications such as computer vision and natural language processing. PyTorch has support for parallelization on machines with multi-core processors and with GPU \cite {Ketkar2017}.
+
+In short, the Python user has access to more than sixty libraries and solutions related to parallel processing \cite {Palach2014}. The Anaconda open-source distribution, focused on scientific computing, which aims to simplify package management and deployment, has a cloud-based repository with more than seven thousand packages for data science and machine learning. Anaconda is available for use in SDumont. The current version of Python, as of December 2020, is 3.9.1. The software composed of the Python language and its standard library, the external libraries, and the interpreter and virtual machine used, constitutes the so-called Python programming environment (or Python ecosystem).
+
+Throughout this text, for the sake of simplicity, each core of a multi-core processor will be denoted as CPU, and each general-purpose graphics accelerator card (GPGPU - General Purpose Graphics Processing Unit) will be denoted as GPU.  In addition, High  Performance  Computing,  which obviously includes parallel processing on CPUs and / or GPUs, will be denoted as HPC.
+
+%
+%
+%
+%----------------------------------------
+\section{JupyterLab (and Jupyter Notebook)}
+\label{sec_jupyterlab}
+%----------------------------------------
+
+JupyterLab, which has been used in all implementations in this work, is a user interface that is an evolution, is compatible, and offers all the familiar building blocks of classic Jupyter Notebook. JupyterLab is an interactive development environment that has the flexibility to allow combination of executable code snippets to solve a problem, with explanatory text, and calculation results including graphics, in addition to having an interactive authoring application running in the web browser. It offers some features of literate programming, which is a programming paradigm introduced by Donald Knuth, in which code accompanies an explanation of its logic in a natural language interspersed with snippets of source code that can be compiled and/or executed \cite {Knuth1992}. The approach is used in scientific computing and data science for reproducible research and open access purposes to facilitate understanding. In this way, it generates a powerful work environment for rapid development and prototyping, promoting integration between the various components of this environment, allowing easy visualization and analysis, and generating multimedia web documentation \cite {Perkel2018}. It has a client-server architecture with a communication protocol that allows running servers on remote machines (a cluster, or a supercomputer), and interactively developing a prototype on a local laptop, while executing the code transparently on remote machine (\autoref {fig_jlinterface}).
+
+
+    \FIGURE [] [0mm] {JupyterLab interface.} {Author's production.} {fig_jlinterface}
+
+
+The development interface in the web browser is standardized and is the same regardless of where the notebook server is running, making it easy to use in different environments and systems. It is even possible to use several notebook servers at the same time, each running on different machines, and being viewed in different windows of the web browser on the local machine, making it possible to develop and run code on different machines at the same time. Depending on the configuration, it is possible to use or combine several programming languages or environments, for example, it is possible to develop code in F90, C, R, Bash shell, and others. It is also possible to access the operating system shell and perform most of the tasks and features from the command line. It also creates or edits a standalone document on the local machine containing a Notebook, which later can also be viewed in an appropriate document reader, or the document can be exported to other formats such as pdf, html, and LaTeX. This document can be shared and also used in another Notebook session. It is possible to use Notebook in order to store the entire history with the step by step of what was done during development, including the outputs and results of the remote machine, interspersed with executable code snippets, and with the description of what was done, in separate cells. This Notebook may be reproducible, cells may be re-executed, and the same results may be obtained by mixing documentation with executable code, as long as it is on the same machine or in the same configuration, or else the Notebook may be viewed as just a regular document, and comments may be be added as they are machine independent. When used in conjunction with Conda \cite {Gruening2018}, an open source environment and package management system, it provides a quick and easy environment to install, run, and update Python packages and resolve their dependencies, including installing packages with the same versions used during code development \cite {Bisong2019}.
+
+%
+%
+%
+%----------------------------------------
+\section{Conda package manager and ecosystem}
+\label{sec_conda}
+%----------------------------------------
+
+Conda \cite {Gruening2018} is a free, open source, multi-featured Python package and environment manager that is cross-platform and can work with languages other than Python. As an example, it is used by the Python Anaconda distribution. Environment management is one of the main aspects of Conda, allowing different versions of packages to be used, or even completely separate package installations. It is possible to work with different Python environments, which can be easily created, saved, loaded and switched. Other features are conflict resolution management, package dependencies, and package breaking. In this work, several features of Conda were used, such as nested activation to allow two environments to be used at the same time. Conda also has features to list current packages and install on another machine to allow reproducibility. It is also possible to create stacked environments, to allow, for example, adding packages to an existing environment without modifying it, and this feature can be useful, for example, in SDumont if the existing Python distribution being used does not have the JupyterLab package, or another package. A new stacked environment is created, in the user area, to add the missing packages, without modifying the environment that already exists. Conda also has a large online package repository.

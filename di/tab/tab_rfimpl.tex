@@ -1,0 +1,30 @@
+\begin{tabular}{lrrrrrrrrr}\toprule
+\textbf{Implemen-} & &\multicolumn{7}{c}{\textbf{Number of MPI processes}} \\
+\cline{3-9}\vspace{-10pt} & & & & & & & & \\
+\textbf{tation} &\textbf{Serial} &\textbf{1} &\textbf{4} &\textbf{16} &\textbf{24} &\textbf{48} &\textbf{72} &\textbf{96}\vspace{2pt} \\
+\toprule\vspace{-11pt} & & & & & & & & \\
+\multicolumn{9}{c}{\textbf{\textit{Processing time (seconds)}}} \\
+\midrule[0.1pt]\vspace{-10pt} & & & & & & & & \\
+\textbf{Python} &\fcblue{25.67} &\fcred{28.59} &\fcred{14.91} &\fcred{11.15} &\fcred{11.00} &\fcred{11.99} &\fcred{13.89} &\fcred{14.52} \\
+\textbf{Numba} &\fcred{24.98} &33.61 &16.63 &13.01 &13.80 &15.65 &15.51 &16.69 \\
+\textbf{Cython} &29.46 &65.56 &25.71 &15.32 &15.41 &17.71 &15.58 &16.89 \\
+\textbf{F90} &137.69 &138.93 &45.35 &20.83 &19.15 &14.55 &14.62 &16.04 \\
+\textbf{F2PY} &135.10 &141.71 &48.29 &23.00 &19.16 &17.14 &17.46 &17.96 \\
+\toprule\vspace{-11pt} & & & & & & & & \\
+\multicolumn{9}{c}{\textbf{\textit{Speedup}}} \\
+\midrule[0.1pt]\vspace{-10pt} & & & & & & & & \\
+\textbf{Python} &1.00 &\fcred{0.90} &\fcred{1.72} &\fcred{2.30} &\fcred{2.33} &\fcred{2.14} &\fcred{1.85} &\fcred{1.77} \\
+\textbf{Numba} &\fcred{1.03} &0.76 &1.54 &1.97 &1.86 &1.64 &1.65 &1.54 \\
+\textbf{Cython} &0.87 &0.39 &1.00 &1.67 &1.67 &1.45 &1.65 &1.52 \\
+\textbf{F90} &0.19 &0.18 &0.57 &1.23 &1.34 &1.76 &1.76 &1.60 \\
+\textbf{F2PY} &0.19 &0.18 &0.53 &1.12 &1.34 &1.50 &1.47 &1.43 \\
+\toprule\vspace{-11pt} & & & & & & & & \\
+\multicolumn{9}{c}{\textbf{\textit{Parallel efficiency}}} \\
+\midrule[0.1pt]\vspace{-10pt} & & & & & & & & \\
+\textbf{Python} &1.00 &\fcred{0.90} &\fcred{0.43} &\fcred{0.14} &\fcred{0.10} &\fcred{0.04} &\fcred{0.03} &\fcred{0.02} \\
+\textbf{Numba} &\fcred{1.03} &0.76 &0.39 &0.12 &0.08 &0.03 &0.02 &0.02 \\
+\textbf{Cython} &0.87 &0.39 &0.25 &0.10 &0.07 &0.03 &0.02 &0.02 \\
+\textbf{F90} &0.19 &0.18 &0.14 &0.08 &0.06 &0.04 &0.02 &0.02 \\
+\textbf{F2PY} &0.19 &0.18 &0.13 &0.07 &0.06 &0.03 &0.02 &0.01 \\
+\bottomrule
+\end{tabular}

@@ -1,0 +1,546 @@
+%   ____ _                 _              _ 
+%  / ___| |__   __ _ _ __ | |_ ___ _ __  / |
+% | |   | '_ \ / _` | '_ \| __/ _ \ '__| | |
+% | |___| | | | (_| | |_) | ||  __/ |    | |
+%  \____|_| |_|\__,_| .__/ \__\___|_|    |_|
+%                   |_|
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{INTRODUCTION}
+\label{ch_introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This work explores the most common high-performance computing (HPC) approaches available in the Python programming environment that are based in the Message Passing Interface (MPI) communication library. These approaches were implemented and evaluated in terms of performance for three selected test cases, which employ different algorithms and were applied to different application problems. The corresponding serial and parallel implementations in Fortran 90 (henceforth referred to as F90) were taken as references to compare the computational performance. All versions of the codes were executed in the Santos Dumont supercomputer of the LNCC (National Laboratory for Scientific Computing), henceforth referred to as SDumont. In addition to the performance results, a discussion of the trade-off between easiness of programming and computational performance is included. This work is a short primer for the use of HPC resources in the Python programming environment, using the SDumont.
+
+Python is a modern and user-friendly language, featuring an easy syntax, good readability, easy interfacing with external applications, fast implementation using scripting, access to a wide community of developers, and with a huge collection of libraries, scientific or not \cite {Lunacek2013,Virtanen2020}. Furthermore, Python supports HPC by means of embedded or external libraries \cite {Sehrish2017}. A powerful programming environment is provided by combining Python with an interactive shell like IPython \cite {Perez2007}, allowing for rapid prototyping. According to the 2021 IEEE Spectrum programming language ranking \cite {IEEE2021}, Python is the most popular, as shown in \autoref {fig_ieee}.
+
+    \FIGURE [.7] [1mm] {Ranking of most popular programming languages, according to \textit {IEEE Spectrum}.} {Adapted from \citeonline {IEEE2021}.} {fig_ieee}
+
+Python availability reaches compiler packages like the Intel one \cite {Cielo2019} or most supercomputer programming environments. Application programs implemented in languages like F90 or C, even demanding massive parallel processing, can be encapsulated in the Python environment by means of wrappers in a modular way. Such flexibility facilitates to perform simulations, data analysis and visualization \cite {Beazley1997}, mainly for large scale scientific applications. Thus, Python provides an interactive, user-friendly programming environment that is convenient to trial-and-error, greedy, or other exploration schemes, common in scientific computing \cite {Hinsen1997}. Current use of Python in supercomputing environments is exemplified in the \autoref {sec_stateofart} by a list of recent works.
+
+The use of Python is also widespread for scientific applications at INPE (the Brazilian National Institute for Space Research), where its digital library lists over 80 references for this language \cite {Inpe2020}, including several applications, such as the optimization of a mathematical model to estimate the amount of solar radiation incident on the Earth's surface \cite {Souza2018}, or the use of a neural network for the classification of supernovae \cite {Nascimento2019}. 
+
+There is a trade-off between languages like F90 or C and the Python environment concerning the easiness of programming and the processing performance. Such languages are harder to implement an application than Python, but are straightforward to optimize/parallelize and provide better performance. However, there are nowadays many libraries and frameworks that provide HPC resources for Python, making it difficult to analyze such trade-off in order to choose one of them.
+
+This work aims to explore the most common MPI-based \cite {Dalcin2008} parallelization approaches available in the Python ecosystem, which includes libraries, frameworks and tools.  The performance of these Python HPC approaches is then compared to the correspondent serial and MPI F90 implementations for three specific tests cases:
+
+\begin{itemize}
+
+\item Stencil test case: a five-point stencil finite difference method to solve partial differential equations resulting from Poisson equations, applied to a 2D heat transfer problem on a finite surface;
+
+\item Fast Fourier Transform (FFT) test case: an algorithm that computes the multidimensional Fourier transform of an 3D array of synthetic data; 
+
+\item Random Forest test case: a random forest algorithm applied for the classification of asteroid orbits of a NASA dataset.
+
+\end{itemize}
+
+In most of this work parallelization is achieved using MPI \cite {Gropp1996, Barney2021}, but some implementations use IPython Parallel \cite {Limprasert2015}, both for CPU execution (Central Processing Unit, which refers to a processor core). Therefore, multiple cores of the processors of one or more computing nodes are employed. Some few implementations were executed in a GPU (Graphics Processing Unit), used as an accelerator for the compute-intensive parts of a program executed in the CPU.  
+
+Some considerations about this work, as well as about Python in general, follows:
+
+\begin{enumerate}
+
+\item Python environment is very diverse, and Python code can be linked to a multitude of APIs/libraries for HPC, allowing programs to be written in many different ways;
+
+\item Python implementations of this work include HPC solutions for standard Python \cite {Dobesova2011}, Cython \cite {Behnel2010}, Numba and Numba-GPU \cite {Marowka2018}, and F2PY \cite {Peterson2009}, but there are many others not employed here;
+
+\item Python multiprocessing environment allows any parallel execution, from MPI processes to OpenMP \cite {Dagum1998} threads, using a personal laptop/PC or supercomputer, but in this work, the different HPC implementations were based on MPI for Python, except for Numba-GPU; 
+
+\item A current Python trend for Deep Learning is the PyTorch library \cite {Ketkar2021}, which mostly generate code for execution in GPUs; 
+
+\item Standard Python code does not allow any parallelization by threads/processes \cite {Gonzalez2019}, which is provided by Python and third-party libraries; however, in the case of thread-based libraries, there is no guarantee of thread-safeness, requiring the program avoiding race conditions, for instance using locks \footnote {\url{http://www.pythontutorial.net/advanced-python/python-threading-lock}}; race conditions happen when different threads access the same memory position to perform a read/write in a random order that may preclude the execution of the program in a logically correct manner; 
+
+\item Performance results shown here are specific of the selected test cases and corresponding  problem size; different algorithms, applications and problem sizes may lead to a different analysis of the processing performance.
+
+\end{enumerate}
+
+In the scope of this work, two articles were published about the Stencil test case, one in the proceedings of the XV Brazilian e-Science Workshop (BreSci-2021) \cite {Miranda2021}, and the other in the journal Cereus Magazine \cite {Miranda2021a}, as shown in the \autoref {appendixA}.
+
+The remaining chapters of this document are: 
+
+\begin{itemize}
+
+\item \autoref {ch_approaches}: Description of the MPI-based HPC approaches for Python programming employed in this work;
+
+\item \autoref {ch_cases}: Description of the selected test cases, showing the corresponding implementations in Python and in F90;
+
+\item \autoref {ch_analysis}: Analysis of the parallel performance for the different Python and F90 implementations of the selected test cases;
+
+\item \autoref {ch_profiling}: Profiling for the F90 and F2PY implementations of the Stencil and FFT test cases, also estimating the overhead due to the use of Python;
+
+\item \autoref {ch_final}: Final remarks;
+
+\item \autoref {appendixA}: Reference and abstract of the published articles that resulted of this work;
+
+\item \autoref {appendixB}: Brief description of the Python environment;
+
+\item \autoref {appendixC}: Listing and brief description of other HPC Python approaches not employed in this work;
+
+\item \autoref {appendixD}: Complete set of codes implemented in this work;
+
+\item \autoref {annexA}: Publicly available serial and parallel F90 codes from the Stencil test case employed in this work.
+
+\end{itemize}
+
+%
+%
+%
+%
+%
+%
+%
+%   ____ _                 _              ____  
+%  / ___| |__   __ _ _ __ | |_ ___ _ __  |___ \ 
+% | |   | '_ \ / _` | '_ \| __/ _ \ '__|   __) |
+% | |___| | | | (_| | |_) | ||  __/ |     / __/ 
+%  \____|_| |_|\__,_| .__/ \__\___|_|    |_____|
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{EMPLOYED PYTHON HPC APPROACHES}
+\label{ch_approaches}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The purpose of this chapter is to briefly describe the most common MPI-based HPC approaches for Python coding employed in this work for the selected test cases. Some of these approaches are part of more general Python frameworks, like the Scikit-learn library, which is specific for machine learning, or the SciPy, for scientific computing. A complete, comprehensive description of all Python HPC resources would be not feasible in the scope of this work. Some Python HPC approaches use wrapping around existing libraries, others re-purpose existing C or F90 code, while others use compilers to generate native code. Most approaches are being continually developed and improved. A number of other Python HPC approaches, not employed in this work, are briefly described in the \autoref {appendixC}.
+
+In this work, two free and open source packages were chosen: the web application JupyterLab (\autoref {sec_jupyterlab}) for providing a graphical interface to the remote SDumont supercomputer, and the Conda environment and package management system (\autoref {sec_conda}). The following sections detail the some of the employed libraries: Scikit-learn (machine learning), SciPy (scientific computing, engineering, etc.), NumPy (mostly for array manipulation), MPI for Python and IPython Parallel (both for parallelization), Cython and Numba (both for generating optimized code), F2PY (reusing F90/C code), CuPy (execution in GPU), pyFFTW and mpi4py-fftw (serial and parallel FFT), among others. All these Python libraries/packages are free and open source.
+
+Please observe the final sections of this chapter, addressing the SDumont computing environment for Python, including the Slurm job manager, and also describing the state-of-the-art of the use of Python in supercomputer environments.  
+
+%
+%
+%
+%----------------------------------------
+\section{Scikit-learn}
+\label{sec_apprsklr}
+%----------------------------------------
+
+Scikit-learn \cite {Kramer2016} is a Python library for machine learning tasks such as classification, regression or clustering via standard algorithms like support vector machine, random forest, gradient boost, k-means or DBSCAN. Scikit-learn is built on top of the SciPy library, being mainly written in Python, except for some core algorithms written in Cython to improve performance. It also uses NumPy, LIBSVM and LIBLINEAR libraries.
+
+In addition, Scikit-learn provides easy interface with other libraries such as Matplotlib, NumPy, Pandas, SciPy, and others. Process-based or thread-based parallelism can be achieved by many different ways, according to the chosen library. For instance, in the Random Forest test case of this work, the Python version employs the Scikit-learn library with a flow of tasks supported by the joblib library, which in turn uses as parallel backend both IPP or loky. The \autoref {lst_skl} shows an excerpt of Scikit-learn code.
+
+\begin{lstlisting}[float=htb, language={Python}, label={lst_skl}, caption={Excerpt of Scikit-learn code.}]
+from sklearn.ensemble import RandomForestClassifier
+import numpy as np
+
+# Load data
+X_train = np.load("X_train.npy")
+y_train = np.load("y_train.npy")
+
+# Create a classifier
+clf = RandomForestClassifier()
+
+# Learn on the train subset
+clf.fit(X_train, y_train)
+\end{lstlisting}
+
+%
+%
+%
+%----------------------------------------
+\section{SciPy}
+\label{sec_scipy}
+%----------------------------------------
+
+SciPy is a Python library used for scientific computing, mathematics, and engineering, and includes modules for optimization, linear algebra, integration, interpolation, FFT, image and signal processing, differential equation solvers, etc. SciPy has become the \textit {de facto} standard for writing scientific computing programs in Python, with thousands of dependent packages and repositories. Other libraries, such as Scikit-learn, are built on top of it. SciPy is written using Python, Cython, Pythran, F90, C/C+, and some optimized libraries. A part of the F90 code of SciPy is a very proven legacy code, which was wrapped and transformed into a Python library. Data structures like multidimensional arrays and some other resources come from the NumPy library \cite {Virtanen2020}. The \autoref {lst_spy} shows an excerpt of SciPy code.
+
+\begin{lstlisting}[float=htb, language={Python}, label={lst_spy}, caption={Excerpt of SciPy code.}]
+from scipy.fft import fft
+import numpy as np
+
+# Input array with real numbers example
+x = np.array([1.7, 0.9, 0.0, -0.9, -1.7, -2.6])
+
+# Compute the 1-D discrete Fourier transform
+y = fft(x)
+\end{lstlisting}
+
+%
+%
+%
+%----------------------------------------
+\section{NumPy}
+\label{sec_apprnump}
+%----------------------------------------
+
+The NumPy library is a Python library that supports multidimensional arrays, definition of arbitrary data types, integration with databases, and a set of functions for numerical calculus, linear algebra, etc., which is not as comprehensive as the offered by SciPy. Regardless of its use in scientific computing, NumPy is more frequently used to process multidimensional data in general. NumPy has tools to integrate existing C/C++ or F90 code \cite {Walt2011}. NumPy may automatically use vectorization in order to explore processor SIMD instructions,
+depending on the processor.
+
+The Python language was not conceived for numerical processing (number crunching), but its characteristics led to the development of several libraries, such as NumPy. Conversely, NumPy led to improvements in the Python syntax, such as handling arrays indexing. NumPy allow arrays to be pointed to memory addresses dynamically allocated by extensions written in C/C++ or F90, without the need to be copied, thus allowing some compatibility with existing numerical libraries, such as the linear-algebra libraries BLAS and LAPACK. The \autoref {lst_npy} shows an excerpt of NumPy code.
+
+\begin{lstlisting}[float=htb, language={Python}, label={lst_npy}, caption={Excerpt of NumPy code.}]
+import numpy as np
+
+# reshape gives a new shape to an array without changing its data
+data = np.arange(10).reshape(2,5)
+\end{lstlisting}
+
+%
+%
+%
+%----------------------------------------
+\section{MPI for Python (mpi4py)}
+\label{sec_apprmpyt}
+%----------------------------------------
+
+The Message Passing Interface (MPI) is the standard HPC communication library \cite {Gropp1996a, OpenMPI2020, Dongarra1995}. MPI for Python (mpi4py) \cite {Dalcin2008} is a package that provides a library with Python bindings to an MPI library that was wrapped around. In addition, mpi4py can be built choosing the underlying MPI distribution. Currently, mpi4py supports the MPI-2 standard. It makes the parallel execution of Python scripts accessible, providing most of the MPI functionality and also communication of Python objects such as NumPy arrays between processes.
+
+Communication of Python objects not supported by the MPI standard can be done using the Python \textit {Pickle} module, which converts the object to a sequence of bytes for the MPI communication and subsequently reconverts the sequence back to the original object (the object is \textit {pickled} into a sequence of bytes to later be \textit {unpickled}). 
+The syntax of MPI for Python is similar to the MPI syntax, but does not have the MPI\_ prefix, and adopting an upper-case initial letter for communication functions that support general Python objects (for example, \textit {Send}), while using a lower case initial letter for standard MPI objects (for example, \textit {send}). MPI for Python also supports parallel input and output in the MPI-2 standard in order to exploit parallel file systems. The \autoref {lst_mpi4py} shows an excerpt of mpi4py code.
+
+\begin{lstlisting}[float=htb, language={Python}, label={lst_mpi4py}, caption={Excerpt of mpi4py code.}]
+# Write to a file test01.py and run with
+# $ mpiexec -n 2 python test01.py
+
+from mpi4py import MPI
+
+# Communication information
+comm = MPI.COMM_WORLD
+mpirank = comm.Get_rank()
+mpisize = comm.size
+
+# Performs an action depending on the process or rank
+if not mpirank:
+    data = [1.7, 0.9, 0.0, -0.9, -1.7, -2.6]
+    comm.send(data, dest=1, tag=123)
+elif mpirank == 1:
+    data = comm.recv(source=0, tag=123)
+    print(mpisize, data)
+\end{lstlisting}
+
+%
+%
+%
+%----------------------------------------
+\section{IPython Parallel (IPP)}
+\label{sec_appripyt}
+%----------------------------------------
+
+IPython alone is a command shell for interactive computing in multiple programming languages, originally developed for Python, with a number of features typical of others shells, but allowing for interactive execution of tasks. It is complemented by IPython Parallel (IPP) \cite {Limprasert2015}, which provides an abstraction layer that supports interactive parallel processing. IPP allows configuring a parallel execution environment for a specific architecture. Applications can be developed, executed, monitored and debugged in an interactive way. If the communication overhead is high, the programmer can employ IPP with MPI to optimize inter-process communication in addition to native IPP communication. However, in this work the standard parallel features of IPP were used.
+
+An IPP Client object is created when there is a request to execute a parallel Python program. The request is sent to the Controller, which is composed by a Hub process and a set of Scheduler processes \footnote{\url{http://tw.pycon.org/2014apac/zh/program/36.html}}. The Controller manages the set of Engine processes trying to meet the demand of the Client. It keeps monitoring the status of these Engines, checking their availability in order to schedule them, in a way that different Client requests may be queued and then executed. These processes are managed by Slurm. Typically, each process runs on a processor core, similarly to MPI processes. IPP also provides interactivity, since the IPP Controller is continuously monitoring new tasks and assigning them to idling IPP Engines. It provides fast, interactive parallelization with few lines of code in the case of \textit {embarrassingly parallel} algorithms, which are trivially parallelized since there are no data dependencies. 
+
+In this work, IPP was only used in the Random Forest test case that used the corresponding algorithm of the Scikit-learn library, employing the joblib library with the IPP parallel backend. \autoref {lst_ipp} shows an excerpt of IPP code.
+
+\begin{lstlisting}[float=htb, language={Python}, label={lst_ipp}, caption={Excerpt of IPP code.}]
+import ipyparallel as ipp
+from ipyparallel.joblib import IPythonParallelBackend
+from joblib import Parallel, parallel_backend, register_parallel_backend
+from sklearn.ensemble import RandomForestClassifier
+import pandas as pd, numpy as np
+
+# Prepare the engines
+c = ipp.Client(profile = "profilename")
+bview = c.load_balanced_view()
+register_parallel_backend('ipyparallel',
+    lambda : IPythonParallelBackend(view = bview))
+
+# Load data
+X_train = np.load("X_train.npy")
+y_train = np.load("y_train.npy")
+
+# Create a random forest classifier
+clf = RandomForestClassifier()
+
+# Train the model using the training sets, in parallel
+with parallel_backend('ipyparallel'):
+    clf.fit(X_train, y_train)
+
+# End
+c.shutdown(hub=True, block=False)
+\end{lstlisting}
+
+%
+%
+%
+%----------------------------------------
+\section{Cython}
+\label{sec_apprcyth}
+%----------------------------------------
+
+Cython is a compiler for the Python language, and for its own Cython extensions, which allows generating C-compiled code automatically from Python code. The C static compiler provides a more optimized code, in comparison to the original Python code \cite {Behnel2010}. Cython source code is compiled to the C language, which is then compiled again to generate an executable machine code. The standard operating system C-compiler is employed.
+
+Cython can be customized by choosing specific Cython extensions for the Python language. Thus, Cython not only has interfaces for the libraries called in the original Python code, but also allows interfacing with other C/C++ codes or libraries. Cython combines the Python fast development environment with the performance of C compiled programs.
+
+Cython compiles the original Python code providing hints about parts of the code that can be optimized by C-compilation, and about optimization choices. However, for these parts, it is up to the programmer to add, for example, variable type annotations to the Python code to comply with the strong typing of the C language. It is possible to add further annotations related to the optimization hints. Cython is commonly used to build Python libraries from Python code that uses Cython extensions. Therefore, the new module/library can be called from the standard Python code. The final performance will depend on the Cython compiler options, the set of extensions used, the libraries being used, or even the portability of the Python code to Cython.
+
+The \autoref {lst_cyt} shows an excerpt of Cython code.
+
+\begin{lstlisting}[float=htb, language={Python}, label={lst_cyt}, caption={Excerpt of Cython code.}]
+%%cython --force --compile-args=-O3
+#cython: language_level=3
+
+# This example uses cythonmagic, a IPython magic command interface for
+# interactive work with Cython, and %%cython to compile and import a 
+# JupyterLab notebook cell with Cython code
+import numpy as np
+
+a = np.zeros((8, 8), np.double, 'F')
+for _ in range(8):
+    a += 1
+print(a)
+\end{lstlisting}
+
+%
+%
+%
+%----------------------------------------
+\section{Numba}
+%----------------------------------------
+
+Numba \cite {Marowka2018} is usually employed as a JIT (just-in-time compiler) that converts a subset of Python and NumPy library functions into optimized machine code using the LLVM compiler infrastructure project \cite {Lattner2004, Lam2015}. LLVM is a collection of modular, reusable compiler and toolchain technologies, which began development in 2000 at the University of Illinois at Urbana-Champaign, and which can be used, as in Numba, to translate into machine code, to run on CPU or GPU. \autoref {fig_numba} shows the diagram representing the phases of interpretation and JIT compilation of Numba. 
+
+    \FIGURE [.6] [1mm] {Diagram of Numba JIT interpretation and compilation phases.} {Adapted from \citeonline {Lam2019}.} {fig_numba}
+
+Numba is available in the Python Anaconda distribution, and allows optimized code generation, with generally only minor changes to the original Python code. LLVM currently supports compilation of languages such as Ada, C/C++, D, Delphi, F90, Haskell, Julia, Objective-C, Rust, Swift, among others. It is based on converting the code to its own intermediate representation (IR – Intermediate Representation), which is strongly typed and follows the RISC standard (Reduced Instruction Set Computing). 
+
+Most HPC approaches for Python employ of AOT (ahead-of-time) compilers, i.e., using code that was compiled before execution, but besides AOT, Numba also supports JIT (just-in-time) compilation during the program execution. One of the advantages of JIT compilation is portability to a different machine, with the Numba compiler producing code optimized for the specific architecture. One of the reasons for using Numba with AOT compilation is to use it on machines that may not have the Numba compiler installed. 
+
+It is important to stress the different procedure for using Numba with JIT or AOT compilation. JIT is the preferred form as it allows for portable code that employs machine-optimized Numba compilation. In the case of JIT, specific decorators must be included in the original compute-intensive Python functions in order to signal the Numba compiler in execution time. In the case of AOT, it is adopted the standard approach of compiling these functions and wrapping them into a standard Python library. Numba also allows execution using a GPU, since it supports part of the Nvidia CUDA API, requiring as usual the definition of a kernel function that to be executed in the GPU, but using Python language, instead of using the CUDA extensions. 
+
+%
+%
+%
+%----------------------------------------
+\subsection{GPU in short}
+%----------------------------------------
+
+In this work, just a few test cases were executed using GPU, and thus this section contains a short introduction to such accelerators.
+
+As shown in \autoref {fig_cuda}, the GPU is the device (or processing accelerator) composed of hundreds of cores and having its own memory. As any accelerator, the GPU is part of the computing node, called the host. Typically, a node has two multicore processors (CPUs), and one or more GPUs. The kernel function contains the instructions to be executed in the GPU cores. Input data (operands) must be copied from the main memory to the GPU memory, and after execution, output data (results) must be copied from the GPU memory to the main memory. These copies in both directions imply in significant overheads that penalize GPU performance. There are schemes to minimize such overhead, but are out of the scope of this work. The architecture of the GPU is composed by a set of streaming multiprocessors (SM), each one composed of the same number of cores. There is a global GPU memory, but also each SM have its own memory, and there are levels of cache between the global and the SM memories.
+ 
+    \FIGURE [.4] [1mm] {GPU processing flow.} {Adapted from \citeonline {Li2015}.} {fig_cuda}
+
+    \FIGURE [.6] [1mm] {Execution illustrating blocks of 15 threads.} {Adapted from \citeonline {Daniel2010}.} {fig_gputhreads}
+
+The GPU parallelization of the kernel function is achieved by mapping the problem domain into blocks of threads. The blocks are then divided into warps of usually 32 threads. Warps of the same block are assigned to one of the streaming multiprocessors of the GPU (\autoref {fig_gputhreads}). The single-instruction multiple-threads (SIMT) paradigm models the GPU execution, since threads of the same warp are executed simultaneously. Optimized GPU execution requires dividing the domain into blocks according to the GPU architecture, i.e., taking into account the number of SMs, and to minimize memory traffic between host and device.
+
+%
+%
+%
+%----------------------------------------
+\section{F2PY}
+\label{sec_apprf2py}
+%----------------------------------------
+
+F2PY (F90 for Python) allows wrapping existing optimized F90/C compiled code into a Python library \cite {Peterson2009}. Thus, it allows reuse of F90/C optimized code. However, if such code is not available, the original compute-intensive part of the Python code can be rewritten in F90/C, and wrapped into a Python library by F2PY. F2PY is part of the NumPy library. The \autoref {lst_f2py} shows an excerpt of F2PY code.
+
+\begin{lstlisting}[float=htb, language={fortran}, label={lst_f2py}, caption={Excerpt of F2PY code.}]
+%%fortran
+! This example uses fortranmagic in a JupyterLab notebook cell, which 
+! compiles and imports symbols from a cell with Fortran code, using F2PY.
+subroutine example(a, b, c)
+    real, intent(in)  :: a, b
+    real, intent(out) :: c
+    c = a + b
+end subroutine example
+\end{lstlisting}
+
+%
+%
+%
+%----------------------------------------
+\section{Pandas}
+%----------------------------------------
+
+Pandas \cite {McKinney2011} is a package for working with relational or labeled data for data analysis and manipulation, featuring optimized manipulation of numerical tables, spreadsheets, relational databases and time series. Pandas is based on the use of DataFrame objects, providing a high level of abstraction for reading, manipulating, aggregating, and displaying data. Pandas includes statistical and other data functions, allows the importing/exporting of data from/to different file formats (CSV, QSL, Microsoft Excel, and others), and handling of missing data, filtering, reshaping, rotating, or indexing data, besides handling time series data. Pandas is performance-optimized as it includes compute-intensive parts written in Cython, and is built on top of NumPy. The \autoref {lst_pandas} shows an excerpt of Pandas code.
+
+\begin{lstlisting}[float=htb, language={Python}, label={lst_pandas}, caption={Excerpt of Pandas code.}]
+import pandas as pd
+
+# Create and display a DataFrame
+df = pd.DataFrame({'Name' : ['Robert', 'John', 'Michael'],
+                   'Rank' : [2, 3, 4]})
+display(df)
+\end{lstlisting}
+
+%
+%
+%
+%----------------------------------------
+\section{pyFFTW}
+\label{sec_apprfftw}
+%----------------------------------------
+
+pyFFTW \cite {Gomersall2021} is a Python library, which is a wrapper for the standard C-language FFTW – Fast Fourier Transform in the West (FFTW) \cite {Frigo1998}, a library developed at the Massachusetts Institute of Technology (MIT). The pyFFTW library performs a planning and configuration step before calculating the FFT, in order to optimize the processing performance. Consequently, pyFFT is more efficient than the simpler NumPy FFT standard module, for instance. The \autoref {lst_pyfftw} shows an excerpt of pyFFTW code.
+
+\begin{lstlisting}[float=htb, language={Python}, label={lst_pyfftw}, caption={Excerpt of pyFFTW code.}]
+import numpy as np, pyfftw as pf
+
+# Create data
+data = [1.7, 0.9, 0.0, -0.9, -1.7, -2.6]
+
+# FFT transform
+result = pf.interfaces.numpy_fft.fftn(data)
+
+# Show the result
+print(result)
+\end{lstlisting}
+
+%
+%
+%
+%----------------------------------------
+\section{mpi4py-fft}
+\label{sec_apprmfft}
+%----------------------------------------
+
+Mpi4py-fft \cite {Mortensen2019}, like pyFFTW, is a Python library for calculating Fast Fourier Transforms (FFTs), but it allows parallelization through MPI to Python (mpi4py), and the use of large multidimensional arrays. Similarly to pyFFTW, it is also a wrapper for the standard C-language FFTW, developed at MIT. In the case of parallelization, it allows choosing an algorithm that will be used for decomposing the domain of the multidimensional array, for example dividing the data into slabs with convenient dimensions to be assigned to the MPI processes. Mpi4py-fft requires an installed and configured MPI library. Conda, an environment and package management system, can be used to install the required mpi4py-fft dependencies. The \autoref {lst_mpifft} shows an excerpt of mpi4py-fft code.
+
+\begin{lstlisting}[float=htb, language={Python}, label={lst_mpifft}, caption={Excerpt of mpi4py-fft code.}]
+from mpi4py_fft import PFFT, newDistArray
+from mpi4py import MPI
+import numpy as np
+
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
+
+f = PFFT(comm, [8, 8, 8], dtype=np.complex128, backend='pyfftw')
+u = newDistArray(f, False)
+u[:,:,:] = np.random.randn(*u.shape)
+
+# FFT
+result = f.forward(u, normalize=False)
+\end{lstlisting}
+
+%
+%
+%
+%----------------------------------------
+\section{Joblib}
+\label{sec_apprjlib}
+%----------------------------------------
+
+The Scikit-learn library includes joblib \cite {Faouzi2020} among other options for parallelism. Joblib is a toolset for providing lightweight Python pipeline, aiming for simple parallelism and on-demand recalculation in the sense of storing to disk and reusing previous results, especially for large NumPy arrays. The user may choose a process-based or thread-based parallel backend, such as loky, Dask, or IPP. Joblib is based on a pipeline scheme that includes stages for tasks like I/O from/to the hard disk of operands and results, or mathematical operations. Such scheme allows a concurrent execution of different tasks in different chunks of an array, for instance. Therefore, loops through a large array are quickly executed, provided that the iterations are independent. In this work, it was used only in the Random Forest test case. The \autoref {lst_ipp} in the \autoref {sec_appripyt} also shows an excerpt of the joblib code.
+
+%
+%
+%
+%----------------------------------------
+\section{Loky}
+\label{sec_apprloky}
+%----------------------------------------
+
+Loky \cite {Kolesnikov2020} is a high-level process-based parallel library that is the default parallel backend for the joblib library of Scikit-learn, providing ease of use. Loky creates and manages a pool of worker processes to execute tasks in parallel. All processes are started using fork+exec on POSIX systems, limiting execution to a single computing node. In this work, it was used only in the Random Forest test case. The \autoref {lst_loky} shows an excerpt of loky code.
+
+\begin{lstlisting}[float=htb, language={Python}, label={lst_loky}, caption={Excerpt of loky code.}]
+from sklearn.ensemble import RandomForestClassifier
+import numpy as np
+
+# loky maximum number of concurrently running jobs
+num_cores = 6
+
+# Load data
+X_train = np.load("X_train.npy")
+y_train = np.load("y_train.npy")
+
+# Create a classifier
+# By default, loky is used
+clf = RandomForestClassifier(n_jobs=num_cores)
+
+# Learn on the train subset
+clf.fit(X_train, y_train)
+\end{lstlisting}
+
+%
+%
+%
+%----------------------------------------
+\section{CuPy}
+%----------------------------------------
+
+CuPy \cite {Nishino2017} is a NumPy/SciPy compatible library based on the CUDA toolkit to allow execution on GPUs. It is based on other libraries also developed for GPU execution, such as cuBLAS, cuDNN, cuRand, cuSolver, cuSPARSE, cuFFT and NCCL. CuPy API has the same API as Numpy/SciPy, and allows replacing standard code of these libraries by GPU-optimized code, thus providing a similar functionality. The \autoref {lst_cupy} shows an excerpt of CuPy code.
+
+\begin{lstlisting}[float=htb, language={Python}, label={lst_cupy}, caption={Excerpt of CuPy code.}]
+import cupy as cp
+
+a = cp.arange(10).reshape(2, 5).astype('d')
+b = a.sum(axis=1)
+print(b)
+\end{lstlisting}
+
+%
+%
+%
+%----------------------------------------
+\section{PARF}
+\label{sec_apprparf}
+%----------------------------------------
+
+PARF \cite {Boulesteix2012} is an F90 library for Random Forest classification developed by Goran Topić and Tomislav Šmuc, at the Informatics and Computing Center of the Ruđer Bošković Institute, Croatia. PARF is based on the algorithm developed by Leo Breiman (University of California, Berkeley) and Adele Cutler (Utah State University). The PARF library includes routines for data handling, Random Forest configuration, training analysis and data visualization. Input data must be done in the ARFF format (Attribute-Relation File Format) of the University of Waikato, New Zealand, an ASCII text format to describe instances and attributes of each database record. PARF is now obsolete, being superseded by new libraries like the Scikit-learn library. The PARF library source codes were written for the Intel F90 compiler, and used for the serial or MPI parallel versions.
+
+In the Random Forest test case of this work, the PARF library was directly called from the F90 amd F2PY serial and parallel implementations. In the case of the standard Python implementations, Cython and Numba implementations, the Scikit-learn library was used instead.  
+
+%
+%
+%
+%----------------------------------------
+\section{Optimization for NUMA}
+\label{sec_opitnuma}
+%----------------------------------------
+
+Similarly to current supercomputer shared-memory nodes, SDumont twin-processor nodes have the memory configured for NUMA (Non-UNiform Memory Access). Each processor has its local low-latency memory, composing a NUMA node, and there is an interconnection between processors to allow one processor to access the memory of the other, but with higher latency. \autoref {fig_numa} shows an example of a NUMA memory architecture for a processing node with two Intel Skylake processors \footnote{\url{http://www.nas.nasa.gov/hecc/support/kb/skylake-processors_550.html}}, similar to the ones in the SDumont Seq-X nodes (\autoref {sec_sdenviron}). NUMA optimization is intended to balance memory usage across processors to optimize memory access by assigning an equal number of threads/processes for the cores of each processor (or close to equal in the case of an odd number). An even 50\%-50\% distribution of processes among the processors is advisable, in order to avoid using all cores of one processor while using only a few of the remaining processor. Such unbalance may compromise memory access in the first processor, overloading its local memory. In order to avoid this issue, a specific flag may be required in the execution of the parallel program in the command line or in the job scheduler, if the default distribution does not provide such balance. 
+
+    \FIGURE [.9] [1mm] {Example of a processing node with two Intel Skylake processors with NUMA memory architecture (SP means Scalable Processor products of Intel).} {Nasa (2021).} {fig_numa}
+
+For instance, parallel executions performed with 16 processes in 24-core B710 or 48-core Seq-X nodes (\autoref {sec_sdenviron}), such number of processes may be unevenly distributed between the processors, for instance, as [12+4] in the B710 node, and [16+0] in the Seq-X node. In order to avoid unbalancing, the Slurm script must include the \textit {cpu\_bind} option with the attribute \textit {distribution=block:cyclic} as shown in the \autoref {lst_bind}.
+
+\begin{lstlisting}[float=htb, language={Bash}, label={lst_bind}, caption={Excerpt of Slurm script.}, basicstyle=\scriptsize]
+> srun  -n 16 ....  --cpu_bind=cores  --distribution=block:cyclic ...  [executable program] 
+\end{lstlisting}
+
+%
+%
+%
+%----------------------------------------
+\section{Python resources available on the SDumont}
+%----------------------------------------
+
+The SDumont computing environment provides two Python distributions, Anaconda and Intel, in addition to its default standard Python 2.7.5 version. In general, Anaconda is the most popular distribution, since it is free and open-source, including a multitude of over 7,500 packages for machine learning, data science, etc. It is also possible to install third-party packages through the use of the Conda environment and package manager. The following Anaconda distributions are available in the SDumont: anaconda2/2018.12 (Python 2.7.15), anaconda2/2019.10 (Python 2.7.16), anaconda3/2018.12 (Python 3.7.3), and anaconda3/2020.11 (Python 3.8.5). It is needed to load the corresponding operating system module.
+
+The Intel Python distribution \cite {Cielo2019} is a set of Python packages and libraries optimized for Intel processor architectures for scientific computing and data science applications. These optimizations are achieved by vectorization, multithreading and the use of Intel libraries designed to optimize packages like NumPy, SciPy and Scikit-learn. Intel Python includes compilers such as Numba and Cython, and libraries such as the Intel Math Kernel, Intel MPI, Intel Tread Building Blocks, and Intel Data Analytics Acceleration Library. The following  Intel Python distributions are available in the SDumont: Intel Parallel Studio XE (PSXE) 2016, 2017, 2018, 2019 (Python 3.6.8), and Python 3.7.7 in Intel PSXE 2020. It is also needed to load the chosen Intel PSXE operating system module, which may require to use an Intel batch file to configure the environment. 
+
+On both Anaconda and Intel Python distributions, in the case of a missing package, Conda allows using its stacking feature or nested activation to append such package without requiring to reinstall the full Python distribution. When selecting a particular Python distribution, it is important to check its compatibility with existing libraries and/or tools. For instance, some profiling metrics of the Intel profiler are not available when using the Anaconda distribution. Conda tools allow logging the list of employed packages and versions, in order to ensure portability to other Python environments.
+
+%
+%
+%
+%----------------------------------------
+\section{Using Python with the Slurm job scheduler}
+%----------------------------------------
+
+The Simple Linux Utility for Resource Management (Slurm) is a job scheduler used in SDumont and of common use in supercomputers and computer clusters (it may also be employed for cluster management). It is free and open source, being developed collaboratively by the Lawrence Livermore National Laboratory, and companies such as SchedMD, Linux NetworX, Hewlett Packard, and Groupe Bull, besides a large group of collaborators. Slurm allows to: (i) allocate resources such as computing nodes to users; (ii) start, execute, and monitor parallel jobs such as an MPI program on a set of allocated nodes; (iii) solve resource contention problems by managing a queue of pending jobs. It uses algorithms to optimize job allocation on the available computing nodes.
+
+In SDumont, parallel tasks are scheduled for execution using Slurm, by means of a script file that contains all settings, options, modules, paths, etc. required by Slurm to run the executable on the computing nodes. In the case of Python, the parallel implementations of this work employ Slurm with a configuration file specific for parallel execution using MPI or IPP (\autoref {sec_appripyt}). 
+
+In the case of MPI, each MPI process is an instance of the Python interpreter, reading the Python source code from the storage device in execution time. The computing environment must be configured using Conda prior to the parallel execution, and when the Python code ends, the MPI processes automatically terminate. In the case of IPP, the processes need to be explicitly terminated.
+
+%
+%
+%
+%----------------------------------------
+\section{Current use of Python in supercomputing environments}
+\label{sec_stateofart}
+%----------------------------------------
+
+This work has a similarity to the tutorial \textit {Python in HPC} \cite {Resch20} provided by the High Performance Computing (HPC) Group of the US National Institute of Health (NIH). The tutorial is aimed at those who are starting to use Python in an HPC environment, describing an example with pyOpenCL (a wrapper around OpenCL which is a framework for writing code for heterogeneous platforms) for GPU execution. There is also a discussion about disk access using Python, since it deals with small file read/write operations. Python fast code development as it is an interpreted and interactive language is emphasized, as well as the need of profiling the code to find performance bottlenecks before exploiting Python HPC resources.
+
+Another tutorial was presented at the Exascale Computing Project 2nd Annual Meeting (2018), \textit {Python for HPC} \cite {Scullin2018}. This tutorial aims to support the use of Python in some US governmental supercomputing facilities. The tutorial summarizes HPC approaches for Python, some of them employed in this work, as well as the stressing the convenience of using Python for both prototyping and implementing production software, and of using F90 to optimize high-performance kernels. There is also a discussion about the growth of the use of Python in science and technology projects, as Python is widely available in US HPC centers. Basic guidelines for HPC Python are also given to avoid excessive disk usage, and to perform code profiling or even applying the Roofline model to check if a given code is memory-bound or compute-bound for execution in the considered supercomputer.
+
+Besides these tutorials, some articles in recent years emphasize the use of Python programming with HPC resources, as follows. 
+
+\begin{itemize}
+
+\item \textit {Towards Green Aviation with Python at Petascale} \cite {Vincent2016} shows the optimization of aircraft aerodynamics using Computational Fluid Dynamics (CFD) by means of the open source framework Python PyFR \cite {Witherden2014}. PyFR is portable and compatible with many architectures, including AMD and Nvidia CPUs and GPUs. It uses execution time code generation to port compute-intensive kernels (parts of code that demand 50\% to 85\% of the processing time) from the Python intermediate language to languages such as CUDA, OpenCL, ROCm, or OpenMP/C, according to the available architecture that may combine CPUs and accelerators. Kernel specification is done by the Python Mako template engine library. It's approximately 8,000 lines of code are mainly written in the Python language. It is scalable from a laptop to a supercomputer by means of the MPI communication library. The article cites the use of Python as rapid application development of non-critical parts of code, while the overhead to execute compute-intensive kernels is minimal, generally due to the call time of an external function. The article also highlights an issue discussed in this work, about the trade-off between exploring the GPU processing power and writing code for the GPU. Due to the processing power of some GPUs, porting compute-intensive pieces of code also to CPU-executable kernel functions (hybrid processing) may require additional coding effort and complexity that may not be worth the gain in processing performance. In this way, running the compute-intensive part on the GPU can end up leaving many processor cores (CPUs) idle. There are some libraries intended to provide easy programming for GPU, like OpenACC \footnote{\url{http://www.openacc.org}}, but usually do not provide the same performance as the CUDA language.
+
+\item \textit {Performance Analysis of Parallel Python Applications} \cite {Wagner2017} is about a new Python profiler, the Extrae performance monitor, which provides event-based tracing. It can be applied to Python codes with parallel backends that are thread-based (OpenMP or pthreads codes), process-based (MPI codes) or hybrid (MPI+OpenMP). It aims at obtaining profiling data as comprehensive as such provided by standard C/F90 profilers. Extrae was evaluated for an electronic structure simulation Python package used in materials science. 
+
+\item \textit {Performance evaluation of Python parallel programming models: Charm4Py and mpi4py} \cite {Fink2021} compares mpi4py, already described in this chapter, and Charm4Py, a similar model that is based on the Charm++ object-oriented framework, which creates virtual processes to be assigned to MPI ranks. The comparison employs a set of benchmarks that include a 2D stencil problem, similar to the first test case of this work, and was executed using both CPUs and GPUs in two supercomputers, Summit and Stampede2 (respectively, \#2 and \#44 of the Top500 list of November 2021). Parallel scalability, granularity and load balance aspects of the tests are discussed.
+
+\item \textit {Productivity, Portability, Performance: Data-Centric Python} \cite {Ziogas2021} proposed and tested a three-layer architecture for HPC Python, composed of data-centric Python, data-centric intermediate language that provides automatic optimizations, and the processing hardware, that may include accelerators such as GPUs or FPGAs. It includes HPC extensions over annotated Python code, and thus an original Python code must be rewritten to add such annotations, but maintaining portability. The proposed approach was tested on the Piz Daint supercomputer (\#20 of the Top500 list of November 2021) using a set of benchmarks and different problem sizes, showing its better parallel efficiency and scalability, when compared to other approaches such as Dask.  
+
+\item \textit {Python and HPC for High Energy Physics Data Analyzes} \cite {Sehrish2017} shows a test case using data from high energy physics experiments, which can easily reach up to 10 petabyte. Data is generated by a detector of subatomic particles of the Fermi National Accelerator Laboratory in dark matter research. Tabular data is provided in the HDF5 format and read into Pandas DataFrames. MPI for Python (mpi4py) is employed for parallelization, and code was executed in multicore processor nodes with/without Intel Phi accelerators.
+
+\item \textit {GPU Computing with Python: Performance, Energy Efficiency and Usability} \cite {Holm2020} shows performance tests using codes and libraries for processing accelerators: CUDA for GPUs and OpenCL for GPUs and others (FPGA, DSP, etc.). The codes were written in C++ with the CUDA or OpenCL libraries, or in Python with the PyCUDA or PyOpenCL libraries. It was intended to make comparisons between the CUDA and OpenCL versions, and also between their corresponding Python versions using PyCUDA and PyOpenCL. Additional comparisons were performed for different GPUs. Some test cases have shown that the overhead of using Python is negligible, for instance comparing a PyCUDA to a CUDA version.
+
+\item \textit {Constructing a Supercomputing Framework using Python for Hybrid Parallelism and GPU Cluster} \cite {Chen2011} is about a new HPC Python software framework, called SOLVCON, for solving linear and nonlinear hyperbolic partial differential equations for Computational Fluid Dynamics (CFD) applications. Hybrid parallelism refers to execution using both CPUs and GPUs. SOLVCON also provides support for parallel I/O and visualization of the numerical results. It is organized in 5 layers that include a total of 27 modules. In typical CFD applications executed by SOLVCON, 99\% of the execution time corresponds to spatial loops, which are implemented using C and/or CUDA languages. Specific SOLVCON modules provide (MPI) process-based or thread-based parallelization. The proposed approach allows writing a Python code integrating codes of other languages, libraries and tools, while obtaining a good parallel scalability. 
+
+\end{itemize}

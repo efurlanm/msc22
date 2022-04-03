@@ -1,0 +1,250 @@
+\documentclass[%
+%%% PARA ESCOLHER O ESTILO TIRE O SIMBOLO %(COMENTÁRIO)
+%SemVinculoColorido,
+%SemFormatacaoCapitulo,
+%SemFolhaAprovacao,
+%SemImagens,
+%CitacaoNumerica, %% o padrão é citação tipo autor-data
+%PublicacaoDissOuTese, %% (é também o "default") com ficha catal. e folha de aprovação em branco. Caso tenha lista de símbolos e lista de siglas e abreviaturas retirar os comentários dos arquivos siglas.tex e abreviaturasesiglas.tex. Retirar também os comentários indicados nesse arquivo, nos includes
+%PublicacaoArtigoOuRelatorio, %% texto sequencial, sem quebra de páginas nem folhas em branco
+%PublicacaoProposta, %% igual tese/dissertação, mas sem ficha catal. e fol. de aprov.
+%PublicacaoLivro, %% com capítulos
+%PublicacaoLivro,SemFormatacaoCapitulo, %% sem capítulos
+%english,portuguese %% para os documentos em Português com abstract.tex em Inglês
+portuguese,english %% para os documentos em Inglês com abstract.tex em Português
+,LogoINPE % comentar essa linha para fazer aparecer o logo do Governo
+,CCBY % as opções de licença são: CCBY, CCBYSA, CCBYND, CCBYNC, CCBYNCSA, CCBYNCND, GPLv3 e INPECopyright
+]{tdiinpe220101}
+%]{../../../../../iconet.com.br/banon/2008/03.25.01.19/doc/tdiinpe}
+
+% PARA EXIBIR EM ARIAL TIRAR O COMENTÁRIO DAS DUAS LINHAS SEGUINTES
+%\renewcommand{\rmdefault}{phv} % Arial
+%\renewcommand{\sfdefault}{phv} % Arial
+
+% PARA PUBLICAÇÕES EM INGLÊS:
+% renomear o arquivo: abnt-alf.bst para abnt-alfportuguese.bst
+% renomear o arquivo: abnt-alfenglish.bst para abnt-alf.bst
+
+% LATEX FONT SIZES
+% command           10pt    11pt    12pt
+% \tiny             5       6       6
+% \scriptsize       7       8       8
+% \footnotesize     8       9       10
+% \small            9       10      10.95
+% \normalsize       10      10.95   12
+% \large            12      12      14.4
+% \Large            14.4    14.4    17.28
+% \LARGE            17.28   17.28   20.74
+% \huge             20.74   20.74   24.88
+% \Huge             24.88   24.88   24.88
+
+% FLOAT: h=here, t=top, b=bottom, p=(page of floats)
+% ex.: \begin{figure}[ht]
+
+%%% Pacotes já previamente carregados: 
+%%% ifthen,calc,graphicx,color,inputenc,babel,hyphenat,array,setspace,bigdelim,multirow,supertabular,tabularx,longtable,lastpage,lscape,rotate,caption2,amsmath,amssymb,amsthm,subfigure,tocloft,makeidx,eso-pic,calligra,hyperref,ae,fontenc
+%%% insira neste campo, comandos de LaTeX %%%
+%%% \usepackage{_exemplo_}
+%\watermark{Revisão No. ##} %% use o comando \watermark para identificar a versão de seu documento
+%% comente este comando quando for gerar a versão final
+%\usepackage{rotating}	% rotating of text and tables
+%\usepackage{dsfont}	% Math symbols
+%\usepackage{comment}
+%\usepackage{lipsum}     % to check formatting
+%\usepackage{afterpage}  % \afterpage{\clearpage}
+%----------------------------------------
+\usepackage{microtype}  % better text justification
+\usepackage{booktabs}   % enhances the quality of tables
+%----------------------------------------
+\usepackage{listings}
+%\renewcommand{\lstlistingname}{Listagem}
+\lstdefinestyle{mystyle}{
+%backgroundcolor=\color{backcolour},
+commentstyle=   \color{codegray},
+keywordstyle=[1]\color{islamicgreen}\bfseries,
+keywordstyle=[2]\color{patriarch},
+keywordstyle=[3]\color{red-brown},
+identifierstyle=\color{richelectricblue},
+stringstyle=    \color{red-violet},
+numberstyle=\tiny\color{codegray},% line numbering
+basicstyle          = \ttfamily\footnotesize,
+frame               = single,
+rulecolor			= \color{codegray},
+columns             = fullflexible,
+breakatwhitespace   = false,
+breaklines          = true,
+keepspaces          = true,
+showspaces          = false,
+showstringspaces    = false,
+inputencoding       = utf8,
+extendedchars       = true,
+literate            =
+{á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+{Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+{à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+{À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+{ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+{Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+{â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+{Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+{œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+{ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+{€}{{\EUR}}1 {£}{{\pounds}}1 {ã}{{\~a}}1 {Ã}{{\~A}}1,
+showtabs=false,
+tabsize=2,
+numbers=left,
+numbersep=5pt,
+aboveskip=2pt,
+belowskip=9pt,
+belowcaptionskip=\bigskipamount,
+% captionpos=b,
+}
+\lstset{}
+\lstset{style=mystyle}
+%----------------------------------------
+\graphicspath{{img/}}
+\pdfstringdefDisableCommands{ \def\\{} }% evita erro token not allowed in a PDF
+%----------------------------------------
+\definecolor{blue}{RGB}{66, 133, 244}% #4285f4
+\definecolor{red}{RGB}{234, 67, 53}% #ea4335
+\definecolor{orange}{RGB}{251, 188, 4}% #fbbc04
+\definecolor{darkorange}{RGB}{255, 109, 1}% #ff6d01
+\definecolor{green}{RGB}{52, 168, 83}% #34a853
+\definecolor{tropicalrainforest}{rgb}{0.0, 0.46, 0.37}% tropicalrainforest
+\definecolor{cyan}{RGB}{70, 189, 198}% #46bdc6
+\definecolor{gray}{gray}{.50}
+\definecolor{islamicgreen}{rgb}{0.0, 0.56, 0.0}
+\definecolor{light-gray}{gray}{.85}
+\definecolor{codegray}{gray}{0.5}
+\definecolor{richelectricblue}{rgb}{0.03, 0.57, 0.82}
+\definecolor{violet}{RGB}{238, 130, 238}
+\definecolor{red-violet}{rgb}{0.78, 0.08, 0.52}
+\definecolor{patriarch}{rgb}{0.5, 0.0, 0.5}
+\definecolor{red-brown}{rgb}{0.65, 0.16, 0.16}
+\definecolor{backcolour}{rgb}{0.97, 0.97, 0.97}
+\definecolor{alt}{rgb}{0.78, 0.08, 0.52}% red-violet
+\newcommand{\ALT}[1]{{\color{alt}#1}}
+%----------------------------------------
+%\definecolor{olive}{rgb}{0.5, 0.5, 0.0}% olive
+%\definecolor{green}{rgb}{0.0, 0.46, 0.37}
+%\definecolor{alt}{rgb}{0.66,0.66,0.66}% #A9A9A9
+%\definecolor{alt}{rgb}{0.0, 0.5, 0.0}%
+%\definecolor{armygreen}{rgb}{0.29, 0.33, 0.13}% armygreen
+%\definecolor{britishracinggreen}{rgb}{0.0, 0.26, 0.15}% britishracinggreen
+%\definecolor{darkgreen}{rgb}{0.0, 0.2, 0.13}% darkgreen
+%\definecolor{darkjunglegreen}{rgb}{0.1, 0.14, 0.13}% darkjunglegreen
+%----------------------------------------
+\newcommand{\fcred}[1]{\textbf{\color{red}#1}}
+\newcommand{\fcgreen}[1]{\textbf{\color{green}#1}}
+\newcommand{\fcblue}[1]{\textbf{\color{blue}#1}}
+\newcommand{\fcorange}[1]{\textbf{\color{orange}#1}}
+\newcommand{\fcdarkorange}[1]{\textbf{\color{darkorange}#1}}
+\newcommand{\fccyan}[1]{\textbf{\color{cyan}#1}}
+\newcommand{\fcgray}[1]{\textbf{\color{gray}#1}}
+%----------------------------------------
+\newcommand{\no}[0]{\textsuperscript{\b{o}}}
+
+% Makes tables and figures the same type of float, so that they are placed in the same queue, and hence appear in the order of appearance. http://tex.stackexchange.com/questions/127742/place-floating-tables-and-figures-in-order-of-appearance
+\makeatletter
+\let\ftype@table\ftype@figure
+\makeatother
+
+\newcommand{\TABLE}[4][6pt]{%
+\begin{table}[!hbt]%
+%\vspace{4mm}
+\caption{#2}%
+\begin{center}%
+\footnotesize%
+\setlength{\tabcolsep}{#1}%
+\input{tab/#4}%
+\end{center}%
+\legenda{}%
+\vspace{-1mm}%
+\FONTE{#3}%
+\label{#4}%
+\vspace{-4mm}%
+\end{table}%
+}
+
+\newcommand{\FIGURE}[1][.95]{%
+\def\ArgI{#1}%
+\FIGURERELAY}
+\newcommand{\FIGURERELAY}[4][-2mm]{%
+\begin{figure}%
+\vspace{-3mm}%
+\caption{#2}%
+\vspace{2mm}%
+\centering%
+\includegraphics[width=\ArgI\linewidth]{#4}%
+\legenda{}%
+\vspace{#1}%
+\FONTE{#3}%
+\label{#4}%
+\vspace{-4mm}%
+\end{figure}%
+}
+
+% = capital autoref =
+% http://tex.stackexchange.com/questions/446748/how-to-redefine-section-and-subsection-in-autoref-names
+\addto\extrasenglish{%
+\renewcommand\chapterautorefname{Chapter}%
+\renewcommand\sectionautorefname{Section}%
+\renewcommand\subsectionautorefname{Subsection}%
+\renewcommand\subsubsectionautorefname{Subsubsection}%
+}
+
+\input{doc/configuration} %% faça as modificações pertinentes no arquivo configuracao.tex
+
+%\makeindex  %% gera INDEX, caso haja algum termo indexado no texto
+
+\begin{document} %% início do documento %% não mexer
+
+\sloppy	% forces overflowing words to move to the next line
+%\marcaRegistrada{}	% comando opcional usado para informar abaixo da ficha catalográfica sobre marca registrada
+\marcaRegistrada{Informar aqui sobre marca registrada (a modificação desta linha deve ser feita no arquivo publicacao.tex).}
+%\financiamento{}	% comando opcional usado para informar abaixo da ficha catalográfica sobre fontes financiadoras
+%\financiamento{Informar aqui sobre fontes financiadoras (a modificação desta linha deve ser feita no arquivo publicacao.tex).}
+%\financiamento{O presente trabalho foi realizado com apoio da Coordenação de Aperfeiçoamento de Pessoal de Nível Superior - Brasil (CAPES) - Código de Financiamento 001.}
+%\financiamento{This study was financed in part by the Coordenação de Aperfeiçoamento de Pessoal de Nível Superior - Brasil (CAPES) - Finance Code 001.}
+\hypersetup{pageanchor=false} % evita problemas com nro. de p.
+\maketitle % não alterar, gera páginas obrigatórias (folha de rosto, ficha catalográfica e folha de aprovação)
+\hypersetup{pageanchor=true}
+% Comente as linhas opcionais abaixo caso não as deseje
+% \include{./docs/epigrafe}% Opcional
+%\include{./docs/dedicatoria}% Opcional
+
+\include{doc/acknowledgments} %% Opcional
+\include{doc/abstract-us} %% obrigatório
+\include{doc/abstract-pt} %% obrigatório
+\includeListaFiguras %% obrigatório caso haja mais de 3 figuras, gerado automaticamente
+\includeListaTabelas %% obrigatório caso haja mais de 3 tabelas, gerado automaticamente
+
+%\include{./docs/abreviaturasesiglas} %% opcional. Altere o arquivo siglaseabreviaturas.tex
+%\include{./docs/simbolos} %% opcional. Altere o arquivo simbolos.tex
+
+\includeSumario     %% obrigatório, gerado automaticamente
+\inicioIntroducao   %% não altere este comando
+%% insira quantos capítulos desejar com o seguinte comando:
+%\include{_pasta_do_arquivo_/_meu_arquivo_} %%sem a extensão
+%% note que deverá haver um arquivo _meu_arquivo_.tex (com extensão) no diretório _pasta_do_arquivo_
+
+\include{doc/ch1-2}
+\include{doc/ch3}
+\include{doc/ch4}
+\include{doc/ch5}
+\include{doc/ch6}
+
+%% Bibliografia %% não alterar %% obrigatório
+\bibliography{bib/references} %% aponte para seu arquivo de bibliografia no formato bibtex (p.ex: referencia.bib)
+%\include{./docs/glossario} %% insira os termos do glossário no arquivo glossario.tex %% opcional
+\inicioApendice
+\include{doc/appendixA}
+\include{doc/appendixB}
+\include{doc/appendixC}
+\include{doc/appendixD}
+\inicioAnexo
+\include{doc/annexA}
+
+%\inicioIndice
+\include{contracapa}
+\end{document}

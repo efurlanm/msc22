@@ -1,0 +1,42 @@
+%   _    _         _                  _   
+%   / \  | |__  ___| |_ _ __ __ _  ___| |_ 
+%   / _ \ | '_ \/ __| __| '__/ _` |/ __| __|
+%  / ___ \| |_) \__ \ |_| | | (_| | (__| |_ 
+% /_/   \_\_.__/|___/\__|_|  \__,_|\___|\__|
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ABSTRACT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{abstract}
+
+%% neste arquivo abstract.tex
+%% o texto do resumo e as palavras-chave têm que ser em Inglês para os documentos escritos em Português
+%% o texto do resumo e as palavras-chave têm que ser em Português para os documentos escritos em Inglês
+%% os nomes dos comandos \begin{abstract}, \end{abstract}, \keywords e \palavrachave não devem ser alterados
+
+%\selectlanguage{english}	%% para os documentos escritos em Português
+\selectlanguage{portuguese}	%% para os documentos escritos em Inglês
+
+\hypertarget{estilo:abstract}{} %% uso para este Guia
+
+
+Algumas das abordagens de computação de alto desempenho mais comuns baseadas em MPI disponíveis no ambiente de programação Python do supercomputador LNCC Santos Dumont são comparadas usando três casos de teste selecionados. Python inclui bibliotecas específicas, ferramentas de desenvolvimento, implementações, documentação e recursos de otimização ou paralelização. Ele fornece uma maneira direta de permitir que programas sejam escritos com um alto nível de abstração, mas os recursos de paralelização para explorar vários núcleos, processadores ou aceleradores, como GPUs, são diversos e podem não ser facilmente selecionáveis pelo programador. Este trabalho compara abordagens comuns em Python para se obter processamento de alto desempenho desempenho utilizando três casos de teste: um problema de transmissão de calor bidimensional resolvido por diferenças finitas, uma transformada rápida de Fourier tridimensional aplicada a dados sintéticos e uma classificação de asteróides por floresta aleatória. As correspondentes implementações seriais e paralelas em Fortran 90 foram tomadas como referência para comparação de desempenho nesses casos de teste. Além dos resultados de desempenho, inclui-se uma discussão sobre o compromisso entre facilidade de programação e desempenho de processamento. Este trabalho pretende ser uma introdução para o uso de recursos de processamento de alto desempenho baseados em MPI para Python.
+
+
+% ANTIGO:
+% Algumas das soluções mais comuns baseadas em processamento de alto desempenho disponíveis no ambiente de programação Python e no supercomputador Santos Dumont do LNCC, foram comparadas utilizando três casos de teste selecionados. O ambiente Python inclui bibliotecas específicas, ferramentas de desenvolvimento, implementações prontas, documentação e recursos para otimização/paralelização de código. Provê uma maneira direta de programar num nível de abstração alto, mas recursos de paralelização para explorar múltiplos núcleos de processadores ou aceleradores como GPUs são diversos e podem não ser facilmente escolhidos pelo programador. Este trabalho compara abordagens comuns em Python para aumentar o desempenho de processamento. Três casos de teste são apresentados: método de diferenças finitas para resolver equações diferenciais parciais resultantes de equações de Poisson, método de transformada discreta de Fourier tridimensional, e método de floresta de decisão aleatória para aprendizado conjunto. As correspondentes implementações sequencial e paralela em Fortran 90 foram tomadas como referência, de modo a comparar seu desempenho com algumas implementações sequenciais e paralelas desses algoritmos. Além dos resultados de desempenho de processamento, foi incluída uma discussão sobre a solução de compromisso entre facilidade de programação versus desempenho de processamento. Teste trabalho tem a intenção de servir de guia introdutório para o uso de recursos de alto desempenho baseados em computação paralela no ambiente Python.
+
+
+
+
+\keywords{%
+	\palavrachave{Processamento de alto desempenho}%
+	\palavrachave{Ambiente de programação Python}%
+	\palavrachave{Computação paralela}%
+}
+
+%\selectlanguage{portuguese}    %% para os documentos escritos em Português
+\selectlanguage{english}        %% para os documentos escritos em Inglês
+
+\end{abstract}

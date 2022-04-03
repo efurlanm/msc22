@@ -1,0 +1,19 @@
+\begin{tabular}{lrrrrrrr}\toprule
+\multicolumn{7}{c}{\textbf{Processing time (seconds)}} \\
+\cline{2-7}\vspace{-9pt} & & & & & & \\
+&\textbf{Serial} &\textbf{1 (1)} &\textbf{4 (2)} &\textbf{9 (5)} &\textbf{16 (8)} &\textbf{36 (18)} \\
+\hline\vspace{-9pt} & & & & & & \\
+\textbf{F90 ref.} &19.25 & & & & & \\
+\textbf{Numba-GPU} &2.25 &51.48 &15.10 &6.95 &6.49 &8.68 \\
+\textbf{Kernel} &0.28 &0.24 &0.26 &0.30 &0.30 &0.35 \\
+\textbf{Transf} &0.27 &51.20 &13.97 &5.81 &4.26 &6.36 \\
+\hline\vspace{-9pt} & & & & & & \\
+\multicolumn{7}{c}{\textbf{Speedup}} \\
+\cline{2-7}\vspace{-9pt} & & & & & & \\
+\textbf{Numba-GPU} &8.57 &0.37 &1.27 &2.77 &2.97 &2.22 \\
+\hline\vspace{-9pt} & & & & & & \\
+\multicolumn{7}{c}{\textbf{Parallel efficiency}} \\
+\cline{2-7}\vspace{-9pt} & & & & & & \\
+\textbf{Numba-GPU} &8.57 &0.37 &0.32 &0.31 &0.19 &0.06 \\
+\bottomrule
+\end{tabular}

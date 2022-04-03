@@ -1,0 +1,27 @@
+\begin{tabular}{lrrrrrrr}\toprule
+\textbf{Implemen-} & &\multicolumn{5}{c}{\textbf{Number of MPI processes}} \\
+\cline{3-7}\vspace{-10pt} & & & & & & \\
+\textbf{tation} &\textbf{Serial} &\textbf{1} &\textbf{4} &\textbf{9} &\textbf{16} &\textbf{36} \\
+\toprule\vspace{-11pt} & & & & & & \\
+\multicolumn{7}{c}{\textbf{\textit{Processing time (seconds)}}} \\
+\midrule[0.1pt]\vspace{-10pt} & & & & & & \\
+\textbf{F90/B715} &\fcblue{19.25} &21.91 &7.34 &6.15 &4.68 &2.13 \\
+\textbf{F90/Seq-X} &15.82 &\fcred{15.64} &\fcred{4.13} &\fcred{2.09} &\fcred{1.48} &\fcred{1.21} \\
+\textbf{Numba-GPU/B715} &9.35 &104.82 &27.25 &11.71 &7.92 &4.35 \\
+\textbf{Numba-GPU/Seq-X} &\fcred{2.25} &49.54 &15.16 &6.91 &6.72 &9.09 \\
+\toprule\vspace{-11pt} & & & & & & \\
+\multicolumn{7}{c}{\textbf{\textit{Speedup}}} \\
+\midrule[0.1pt]\vspace{-10pt} & & & & & & \\
+\textbf{F90/B715} &1.00 &0.88 &2.62 &3.13 &4.11 &9.04 \\
+\textbf{F90/Seq-X} &1.22 &\fcred{1.23} &\fcred{4.66} &\fcred{9.22} &\fcred{13.02} &\fcred{15.94} \\
+\textbf{Numba-GPU/B715} &2.06 &0.18 &0.71 &1.64 &2.43 &4.43 \\
+\textbf{Numba-GPU/Seq-X} &\fcred{8.57} &0.39 &1.27 &2.79 &2.87 &2.12 \\
+\toprule\vspace{-11pt} & & & & & & \\
+\multicolumn{7}{c}{\textbf{\textit{Parallel efficiency}}} \\
+\midrule[0.1pt]\vspace{-10pt} & & & & & & \\
+\textbf{F90/B715} &1.00 &0.88 &0.66 &0.35 &0.26 &0.25 \\
+\textbf{F90/Seq-X} &1.22 &\fcred{1.23} &\fcred{1.17} &\fcred{1.02} &\fcred{0.81} &\fcred{0.44} \\
+\textbf{Numba-GPU/B715} &2.06 &0.18 &0.18 &0.18 &0.15 &0.12 \\
+\textbf{Numba-GPU/Seq-X} &\fcred{8.57} &0.39 &0.32 &0.31 &0.18 &0.06 \\
+\bottomrule
+\end{tabular}
