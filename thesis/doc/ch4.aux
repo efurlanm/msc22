@@ -1,0 +1,152 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\@writefile{toc}{\contentsline {chapter}{\numberline {4}TEST CASES PARALLEL PERFORMANCE}{47}{chapter.4}\protected@file@percent }
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\newlabel{ch_analysis}{{4}{47}{TEST CASES PARALLEL PERFORMANCE}{chapter.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.1}Test environment}{47}{section.4.1}\protected@file@percent }
+\newlabel{sec_analintr}{{4.1}{47}{Test environment}{section.4.1}{}}
+\newlabel{eq_spd}{{4.1}{47}{Test environment}{equation.4.1.1}{}}
+\newlabel{eq_ep}{{4.2}{48}{Test environment}{equation.4.1.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1.1}The Santos Dumont computing environment}{48}{subsection.4.1.1}\protected@file@percent }
+\newlabel{sec_sdenviron}{{4.1.1}{48}{The Santos Dumont computing environment}{subsection.4.1.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1.2}Compiler evaluation for the Stencil test case}{49}{subsection.4.1.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4.1}{\ignorespaces Serial and parallel elapsed times (seconds) (Stencil test case, B710 or Seq-X nodes) as a function of the number of processes, for the different F90 and Numba implementations. Best times are highlighted in \textbf  {\color  {red}red} for Seq-X, and in \textbf  {\color  {blue}blue} for B710.}}{50}{table.4.1}\protected@file@percent }
+\newlabel{tab_fort}{{4.1}{50}{Serial and parallel elapsed times (seconds) (Stencil test case, B710 or Seq-X nodes) as a function of the number of processes, for the different F90 and Numba implementations. Best times are highlighted in \fcred {red} for Seq-X, and in \fcblue {blue} for B710}{table.4.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.2}Stencil test case processing performance}{50}{section.4.2}\protected@file@percent }
+\newlabel{sec_analsten}{{4.2}{50}{Stencil test case processing performance}{section.4.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.2}{\ignorespaces Performance (Stencil test case, B710 nodes) of the different implementations, depending on the number of MPI processes: processing times, speedups, and parallel efficiencies. Best values for serial or for each number of MPI processes are highlighted in \textbf  {\color  {red}red}. The execution time of the compiled serial code was taken as a reference for the calculation of speedup (highlighted in \textbf  {\color  {blue}blue}).}}{51}{table.4.2}\protected@file@percent }
+\newlabel{tab_stim}{{4.2}{51}{Performance (Stencil test case, B710 nodes) of the different implementations, depending on the number of MPI processes: processing times, speedups, and parallel efficiencies. Best values for serial or for each number of MPI processes are highlighted in \fcred {red}. The execution time of the compiled serial code was taken as a reference for the calculation of speedup (highlighted in \fcblue {blue})}{table.4.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.1}{\ignorespaces Processing times (seconds) (Stencil test case, B710 nodes) of the different implementations, depending on the number of MPI processes. For convenience, times above 30~s are not fully depicted.}}{52}{figure.4.1}\protected@file@percent }
+\newlabel{fig_sttime}{{4.1}{52}{Processing times (seconds) (Stencil test case, B710 nodes) of the different implementations, depending on the number of MPI processes. For convenience, times above 30~s are not fully depicted}{figure.4.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.1}F90 serial and parallel (CPU)}{52}{subsection.4.2.1}\protected@file@percent }
+\newlabel{sec_stenf90}{{4.2.1}{52}{F90 serial and parallel (CPU)}{subsection.4.2.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.2}{\ignorespaces Speedups (Stencil test case, B710 nodes) of the different implementations, depending on the number of MPI processes. The execution time of the \textit  {F90 serial} was taken as the reference for speedup calculation. Dashed line denotes the linear speedup.}}{53}{figure.4.2}\protected@file@percent }
+\newlabel{fig_stspee}{{4.2}{53}{Speedups (Stencil test case, B710 nodes) of the different implementations, depending on the number of MPI processes. The execution time of the \textit {F90 serial} was taken as the reference for speedup calculation. Dashed line denotes the linear speedup}{figure.4.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.3}{\ignorespaces Parallel efficiencies (Stencil test case, B710 nodes) of the different implementations, depending on the number of MPI processes.}}{53}{figure.4.3}\protected@file@percent }
+\newlabel{fig_steffi}{{4.3}{53}{Parallel efficiencies (Stencil test case, B710 nodes) of the different implementations, depending on the number of MPI processes}{figure.4.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.2}F2PY serial and parallel (CPU)}{54}{subsection.4.2.2}\protected@file@percent }
+\newlabel{sec_stenf2py}{{4.2.2}{54}{F2PY serial and parallel (CPU)}{subsection.4.2.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.3}Standard Python serial and parallel (CPU)}{54}{subsection.4.2.3}\protected@file@percent }
+\newlabel{sec_stenpyth}{{4.2.3}{54}{Standard Python serial and parallel (CPU)}{subsection.4.2.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.4}Cython serial and parallel (CPU)}{54}{subsection.4.2.4}\protected@file@percent }
+\newlabel{sec_stencyth}{{4.2.4}{54}{Cython serial and parallel (CPU)}{subsection.4.2.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.5}Numba serial and parallel (CPU)}{55}{subsection.4.2.5}\protected@file@percent }
+\newlabel{sec_stennumb}{{4.2.5}{55}{Numba serial and parallel (CPU)}{subsection.4.2.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.6}Numba-GPU}{55}{subsection.4.2.6}\protected@file@percent }
+\newlabel{sec_stengpu}{{4.2.6}{55}{Numba-GPU}{subsection.4.2.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.3}{\ignorespaces Performance (Stencil test case, Seq-X and B715 nodes) as a function of the number of processes for the F90 and Numba-GPU implementations. The execution time of the F90-compiled serial code in the B715 node was taken as the reference for the speedup calculation (highlighted in \textbf  {\color  {blue}blue}). Best values for serial or for each number of MPI processes are highlighted in \textbf  {\color  {red}red}.}}{56}{table.4.3}\protected@file@percent }
+\newlabel{tab_stsx}{{4.3}{56}{Performance (Stencil test case, Seq-X and B715 nodes) as a function of the number of processes for the F90 and Numba-GPU implementations. The execution time of the F90-compiled serial code in the B715 node was taken as the reference for the speedup calculation (highlighted in \fcblue {blue}). Best values for serial or for each number of MPI processes are highlighted in \fcred {red}}{table.4.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.4}{\ignorespaces Processing times (seconds) (Stencil test case, Seq-X and B715 nodes) as a function of the number of MPI processes for the F90 and Numba-GPU implementations executed on the Seq-X (\textbf  {\color  {red}red} and \textbf  {\color  {green}green} bars) and on the B715 node (\textbf  {\color  {blue}blue} and \textbf  {\color  {orange}orange} bars). For convenience, times above 30~s are not fully depicted.}}{57}{figure.4.4}\protected@file@percent }
+\newlabel{fig_stsx}{{4.4}{57}{Processing times (seconds) (Stencil test case, Seq-X and B715 nodes) as a function of the number of MPI processes for the F90 and Numba-GPU implementations executed on the Seq-X (\fcred {red} and \fcgreen {green} bars) and on the B715 node (\fcblue {blue} and \fcorange {orange} bars). For convenience, times above 30~s are not fully depicted}{figure.4.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.5}{\ignorespaces Speedup (Stencil test case, Seq-X and B715 nodes) as a function of the number of MPI processes, for the F90 and Numba-GPU implementations, serial and parallel versions, executed on the Seq-X (dashed lines) and on the B715 (solid lines). The execution time of serial implementation F90 on B715 was taken as reference for speedup calculation. The dotted line \textbf  {\color  {gray}gray} is the linear speedup.}}{58}{figure.4.5}\protected@file@percent }
+\newlabel{fig_stsxspee}{{4.5}{58}{Speedup (Stencil test case, Seq-X and B715 nodes) as a function of the number of MPI processes, for the F90 and Numba-GPU implementations, serial and parallel versions, executed on the Seq-X (dashed lines) and on the B715 (solid lines). The execution time of serial implementation F90 on B715 was taken as reference for speedup calculation. The dotted line \fcgray {gray} is the linear speedup}{figure.4.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.6}{\ignorespaces Parallel efficiencies (Stencil test case, Seq-X and B715 nodes) as a function of the number of MPI processes, for the F90 and Numba-GPU implementations, serial and parallel versions, executed on the Seq-X node (dashed lines) and on the B715 nodes (solid lines).}}{59}{figure.4.6}\protected@file@percent }
+\newlabel{fig_stsxeffi}{{4.6}{59}{Parallel efficiencies (Stencil test case, Seq-X and B715 nodes) as a function of the number of MPI processes, for the F90 and Numba-GPU implementations, serial and parallel versions, executed on the Seq-X node (dashed lines) and on the B715 nodes (solid lines)}{figure.4.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.4}{\ignorespaces Time elapsed (seconds) (Stencil test case, Seq-X and B715 nodes) for selected code snippets, as a function of the number of MPI processes, for the Numba-GPU implementation.}}{59}{table.4.4}\protected@file@percent }
+\newlabel{tab_stb5mu}{{4.4}{59}{Time elapsed (seconds) (Stencil test case, Seq-X and B715 nodes) for selected code snippets, as a function of the number of MPI processes, for the Numba-GPU implementation}{table.4.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.3}FFT test case processing performance}{60}{section.4.3}\protected@file@percent }
+\newlabel{sec_analfft}{{4.3}{60}{FFT test case processing performance}{section.4.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.5}{\ignorespaces Performance (FFT test case, B710 nodes) of the different implementations, depending on the number of MPI processes: processing time, speedup, and parallel efficiencies. Best values are highlighted in \textbf  {\color  {red}red}. The execution time of the \textit  {F90 serial} implementation was taken as the reference for speedup calculation and is shown in \textbf  {\color  {blue}blue}.}}{61}{table.4.5}\protected@file@percent }
+\newlabel{tab_ftim}{{4.5}{61}{Performance (FFT test case, B710 nodes) of the different implementations, depending on the number of MPI processes: processing time, speedup, and parallel efficiencies. Best values are highlighted in \fcred {red}. The execution time of the \textit {F90 serial} implementation was taken as the reference for speedup calculation and is shown in \fcblue {blue}}{table.4.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.1}F90 serial and parallel (CPU)}{61}{subsection.4.3.1}\protected@file@percent }
+\newlabel{sec_fftf90}{{4.3.1}{61}{F90 serial and parallel (CPU)}{subsection.4.3.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.7}{\ignorespaces Processing times (seconds) (FFT test case, B710 nodes) of the different implementations as a function of the number of MPI processes. For convenience, times above 30~s are not fully depicted.}}{62}{figure.4.7}\protected@file@percent }
+\newlabel{fig_ffttime}{{4.7}{62}{Processing times (seconds) (FFT test case, B710 nodes) of the different implementations as a function of the number of MPI processes. For convenience, times above 30~s are not fully depicted}{figure.4.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.8}{\ignorespaces Speedups (FFT test case, B710 nodes) of the implementations as a function of the number of MPI processes. Dotted lines denote linear speedup.}}{62}{figure.4.8}\protected@file@percent }
+\newlabel{fig_fftspee}{{4.8}{62}{Speedups (FFT test case, B710 nodes) of the implementations as a function of the number of MPI processes. Dotted lines denote linear speedup}{figure.4.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.9}{\ignorespaces Parallel efficiencies (FFT test case, B710 nodes) as a function of the number of MPI processes depending on the number of MPI processes.}}{63}{figure.4.9}\protected@file@percent }
+\newlabel{fig_ffteffi}{{4.9}{63}{Parallel efficiencies (FFT test case, B710 nodes) as a function of the number of MPI processes depending on the number of MPI processes}{figure.4.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.2}F2PY serial and parallel (CPU)}{63}{subsection.4.3.2}\protected@file@percent }
+\newlabel{sec_fftf2py}{{4.3.2}{63}{F2PY serial and parallel (CPU)}{subsection.4.3.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.3}Standard Python serial and parallel (CPU)}{63}{subsection.4.3.3}\protected@file@percent }
+\newlabel{sec_fftpyth}{{4.3.3}{63}{Standard Python serial and parallel (CPU)}{subsection.4.3.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.4}Cython serial and parallel (CPU)}{63}{subsection.4.3.4}\protected@file@percent }
+\newlabel{sec_fftcyth}{{4.3.4}{63}{Cython serial and parallel (CPU)}{subsection.4.3.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.5}Numba serial and parallel (CPU)}{64}{subsection.4.3.5}\protected@file@percent }
+\newlabel{sec_fftnumb}{{4.3.5}{64}{Numba serial and parallel (CPU)}{subsection.4.3.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.6}CuPy (GPU)}{64}{subsection.4.3.6}\protected@file@percent }
+\newlabel{sec_fftngpu}{{4.3.6}{64}{CuPy (GPU)}{subsection.4.3.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.7}Optimization for NUMA}{64}{subsection.4.3.7}\protected@file@percent }
+\newlabel{sec_fftnuma}{{4.3.7}{64}{Optimization for NUMA}{subsection.4.3.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.6}{\ignorespaces Performance (FFT test case, Seq-X and B715 nodes) of the serial CuPy implementation and of the F90 implementations, as a function of the number of MPI processes. The execution time of the serial F90 implementation executed in the B715 node was taken as a reference for the calculation of speedup (highlighted in \textbf  {\color  {blue}blue}). }}{65}{table.4.6}\protected@file@percent }
+\newlabel{tab_fftsx}{{4.6}{65}{Performance (FFT test case, Seq-X and B715 nodes) of the serial CuPy implementation and of the F90 implementations, as a function of the number of MPI processes. The execution time of the serial F90 implementation executed in the B715 node was taken as a reference for the calculation of speedup (highlighted in \fcblue {blue})}{table.4.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.10}{\ignorespaces Processing times (seconds) (FFT test case, Seq-X and B715 nodes) depending on the number of MPI processes for the F90 and CuPy implementations performed on the Seq-X (\textbf  {\color  {red}red} and \textbf  {\color  {green}green} bars) and on the B715 node (\textbf  {\color  {blue}blue} and \textbf  {\color  {orange}orange} bars).}}{66}{figure.4.10}\protected@file@percent }
+\newlabel{fig_fftsx}{{4.10}{66}{Processing times (seconds) (FFT test case, Seq-X and B715 nodes) depending on the number of MPI processes for the F90 and CuPy implementations performed on the Seq-X (\fcred {red} and \fcgreen {green} bars) and on the B715 node (\fcblue {blue} and \fcorange {orange} bars)}{figure.4.10}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.11}{\ignorespaces Speedups (FFT test case, Seq-X and B715 nodes) of the serial CuPy implementation and of the F90 implementations, as a function of the number of MPI processes, executed on the Seq-X (\textbf  {\color  {red}red} triangle and \textbf  {\color  {green}green} line) and on the B715 node (\textbf  {\color  {blue}blue} dot and \textbf  {\color  {orange}orange} line). The execution time of the serial F90 implementation executed in the B715 node was taken as a reference for the calculation of speedup (highlighted in \textbf  {\color  {blue}blue}). The dotted line indicates the linear speedup.}}{66}{figure.4.11}\protected@file@percent }
+\newlabel{fig_fftsxspee}{{4.11}{66}{Speedups (FFT test case, Seq-X and B715 nodes) of the serial CuPy implementation and of the F90 implementations, as a function of the number of MPI processes, executed on the Seq-X (\fcred {red} triangle and \fcgreen {green} line) and on the B715 node (\fcblue {blue} dot and \fcorange {orange} line). The execution time of the serial F90 implementation executed in the B715 node was taken as a reference for the calculation of speedup (highlighted in \fcblue {blue}). The dotted line indicates the linear speedup}{figure.4.11}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.12}{\ignorespaces Parallel efficiencies (FFT test case, Seq-X and B715 nodes) of the serial CuPy implementation and of the F90 implementations, as a function of the number of MPI processes, performed on the Seq-X (\textbf  {\color  {red}red} triangle and \textbf  {\color  {green}green} line) and on the B715 node (\textbf  {\color  {blue}blue} dot and \textbf  {\color  {orange}orange} line).}}{67}{figure.4.12}\protected@file@percent }
+\newlabel{fig_fftsxeffi}{{4.12}{67}{Parallel efficiencies (FFT test case, Seq-X and B715 nodes) of the serial CuPy implementation and of the F90 implementations, as a function of the number of MPI processes, performed on the Seq-X (\fcred {red} triangle and \fcgreen {green} line) and on the B715 node (\fcblue {blue} dot and \fcorange {orange} line)}{figure.4.12}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.4}Random Forest test case processing performance}{67}{section.4.4}\protected@file@percent }
+\newlabel{sec_analrf}{{4.4}{67}{Random Forest test case processing performance}{section.4.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.7}{\ignorespaces Processing times (seconds) (FFT test case, B710 and Seq-X nodes), speedups and parallel efficiencies of the different implementations for 16 MPI processes, using or not the Bind option for NUMA optimization. The execution time of F90 without such option (None) on node B710 was taken as reference for speedup calculation (highlighted in \textbf  {\color  {blue}blue}). Best values are highlighted in \textbf  {\color  {red}red}.}}{68}{table.4.7}\protected@file@percent }
+\newlabel{tab_ftnu}{{4.7}{68}{Processing times (seconds) (FFT test case, B710 and Seq-X nodes), speedups and parallel efficiencies of the different implementations for 16 MPI processes, using or not the Bind option for NUMA optimization. The execution time of F90 without such option (None) on node B710 was taken as reference for speedup calculation (highlighted in \fcblue {blue}). Best values are highlighted in \fcred {red}}{table.4.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.13}{\ignorespaces Processing times (seconds) (FFT test case, B710 and Seq-X nodes) of the different implementations for 16 MPI processes with/without NUMA optimization (respectively Bind/None).}}{69}{figure.4.13}\protected@file@percent }
+\newlabel{fig_ftnu}{{4.13}{69}{Processing times (seconds) (FFT test case, B710 and Seq-X nodes) of the different implementations for 16 MPI processes with/without NUMA optimization (respectively Bind/None)}{figure.4.13}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.14}{\ignorespaces Speedups (FFT test case, B710 and Seq-X nodes) of the different implementations for 16 MPI processes with/without NUMA optimization (respectively Bind/None).}}{69}{figure.4.14}\protected@file@percent }
+\newlabel{fig_ftnuspee}{{4.14}{69}{Speedups (FFT test case, B710 and Seq-X nodes) of the different implementations for 16 MPI processes with/without NUMA optimization (respectively Bind/None)}{figure.4.14}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.15}{\ignorespaces Parallel efficiencies (FFT test case, B710 and Seq-X nodes) of the different implementations for 16 MPI processes, with/without NUMA optimization (respectively Bind/None).}}{70}{figure.4.15}\protected@file@percent }
+\newlabel{fig_ftnueffi}{{4.15}{70}{Parallel efficiencies (FFT test case, B710 and Seq-X nodes) of the different implementations for 16 MPI processes, with/without NUMA optimization (respectively Bind/None)}{figure.4.15}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.8}{\ignorespaces Performance (Random Forest test case, B710 nodes) of the different implementations, depending on the number of processes: processing times, speedups, and parallel efficiencies. Best values for each case are highlighted in \textbf  {\color  {red}red}. The execution time of the serial code was taken as a reference for the calculation of speedup, shown in \textbf  {\color  {blue}blue}.}}{71}{table.4.8}\protected@file@percent }
+\newlabel{tab_rfimpl}{{4.8}{71}{Performance (Random Forest test case, B710 nodes) of the different implementations, depending on the number of processes: processing times, speedups, and parallel efficiencies. Best values for each case are highlighted in \fcred {red}. The execution time of the serial code was taken as a reference for the calculation of speedup, shown in \fcblue {blue}}{table.4.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.1}F90 Serial and parallel (CPU)}{71}{subsection.4.4.1}\protected@file@percent }
+\newlabel{sec_rff90}{{4.4.1}{71}{F90 Serial and parallel (CPU)}{subsection.4.4.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.2}F2PY Serial and parallel (CPU)}{71}{subsection.4.4.2}\protected@file@percent }
+\newlabel{sec_rff2py}{{4.4.2}{71}{F2PY Serial and parallel (CPU)}{subsection.4.4.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.16}{\ignorespaces Processing times (seconds) (Random Forest test case, B710 nodes) for the different implementations as a function of the number of processes. For convenience, times above 40~s are not fully depicted.}}{72}{figure.4.16}\protected@file@percent }
+\newlabel{fig_rftime}{{4.16}{72}{Processing times (seconds) (Random Forest test case, B710 nodes) for the different implementations as a function of the number of processes. For convenience, times above 40~s are not fully depicted}{figure.4.16}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.17}{\ignorespaces Speedups (Random Forest test case, B710 nodes) of implementations as a function of the number of processes. Serial Python time was used as reference for calculation of the speedup. The dotted line denotes linear speedup.}}{72}{figure.4.17}\protected@file@percent }
+\newlabel{fig_rfspee}{{4.17}{72}{Speedups (Random Forest test case, B710 nodes) of implementations as a function of the number of processes. Serial Python time was used as reference for calculation of the speedup. The dotted line denotes linear speedup}{figure.4.17}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.18}{\ignorespaces Parallel efficiencies (Random Forest test case, B710 nodes) of implementations as a function of number of processes.}}{73}{figure.4.18}\protected@file@percent }
+\newlabel{fig_rfeffi}{{4.18}{73}{Parallel efficiencies (Random Forest test case, B710 nodes) of implementations as a function of number of processes}{figure.4.18}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.3}Standard Python Serial and parallel (CPU)}{73}{subsection.4.4.3}\protected@file@percent }
+\newlabel{sec_ffpyth}{{4.4.3}{73}{Standard Python Serial and parallel (CPU)}{subsection.4.4.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.4}Cython Serial and parallel (CPU)}{74}{subsection.4.4.4}\protected@file@percent }
+\newlabel{sec_rfcyth}{{4.4.4}{74}{Cython Serial and parallel (CPU)}{subsection.4.4.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.5}Numba Serial and parallel (CPU)}{74}{subsection.4.4.5}\protected@file@percent }
+\newlabel{sec_rfnumb}{{4.4.5}{74}{Numba Serial and parallel (CPU)}{subsection.4.4.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.6}IPP and Loky (CPU)}{74}{subsection.4.4.6}\protected@file@percent }
+\newlabel{sec_ipploky}{{4.4.6}{74}{IPP and Loky (CPU)}{subsection.4.4.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.9}{\ignorespaces Performance (Random Forest test case, Seq-X nodes) of the IPP, IPP NUMA and locky implementations as a function of the number of processes: processing times, speedups, and parallel efficiencies. The best values for serial or for each number of processes are shown in \textbf  {\color  {red}red}. The serial code execution time was taken as a reference for the speedup calculation, shown in \textbf  {\color  {blue}blue}.}}{75}{table.4.9}\protected@file@percent }
+\newlabel{tab_rfiln}{{4.9}{75}{Performance (Random Forest test case, Seq-X nodes) of the IPP, IPP NUMA and locky implementations as a function of the number of processes: processing times, speedups, and parallel efficiencies. The best values for serial or for each number of processes are shown in \fcred {red}. The serial code execution time was taken as a reference for the speedup calculation, shown in \fcblue {blue}}{table.4.9}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.19}{\ignorespaces Processing times (seconds) (Random Forest test case, Seq-X nodes) of implementations as a function of the number of processes.}}{76}{figure.4.19}\protected@file@percent }
+\newlabel{fig_rfloti}{{4.19}{76}{Processing times (seconds) (Random Forest test case, Seq-X nodes) of implementations as a function of the number of processes}{figure.4.19}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.20}{\ignorespaces Speedups (Random Forest test case, Seq-X nodes) of implementations as a function of the number of processes. Serial Python time was used as reference for calculations. The dotted line denotes linear speedup.}}{76}{figure.4.20}\protected@file@percent }
+\newlabel{fig_rflosp}{{4.20}{76}{Speedups (Random Forest test case, Seq-X nodes) of implementations as a function of the number of processes. Serial Python time was used as reference for calculations. The dotted line denotes linear speedup}{figure.4.20}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.21}{\ignorespaces Parallel efficiencies (Random Forest test case, Seq-X nodes) of implementations as a function of number of processes.}}{77}{figure.4.21}\protected@file@percent }
+\newlabel{fig_rfsxef}{{4.21}{77}{Parallel efficiencies (Random Forest test case, Seq-X nodes) of implementations as a function of number of processes}{figure.4.21}{}}
+\@setckpt{doc/ch4}{
+\setcounter{page}{78}
+\setcounter{equation}{2}
+\setcounter{enumi}{6}
+\setcounter{enumii}{0}
+\setcounter{enumiii}{0}
+\setcounter{enumiv}{0}
+\setcounter{footnote}{2}
+\setcounter{mpfootnote}{0}
+\setcounter{part}{0}
+\setcounter{chapter}{4}
+\setcounter{section}{4}
+\setcounter{subsection}{6}
+\setcounter{subsubsection}{0}
+\setcounter{paragraph}{0}
+\setcounter{subparagraph}{0}
+\setcounter{figure}{21}
+\setcounter{table}{9}
+\setcounter{float@type}{8}
+\setcounter{LT@tables}{0}
+\setcounter{LT@chunks}{0}
+\setcounter{parentequation}{0}
+\setcounter{subfigure}{0}
+\setcounter{lofdepth}{1}
+\setcounter{subtable}{0}
+\setcounter{lotdepth}{1}
+\setcounter{Item}{6}
+\setcounter{Hfootnote}{8}
+\setcounter{bookmark@seq@number}{83}
+\setcounter{ABCIaux}{0}
+\setcounter{ABCImax}{0}
+\setcounter{lstnumber}{3}
+\setcounter{section@level}{2}
+\setcounter{lstlisting}{0}
+}
