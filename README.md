@@ -1,4 +1,4 @@
-#  Subjects related to my thesis
+#  Subjects related to my master's thesis
 
 This repository contains the work I did for my thesis, as well as related material.
 
@@ -18,6 +18,6 @@ This repository contains the work I did for my thesis, as well as related materi
 <table>
     <tr>
         <td><img src="img/construction.gif"></td>
-        <td>This repository is permanently under construction, so its content changes constantly</td>
+        <td>This repository is permanently under construction, so its content changes constantly.</td>
     </tr>
 </table>
