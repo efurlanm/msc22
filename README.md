@@ -1,8 +1,9 @@
-#  My thesis
+#  Subjects related to my thesis
 
-This repo contains the work I did for my thesis
+This repository contains the work I did for my thesis, as well as related material.
 
-## Directory structure including thesis and implementations
+
+## Directory structure including implementations
 
 | Directory | Description                                                                                                                                                                        |
 |:---------:| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -11,7 +12,8 @@ This repo contains the work I did for my thesis
 | rforest   | The random forest test case, an ensemble learning method for tasks such as classification and regression.                                                                          |
 | thesis    | My original master's thesis in LaTeX format.                                                                                                                                       |
 
-## Note
+
+## Notes
 
 <table>
     <tr>
