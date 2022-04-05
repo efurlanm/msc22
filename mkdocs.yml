@@ -1,0 +1,17 @@
+site_name: My MSc
+site_author: E Furlan
+copyright: CC BY-NC 4.0 License
+repo_name: efurlanm/msc22
+repo_url: http://github.com/efurlanm/msc22
+site_url: ""
+use_directory_urls: false
+theme:
+    name: material
+    font: false
+    palette:
+        primary: teal
+        accent: teal
+    features:
+        - header.autohide
+extra_css:
+    - css/extra.css
