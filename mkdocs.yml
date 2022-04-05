@@ -3,6 +3,7 @@ site_author: E Furlan
 copyright: CC BY-NC 4.0 License
 repo_name: efurlanm/msc22
 repo_url: http://github.com/efurlanm/msc22
+site_dir: ../efurlanm.github.io/msc22
 site_url: ""
 use_directory_urls: false
 theme:
