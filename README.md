@@ -1,9 +1,23 @@
-#  Subjects related to my master's thesis
+# My MSc
 
-This repository contains the work I did for my thesis, as well as related material.
+     __  __ ____
+    |  \/  / ___|  ___
+    | |\/| \___ \ / __|
+    | |  | |___) | (__
+    |_|  |_|____/ \___|
+    My master's thesis
+
+Implementations made, miscellaneous materials, and related information.
+
+<table>
+    <tr>
+        <td><img src="img/construction.gif"></td>
+        <td>This repository is permanently under construction, so its content changes constantly.</td>
+    </tr>
+</table>
 
 
-## Directory structure including implementations
+## Directory structure
 
 | Directory | Description                                                                                                                                                                        |
 |:---------:| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -13,11 +27,6 @@ This repository contains the work I did for my thesis, as well as related materi
 | thesis    | My original master's thesis in LaTeX format.                                                                                                                                       |
 
 
-## Notes
+## License
 
-<table>
-    <tr>
-        <td><img src="img/construction.gif"></td>
-        <td>This repository is permanently under construction, so its content changes constantly.</td>
-    </tr>
-</table>
+[Attribution-NonCommercial 4.0 International - CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
