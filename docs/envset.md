@@ -1,13 +1,13 @@
 # Environment setup
 
-The following is a step-by-step, starting from scratch, to set up a basic and working JupyterLab (JL) environment for use on the local machine (PC or laptop) and the LNCC Santos Dumont supercomputer (SDumont). For this setup I'm using a laptop with VirtualBox installed and a virtual machine running Kubuntu 20.04. In this text the terms "virtual machine" and "local machine" are used interchangeably, meaning the same thing. What will be seen next is:
+The following is a step-by-step, starting from scratch, to set up a basic and working JupyterLab (JLab) environment for use on the local machine (PC or laptop) and the LNCC Santos Dumont supercomputer (SDumont). For this setup I'm using a laptop with VirtualBox installed and a virtual machine running Kubuntu 20.04. In this text the terms "virtual machine" and "local machine" are used interchangeably, meaning the same thing. What will be seen next is:
 
-- Installing the Anaconda distribution on the local machine, and running JL
+- Installing the Anaconda distribution on the local machine, and running JLab
 - VPN configuration for accessing the SDumont, using the system's network manager
 - Configuring SSH to use key instead of password, and also using the ControlMaster feature that keeps the connection alive
-- Configure the conda environment, and install the syncthing package (ST)
-- Configure ST to keep directories synchronized between machines
-- Run JL on both local and SDumont machines.
+- Configure the conda environment, and install the Syncthing (SThing) package
+- Configure SThing to keep directories synchronized between machines
+- Run JLab on both local and SDumont machines.
 
 
 ## Anaconda install
@@ -27,7 +27,7 @@ Download and install (CLI):
 ![](img/set003.png)  
 ![](img/set004.png)
 
-Running JupyterLab to check if it's already working (the web browser will run automatically and the JL will appear):
+Running JupyterLab to check if it's already working (the web browser will run automatically and the JLab will appear):
 
     $ source ~/anaconda3/etc/profile.d/conda.sh
     $ conda activate
@@ -220,9 +220,9 @@ And then we activate the nested environment:
 Now we can update or install missing packages.
 
 
-## Syncthing setup
+## SThing setup
 
-The purpose of `syncthing` (ST) is to have a directory automatically synchronized between the local machine and SDdumont, so we don't have to remember to copy files from one machine to another, everything is done automatically. ST also works similarly to JL, with client/server architecture and web interface. The ST needs to be installed on both the local machine and the SDdumont, and this can be done using `conda`. Let's start with the SDdumont, assuming the nested conda environment is already active:
+The purpose of `syncthing` (SThing) is to have a directory automatically synchronized between the local machine and SDdumont, so we don't have to remember to copy files from one machine to another, everything is done automatically. SThing also works similarly to JLab, with client/server architecture and web interface. The SThing needs to be installed on both the local machine and the SDdumont, and this can be done using `conda`. Let's start with the SDdumont, assuming the nested conda environment is already active:
 
     $ conda install -c conda-forge syncthing
     Collecting package metadata (current_repodata.json): done
@@ -255,7 +255,7 @@ The purpose of `syncthing` (ST) is to have a directory automatically synchronize
         ------------------------------------------------------------
                                             Total:         8.2 MB
 
-    The following NEW packages will be INSTALLED:
+    The following NEW packages will be INSThingALLED:
 
     syncthing          conda-forge/linux-64::syncthing-1.19.2-ha8f183a_0
 
@@ -306,7 +306,7 @@ Let's do the same on the local machine, but in this case assuming the conda envi
         ------------------------------------------------------------
                                             Total:         9.2 MB
 
-    The following NEW packages will be INSTALLED:
+    The following NEW packages will be INSThingALLED:
 
     python_abi         conda-forge/linux-64::python_abi-3.9-2_cp39
     syncthing          conda-forge/linux-64::syncthing-1.19.2-ha8f183a_0
@@ -328,9 +328,9 @@ Let's do the same on the local machine, but in this case assuming the conda envi
     Executing transaction: done
 
 
-## JL on the local machine
+## JLab on the local machine
 
-At this point the basic configuration is done and we can finally get into JL. Let's first do this on the local machine:
+At this point the basic configuration is done and we can finally get into JLab. Let's first do this on the local machine:
 
     $ source ~/anaconda3/etc/profile.d/conda.sh
     $ conda activate
@@ -338,9 +338,9 @@ At this point the basic configuration is done and we can finally get into JL. Le
     $ cd ~/Sync
     $ jupyter-lab --no-browser --ip=0.0.0.0 --NotebookApp.token="" --port=8888 > ~/8888.log 2>&1 &
 
-The `--no-browser` option means do not automatically run the web browser, `--gui-address` chooses external access and port number. For JL, `--ip=0.0.0.0` allows access from another machine, `--NotebookApp.token=""` allows use without security token, `--port=8888` sets the port to use, `8888.log` is the log file, and `&` makes the server run in the background (to stop it: `killall jupyter-lab`).
+The `--no-browser` option means do not automatically run the web browser, `--gui-address` chooses external access and port number. For JLab, `--ip=0.0.0.0` allows access from another machine, `--NotebookApp.token=""` allows use without security token, `--port=8888` sets the port to use, `8888.log` is the log file, and `&` makes the server run in the background (to stop it: `killall jupyter-lab`).
 
-The first time ST is run, it automatically creates the `~/Sync` directory. We enter this directory, configure the environment and run the JL server. Note that the use of `--NotebookApp.token=""` should be avoided for security reasons, but its correct use is beyond the scope of this introduction. 
+The first time SThing is run, it automatically creates the `~/Sync` directory. We enter this directory, configure the environment and run the JLab server. Note that the use of `--NotebookApp.token=""` should be avoided for security reasons, but its correct use is beyond the scope of this introduction. 
 
 When running the web browser and typing the addresses `http://localhost:8888` and `http://localhost:8384` in two different tabs, the result should be:
 
@@ -348,23 +348,23 @@ When running the web browser and typing the addresses `http://localhost:8888` an
 
 Basically what we did was four things (in sequence):
 
-- Configure the EC
-- Run ST server
+- Configure the CE
+- Run SThing server
 - Enter the working directory
-- Run JL server
+- Run JLab server
 
-The ST should show:
+The SThing should show:
 
 ![](img/set007.png)
 
 Enter the `Actions` menu choose `Show ID` and write down the ID to use later.
 
-From this point on, most tasks can be done within JL as it has a file browser, terminal, notebook, text editor, table of contents, pdf viewer, etc. Note that there are several possible ways to use JL, and I'm only using one of them. To access the SDumont we will use the JL, the only thing that will be done "outside" will be the VPN connection that will be made using the system's network manager.
+From this point on, most tasks can be done within JLab as it has a file browser, terminal, notebook, text editor, table of contents, pdf viewer, etc. Note that there are several possible ways to use JLab, and I'm only using one of them. To access the SDumont we will use the JLab, the only thing that will be done "outside" will be the VPN connection that will be made using the system's network manager.
 
 
-## JL on the SDumont
+## JLab on the SDumont
 
-To access SDumont we will choose two random ports, one for JL (35655), and another for ST (28863). First we activate VPN in the system's network manager, then using a notebook in JL, first we activate the SSH connection, then already in the login node we activate CE, then ST, enter the working directory (~/Sync), run the JL server, and finally, on the local machine, we create the two tunnels to access the JL and ST that are running on SDumont. The commands below are running inside a [notebook cell in JL](http://github.com/efurlanm/msc22/blob/main/docs/connect.ipynb) on the local machine:
+To access SDumont we will choose two random ports, one for JLab (35655), and another for SThing (28863). First we activate VPN in the system's network manager, then using a notebook in JLab, first we activate the SSH connection, then already in the login node we activate CE, then SThing, enter the working directory (~/Sync), run the JLab server, and finally, on the local machine, we create the two tunnels to access the JLab and SThing that are running on SDumont. The commands below are running inside a [notebook cell in JLab](http://github.com/efurlanm/msc22/blob/main/docs/connect.ipynb) on the local machine:
 
     %%bash
     ssh -Nf sd
@@ -380,15 +380,15 @@ To access SDumont we will choose two random ports, one for JL (35655), and anoth
     ssh -NfTL 8385:localhost:28863 sd
     ssh -NfTL 8889:localhost:35655 sd
 
-And the result is shown below, the first two tabs are referring to the local machine, and the last two are JL and ST running on SDumont. The JL tab running on SDumont may take a while to appear:
+And the result is shown below, the first two tabs are referring to the local machine, and the last two are JLab and SThing running on SDumont. The JLab tab running on SDumont may take a while to appear:
 
 ![](img/set008.png)
 
-JL running on SDdumont:
+JLab running on SDdumont:
 
 ![](img/set009.png)
 
-ST running on SDdumont:
+SThing running on SDdumont:
 
 ![](img/set010.png)
 
@@ -396,10 +396,10 @@ In this example above, we have the servers running with the interface being acce
 
 | server | local machine | SDumont |
 | --- | --- | --- |
-| JL | localhost:8888 | localhost:8889 |
-| ST | localhost:8384 | localhost:8385 |
+| JLab | localhost:8888 | localhost:8889 |
+| SThing | localhost:8384 | localhost:8385 |
 
-The next step now is to sync the `~/Sync` directories. To do this, in ST, we click on *+ Add Remote Device* and enter the ID that we had previously noted:
+The next step now is to sync the `~/Sync` directories. To do this, in SThing, we click on *+ Add Remote Device* and enter the ID that we had previously noted:
 
 ![](img/set011.png)
 
@@ -423,10 +423,13 @@ To not have to keep adding directories, one option is to configure it to add aut
 
 ![](img/set016.png)
 
-Once the ST is configured, when creating or modifying a file on one machine, the other is automatically updated. In the picture below, on the left side is a browser window showing the JL running on the local machine editing a notebook (connect.ipynb), and on the right side window the same file is shown on the JL running on SDdumont:
+Once the SThing is configured, when creating or modifying a file on one machine, the other is automatically updated. In the picture below, on the left side is a browser window showing the JLab running on the local machine editing a notebook (connect.ipynb), and on the right side window the same file is shown on the JLab running on SDdumont:
 
 ![](img/set017.png)
 
-The notebook file "connect.ipynb" is available at this github link:
+The notebook file "connect.ipynb" is available at: <http://github.com/efurlanm/msc22/blob/main/docs/Notebooks/connect.ipynb>
 
-<http://github.com/efurlanm/msc22/blob/main/docs/Notebooks/connect.ipynb>
+
+## Conclusion
+
+In this text we saw how to configure and run the JLab environment on the SDumont computer, starting from scratch. In the end we were left with two JLab servers running, one on a local machine, the other on SDumont, and their web interfaces were accessible in two web browser windows on the local machine. Additionally the SThing file synchronization tool has been configured to work together with JLab.
