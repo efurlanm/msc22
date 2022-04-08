@@ -1,6 +1,6 @@
-# Environment setting
+# Environment setup
 
-The following is a step-by-step, starting from scratch, to set up a basic and working JupyterLab (JL) environment for use on the local machine (PC or laptop) and the SDumont. JL is not restricted to Python and can also be used with Fortran, C, R, Bash shelll and others.For this setup I'm using a laptop with VirtualBox installed, and a virtual machine running Kubuntu 20.04.
+The following is a step-by-step, starting from scratch, to set up a basic and working JupyterLab (JL) environment for use on the local machine (PC or laptop) and the SDumont. Just as a reminder, JL is not restricted to Python and can also be used with Fortran, C, R, Bash shelll and others. For this setup I'm using a laptop with VirtualBox installed and a virtual machine running Kubuntu 20.04.
 
 
 ## Anaconda install
@@ -39,7 +39,7 @@ We will need the network-manager-vpnc:
 
     $ sudo apt install network-manager-vpnc
 
-After that, enter the Network Manager, Configure Network Connections, and then add a connection, and chose Cisco Compatible VPN (vpnc):
+After that, enter the Network Manager, Configure Network Connections, add a connection, and chose Cisco Compatible VPN (vpnc):
 
 ![](img/ac01.png)
 
@@ -208,16 +208,14 @@ And to activate and access the nested environment, we first configure the shell:
 
 And then we activate the nested environment:
 
-    $ conda activate --stack /scratch/<project>/<username>/env01
+    $ conda activate --stack /scratch${HOME#/prj}/env01
 
 Now we can update or install missing packages.
 
 
 ## Syncthing
 
-The purpose of `syncthing` (ST) is to have a directory automatically synchronized between the local machine and SDdumont, so we don't have to remember to copy files from one machine to another, everything is done automatically. ST also works similarly to JL, with client/server architecture and web interface.
-
-The ST needs to be installed on both the local machine and the SDdumont, and this can be done using `conda`. Let's start with the SDdumont, assuming the nested conda environment is already active:
+The purpose of `syncthing` (ST) is to have a directory automatically synchronized between the local machine and SDdumont, so we don't have to remember to copy files from one machine to another, everything is done automatically. ST also works similarly to JL, with client/server architecture and web interface. The ST needs to be installed on both the local machine and the SDdumont, and this can be done using `conda`. Let's start with the SDdumont, assuming the nested conda environment is already active:
 
     $ conda install -c conda-forge syncthing
     Collecting package metadata (current_repodata.json): done
@@ -325,7 +323,7 @@ Let's do the same on the local machine, but in this case assuming the conda envi
 
 ## JL on the local machine
 
-At this point the basic configuration is done and we can finally get into JL. Let's first do this on the **local machine**:
+At this point the basic configuration is done and we can finally get into JL. Let's first do this on the local machine:
 
     $ source ~/anaconda3/etc/profile.d/conda.sh
     $ conda activate
@@ -359,7 +357,7 @@ From this point on, most tasks can be done within JL as it has a file browser, t
 
 ## JL on the SDumont
 
-To access SDumont we will choose two random ports, one for JL (35655), and another for ST (28863). First we activate VPN in the system's network manager, then using a notebook in JL, first we activate the SSH connection, then already in the login node we activate CE, then ST, enter the working directory (~/Sync), run the JL server, and finally, on the local machine, we create the two tunnels to access the JL and ST that are running on SDumont. The commands below are running inside a notebook cell in JL:
+To access SDumont we will choose two random ports, one for JL (35655), and another for ST (28863). First we activate VPN in the system's network manager, then using a notebook in JL, first we activate the SSH connection, then already in the login node we activate CE, then ST, enter the working directory (~/Sync), run the JL server, and finally, on the local machine, we create the two tunnels to access the JL and ST that are running on SDumont. The commands below are running inside a notebook cell in JL on the local machine:
 
     %%bash
     ssh -Nf sd
