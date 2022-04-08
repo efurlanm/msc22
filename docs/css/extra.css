@@ -1,3 +1,10 @@
+/* ### CODE ### */
+
+.md-typeset code {
+    font-size: 13.4px;
+}
+
+
 /* ### TABLE ### */
 
 .md-typeset table:not([class]) {
@@ -18,11 +25,10 @@
 }
 
 
-
 /* ### JUPYTER ### */
 
 .jupyter-wrapper .jp-RenderedText {
-    --jp-code-font-size: 12px;
+    --jp-code-font-size: 13px;
 }
 
 .md-typeset h1 {
