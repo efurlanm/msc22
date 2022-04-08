@@ -1,6 +1,13 @@
 # Environment setup
 
-The following is a step-by-step, starting from scratch, to set up a basic and working JupyterLab (JL) environment for use on the local machine (PC or laptop) and the SDumont. Just as a reminder, JL is not restricted to Python and can also be used with Fortran, C, R, Bash shelll and others. For this setup I'm using a laptop with VirtualBox installed and a virtual machine running Kubuntu 20.04.
+The following is a step-by-step, starting from scratch, to set up a basic and working JupyterLab (JL) environment for use on the local machine (PC or laptop) and the LNCC Santos Dumont supercomputer (SDumont). For this setup I'm using a laptop with VirtualBox installed and a virtual machine running Kubuntu 20.04. In this text the terms "virtual machine" and "local machine" are used interchangeably, meaning the same thing. What will be seen next is:
+
+- Installing the Anaconda distribution on the local machine, and running JL
+- VPN configuration for accessing the SDumont, using the system's network manager
+- Configuring SSH to use key instead of password, and also using the ControlMaster feature that keeps the connection alive
+- Configure the conda environment, and install the syncthing package (ST)
+- Configure ST to keep directories synchronized between machines
+- Run JL on both local and SDumont machines.
 
 
 ## Anaconda install
@@ -213,7 +220,7 @@ And then we activate the nested environment:
 Now we can update or install missing packages.
 
 
-## Syncthing
+## Syncthing setup
 
 The purpose of `syncthing` (ST) is to have a directory automatically synchronized between the local machine and SDdumont, so we don't have to remember to copy files from one machine to another, everything is done automatically. ST also works similarly to JL, with client/server architecture and web interface. The ST needs to be installed on both the local machine and the SDdumont, and this can be done using `conda`. Let's start with the SDdumont, assuming the nested conda environment is already active:
 
@@ -357,7 +364,7 @@ From this point on, most tasks can be done within JL as it has a file browser, t
 
 ## JL on the SDumont
 
-To access SDumont we will choose two random ports, one for JL (35655), and another for ST (28863). First we activate VPN in the system's network manager, then using a notebook in JL, first we activate the SSH connection, then already in the login node we activate CE, then ST, enter the working directory (~/Sync), run the JL server, and finally, on the local machine, we create the two tunnels to access the JL and ST that are running on SDumont. The commands below are running inside a notebook cell in JL on the local machine:
+To access SDumont we will choose two random ports, one for JL (35655), and another for ST (28863). First we activate VPN in the system's network manager, then using a notebook in JL, first we activate the SSH connection, then already in the login node we activate CE, then ST, enter the working directory (~/Sync), run the JL server, and finally, on the local machine, we create the two tunnels to access the JL and ST that are running on SDumont. The commands below are running inside a [notebook cell in JL](http://github.com/efurlanm/msc22/blob/main/docs/connect.ipynb) on the local machine:
 
     %%bash
     ssh -Nf sd
@@ -422,4 +429,4 @@ Once the ST is configured, when creating or modifying a file on one machine, the
 
 The notebook file "connect.ipynb" is available at this github link:
 
-<https://github.com/efurlanm/msc22/blob/main/docs/connect.ipynb>
+<http://github.com/efurlanm/msc22/blob/main/docs/Notebooks/connect.ipynb>
