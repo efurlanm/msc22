@@ -84,7 +84,7 @@ The `~/.ssh/config` file on the local machine would look like this:
 
     ...
 
-The `<username>` needs to be replaced with the username. The option called ControlMaster allows sharing of multiple sessions on a single network connection, so when connecting to the cluster (using `ssh -Nf sd`) the connection is active, and all subsequent ssh sessions (including svn, rsync , etc. ) do not need authentication. At the end of use, it is necessary to end the connection with the command `ssh -O exit sd`. Note that the `x` in `\home\x` is the username being used on the machine, and will vary from case to case.
+The `<username>` needs to be replaced with the username. The option called ControlMaster allows sharing of multiple sessions on a single network connection, so when connecting to the cluster (using `ssh -Nf sd`) the connection is active, and all subsequent ssh sessions (including svn, rsync , etc. ) do not need authentication. At the end of use, it is necessary to end the connection with the command `ssh -O exit sd`. Note that the `<username>` is the username being used on the machine, and will vary from case to case.
 
 Creating the key:
 
@@ -97,7 +97,7 @@ Creating the key:
     Your identification has been saved in /home/<username>/.ssh/id_ed25519
     Your public key has been saved in /home/<username>/.ssh/id_ed25519.pub
     The key fingerprint is:
-    SHA256:+yk+H+nKje5aO7LsqjkrWu6cgA3J1PMELz7VcL/0AuM x@vm001
+    SHA256:+yk+H(...)/0AuM x@vm001
     The key's randomart image is:
     +--[ED25519 256]--+
     |   . . .         |
@@ -116,7 +116,7 @@ Copy the SSH key to the user area on the SDdumont:
     $ ssh-copy-id <username>@login.sdumont.lncc.br
     /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/<username>/.ssh/id_ed25519.pub"
     The authenticity of host 'login.sdumont.lncc.br (146.134.143.249)' can't be established.
-    ECDSA key fingerprint is SHA256:FZQPi+BmDfSRASiRblWzoY9nUM/T4sBHu4b3NNuJnyI.
+    ECDSA key fingerprint is SHA256:FZQP(...)JnyI.
     Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
     /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
     /usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
@@ -364,7 +364,7 @@ From this point on, most tasks can be done within JLab as it has a file browser,
 
 ## JLab on the SDumont
 
-To access SDumont we will choose two random ports, one for JLab (35655), and another for SThing (28863). First we activate VPN in the system's network manager, then using a notebook in JLab, first we activate the SSH connection, then already in the login node we activate CE, then SThing, enter the working directory (~/Sync), run the JLab server, and finally, on the local machine, we create the two tunnels to access the JLab and SThing that are running on SDumont. The commands below are running inside a [notebook cell in JLab](http://github.com/efurlanm/msc22/blob/main/docs/connect.ipynb) on the local machine:
+To access SDumont we will choose two random ports, one for JLab (35655), and another for SThing (28863). First we activate VPN in the system's network manager, then using a notebook in JLab, first we activate the SSH connection, then already in the login node we activate CE, then SThing, enter the working directory (~/Sync), run the JLab server, and finally, on the local machine, we create the two tunnels to access the JLab and SThing that are running on SDumont. The commands below are running inside a [notebook cell in JLab](http://github.com/efurlanm/msc22/blob/main/docs/Notebooks/connect.ipynb) on the local machine:
 
     %%bash
     ssh -Nf sd
@@ -423,7 +423,7 @@ To not have to keep adding directories, one option is to configure it to add aut
 
 ![](img/set016.png)
 
-Once the SThing is configured, when creating or modifying a file on one machine, the other is automatically updated. In the picture below, on the left side is a browser window showing the JLab running on the local machine editing a notebook (connect.ipynb), and on the right side window the same file is shown on the JLab running on SDdumont:
+Once the SThing is configured, when creating or modifying a file on one machine, the other is automatically updated. In the picture below, on the left side is a browser window showing the JLab running on the local machine editing a notebook [connect.ipynb](http://github.com/efurlanm/msc22/blob/main/docs/Notebooks/connect.ipynb), and on the right side window the same file is shown on the JLab running on SDdumont:
 
 ![](img/set017.png)
 
