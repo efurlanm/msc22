@@ -48,23 +48,23 @@ We will need the network-manager-vpnc:
 
 After that, enter the Network Manager, Configure Network Connections, add a connection, and chose Cisco Compatible VPN (vpnc):
 
-![](img/ac01.png)
+![](img/set018.png)
 
 The following screen must be completed according to the instructions provided by the LNCC:
 
-![](img/ac03.png)
+![](img/set019.png)
 
 Let's configure the route so that the normal internet from the local machine continues to work:
 
-![](img/ac10.png)
+![](img/set020.png)
 
 Insert (+ Add) the Address 146.134.143.249, Netmask (accept the default), select "Use only for resources on this connection", and save the connection (OK):
 
-![](img/ac09.png) 
+![](img/set021.png) 
 
 Then, through the network manager, make the connection, and it should appear connected:
 
-![](img/ac04.png)
+![](img/set022.png)
 
 
 ## SSH setup
