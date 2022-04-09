@@ -1,6 +1,6 @@
 # Environment setup
 
-The following is a step-by-step, starting from scratch, to set up a basic and working JupyterLab (JLab) environment for use on the local machine (PC or laptop) and the LNCC Santos Dumont supercomputer (SDumont). For this setup I'm using a laptop with VirtualBox installed and a virtual machine running Kubuntu 20.04. In this text the terms "virtual machine" and "local machine" are used interchangeably, meaning the same thing. What will be seen next is:
+This page shows a simple step-by-step, starting from scratch, to configure a basic and functional JupyterLab (JLab) environment for use on the local machine (PC or laptop) and LNCC Santos Dumont (SDumont) supercomputer. The article is not intended to be complete, it is a simple script that I use to work on SDumont. For this setup I'm using a laptop with VirtualBox installed and a virtual machine running Kubuntu 20.04. In this text the terms "virtual machine" and "local machine" are used interchangeably, meaning the same thing. What will be seen next is:
 
 - Installing the Anaconda distribution on the local machine, and running JLab
 - VPN configuration for accessing the SDumont, using the system's network manager
@@ -432,4 +432,4 @@ The notebook file "connect.ipynb" is available at: <http://github.com/efurlanm/m
 
 ## Conclusion
 
-In this text we saw how to configure and run the JLab environment on the SDumont computer, starting from scratch. In the end we were left with two JLab servers running, one on a local machine, the other on SDumont, and their web interfaces were accessible in two web browser windows on the local machine. Additionally the SThing file synchronization tool has been configured to work together with JLab.
+In this page we saw how to configure and run the JLab environment on the SDumont computer, starting from scratch. In the end we were left with two JLab servers running, one on a local machine, the other on SDumont, and their web interfaces were accessible in two web browser windows on the local machine. Additionally the SThing file synchronization tool has been configured to work together with JLab.
