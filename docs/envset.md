@@ -1,12 +1,24 @@
 # Environment setup
 
-This page shows a simple step-by-step, starting from scratch, to configure a basic and functional JupyterLab (JLab) environment for use on the local machine (PC or laptop) and LNCC Santos Dumont (SDumont) supercomputer. The article is not intended to be complete, it is a simple script that I use to work on SDumont. For this setup I'm using a laptop with VirtualBox installed and a virtual machine running Kubuntu 20.04. In this text the terms "virtual machine" and "local machine" are used interchangeably, meaning the same thing. What will be seen next is:
+This page shows a simple step-by-step, starting from scratch, to configure a basic and functional JupyterLab (JLab) environment for use on the local machine (PC or laptop) and also on the LNCC Santos Dumont (SDumont) supercomputer on a login node.
 
-- Installing the Anaconda distribution on the local machine, and running JLab
-- VPN configuration for accessing the SDumont, using the system's network manager
-- Configuring SSH to use key instead of password, and also using the ControlMaster feature that keeps the connection alive
-- Configure the conda environment, and install the Syncthing (SThing) package
-- Configure SThing to keep directories synchronized between machines
+Some of the reasons to run JLab on SDumont are:
+
+- Be able to use the interactive features of the JLab environment directly on the target machine. In particular, use Python's interactive features to obtain and analyze results on the target machine;
+- Use the packages, tools, and hardware available on SDumont;
+- Debug directly on the machine where the application will run.
+- Use tools that generate native code (like Cython, F2FY, Numba, etc.) directly on the target machine;
+- Use SLURM workload manager features in a Jupyter Notebook, such as using development queues, while viewing and analyzing results as they are ready, interactively, in such a way as to reduce development time.
+
+This page is not intended to be complete, it is a simple step by step that I use to work in SDumont. For this setup, I'm conveniently using a laptop with VirtualBox installed and a virtual machine (VM) running Kubuntu 20.04. In this text, the terms "virtual machine" and "local machine" are used interchangeably, meaning the same thing.
+
+What will be seen next is:
+
+- Installing the Anaconda distribution on the local machine, and running JLab;
+- VPN configuration for accessing the SDumont, using the system's network manager;
+- Configuring SSH to use key instead of password, and also using the ControlMaster feature that keeps the connection alive;
+- Configure the conda environment, and install the Syncthing (SThing) package;
+- Configure SThing to keep directories synchronized between machines;
 - Run JLab on both local and SDumont machines.
 
 
