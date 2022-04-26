@@ -70,7 +70,7 @@ Let's configure the route so that the normal internet from the local machine con
 
 ![](img/set020.png)
 
-Insert (+ Add) the Address 146.134.143.249, Netmask (accept the default), select "Use only for resources on this connection", and save the connection (OK):
+Insert (+ Add) the Address 146.134.143.249, Netmask (accept the default), select "Use only for resources on this connection", "Ignore automatically obatined routes", and save the connection (OK):
 
 ![](img/set021.png) 
 
@@ -444,4 +444,4 @@ The notebook file "connect.ipynb" is available at: <http://github.com/efurlanm/m
 
 ## Conclusion
 
-In this page we saw how to configure and run the JLab environment on the SDumont computer, starting from scratch. In the end we were left with two JLab servers running, one on a local machine, the other on SDumont, and their web interfaces were accessible in two web browser windows on the local machine. Additionally the SThing file synchronization tool has been configured to work together with JLab.
+In this page we saw how to configure and run the JLab environment on the SDumont supercomputer, starting from scratch. In the end we were left with two JLab servers running, one on a local machine, the other on SDumont, and their web interfaces were accessible in two web browser windows on the local machine. Additionally the SThing file synchronization tool has been configured.
