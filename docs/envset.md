@@ -1,28 +1,28 @@
 # Environment setup
 
-This page shows a simple step-by-step, starting from scratch, to configure a basic and functional JupyterLab (JLab) environment for use on the local machine (PC or laptop) and also on the LNCC Santos Dumont (SDumont) supercomputer on a login node.
+This page shows a simple step-by-step, starting from scratch, to configure a basic and functional JupyterLab (JLab) environment for use on the local machine (desktop PC or laptop) and also on the LNCC Santos Dumont (SDumont) supercomputer on a login node. This is the configuration I am using in my works.
 
 Some of the reasons to run JLab on SDumont are:
 
-- Use the interactive features of the JLab/Python environment directly on the target machine;
-- Use the packages, tools, and hardware available on SDumont;
-- Debug directly on the machine where the application will run;
-- Use tools that generate native code (like Cython, F2FY, Numba, etc.) directly on the target machine;
-- View and analyze results as they are ready, in such a way as to reduce development time.
+- Use the interactive features of the JLab/Python environment directly on the target machine
+- Use the packages, tools, and hardware available on SDumont
+- Debug directly on the machine where the application will run
+- Use tools that generate native code (like Cython, F2FY, Numba, etc.) directly on the target machine
+- View and analyze results as they are ready, in such a way as to reduce development time
 
 This page is not intended to be complete, it is a simple step by step that I use to work in SDumont. For this setup, I'm conveniently using a laptop with VirtualBox installed and a virtual machine (VM) running Kubuntu 20.04. In this text, the terms "virtual machine" and "local machine" are used interchangeably, meaning the same thing.
 
 What will be seen next is:
 
-- Installing the Anaconda distribution on the local machine, and running JLab;
-- VPN configuration for accessing the SDumont, using the system's network manager;
-- Configuring SSH to use key instead of password, and also using the ControlMaster feature that keeps the connection alive;
-- Configure the conda environment, and install the Syncthing (SThing) package;
+- Installing the Anaconda distribution (on the local machine), and running JLab
+- VPN configuration for accessing the SDumont, using the os's network manager
+- Configuring SSH to use key instead of password, and also using the ControlMaster feature that keeps the connection alive
+- Configure the conda environment, and install the Syncthing (SThing) package
 - Configure SThing to keep directories synchronized between machines;
-- Run JLab on both local and SDumont machines.
+- Run JLab on both local and SDumont machines
 
 
-## Anaconda install
+## Anaconda install (local machine)
 
 Let's start by installing the Anaconda distribution on the local machine, and for that we are going to download it, and this can be done either through the browser or the CLI:
 
@@ -50,7 +50,7 @@ Running JupyterLab to check if it's already working (the web browser will run au
 At this point the Anaconda distribution is installed and JupyterLab is running on the local machine. 
 
 
-## VPN setup
+## VPN setup (local machine)
 
 Let's now configure the network manager to access the SDdumont VPN. The steps to be followed are contained in the detailed information provided by the LNCC, and only part of it is reproduced here. The following text assumes that you already have an SDdumont account.
 
@@ -66,7 +66,7 @@ The following screen must be completed according to the instructions provided by
 
 ![](img/set019.png)
 
-Let's configure the route so that the normal internet from the local machine continues to work:
+We are now going to configure the route to change the behavior of the traffic and make sure that only the resources you want from SDumont pass through this interface, and not all the traffic, and in this way it is possible to use the internet connection of the local machine normally without interference:
 
 ![](img/set020.png)
 
@@ -167,7 +167,7 @@ At this point, if everything was configured correctly, it is already possible to
     [<username>@sdumont13 ~]$
 
 
-## Conda environment
+## Conda environment (SDumont)
 
 The next step now is to configure a Conda Environment (CE) to be used on the SDdumont. SDdumont already has some versions of the Anaconda distribution installed, selectable via the `module` command, and we will use the most current one (2020.11):
 
@@ -232,9 +232,9 @@ And then we activate the nested environment:
 Now we can update or install missing packages.
 
 
-## SThing setup
+## SThing setup (SDumont)
 
-The purpose of `syncthing` (SThing) is to have a directory automatically synchronized between the local machine and SDdumont, so we don't have to remember to copy files from one machine to another, everything is done automatically. SThing also works similarly to JLab, with client/server architecture and web interface. The SThing needs to be installed on both the local machine and the SDdumont, and this can be done using `conda`. Let's start with the SDdumont, assuming the nested conda environment is already active:
+The main purpose of `syncthing` (SThing) is to have a mirror directory automatically and constantly synchronized between the local machine and SDdumont, so that we don't have to remember to copy files from one machine to another, or worry about what else is updated where, thus automating a part of the workflow. SThing also works similarly to JLab, with client/server architecture and web interface. The SThing needs to be installed on both the local machine and the SDdumont, and this can be done using `conda`. Let's start with the SDdumont, assuming the nested conda environment is already active:
 
     $ conda install -c conda-forge syncthing
     Collecting package metadata (current_repodata.json): done
@@ -280,6 +280,9 @@ The purpose of `syncthing` (SThing) is to have a directory automatically synchro
     Preparing transaction: done
     Verifying transaction: done
     Executing transaction: done
+
+
+## SThing setup (local machine)
 
 Let's do the same on the local machine, but in this case assuming the conda environment is not active yet:
 
@@ -340,7 +343,7 @@ Let's do the same on the local machine, but in this case assuming the conda envi
     Executing transaction: done
 
 
-## JLab on the local machine
+## JLab (local machine)
 
 At this point the basic configuration is done and we can finally get into JLab. Let's first do this on the local machine:
 
@@ -374,9 +377,9 @@ Enter the `Actions` menu choose `Show ID` and write down the ID to use later.
 From this point on, most tasks can be done within JLab as it has a file browser, terminal, notebook, text editor, table of contents, pdf viewer, etc. Note that there are several possible ways to use JLab, and I'm only using one of them. To access the SDumont we will use the JLab, the only thing that will be done "outside" will be the VPN connection that will be made using the system's network manager.
 
 
-## JLab on the SDumont
+## JLab (SDumont)
 
-To access SDumont we will choose two random ports, one for JLab (35655), and another for SThing (28863). First we activate VPN in the system's network manager, then using a notebook in JLab, first we activate the SSH connection, then already in the login node we activate CE, then SThing, enter the working directory (~/Sync), run the JLab server, and finally, on the local machine, we create the two tunnels to access the JLab and SThing that are running on SDumont. The commands below are running inside a [notebook cell in JLab](http://github.com/efurlanm/msc22/blob/main/docs/Notebooks/connect.ipynb) on the local machine:
+To access SDumont we will choose two random ports, one for JLab (35655), and another for SThing (28863). First we activate the VPN in the system's network manager, then using a notebook in the JLab, we activate the SSH connection, then already in the login node we activate the CE, then the STing, we enter the working directory (~/Sync), we run the JLab server, and finally, on the local machine, we create the two tunnels to access the JLab and STThing that are running on SDumont. The commands below are running inside a [notebook cell in JLab](http://github.com/efurlanm/msc22/blob/main/docs/Notebooks/connect.ipynb) on the local machine:
 
     %%bash
     ssh -Nf sd
@@ -441,6 +444,15 @@ Once the SThing is configured, when creating or modifying a file on one machine,
 
 The notebook file "connect.ipynb" is available at: <http://github.com/efurlanm/msc22/blob/main/docs/Notebooks/connect.ipynb>
 
+At this point we already have the basic tools configured, and from now on to access SDumont the workflow is:
+
+- run JLab and SThing servers on local machine
+- load the Notebook (if not already) containing the commands to connect to SDumont and run the servers
+- turn on VPN in system connection manager
+- use SSH with the ControlMaster feature to keep the connection alive
+- run JLab and SThing servers on SDumont
+- enable SSH tunnels
+- use web browser to run clients
 
 ## Conclusion
 
