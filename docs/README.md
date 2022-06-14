@@ -42,13 +42,6 @@ Most of the information about SDumont contained in this repository was obtained 
 [Attribution-NonCommercial 4.0 International - CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
 
 
-<br>
-<table>
-    <tr>
-        <td><img src="img/construction.gif"></td>
-        <td>This repository is permanently under construction, so its content changes constantly.</td>
-    </tr>
-</table>
 
 
 <!-- REFERENCES -->
