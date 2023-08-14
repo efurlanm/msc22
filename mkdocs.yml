@@ -1,0 +1,22 @@
+site_name: My MSc
+site_author: E Furlan
+copyright: CC BY-NC 4.0 License
+repo_name: efurlanm/msc22
+repo_url: http://github.com/efurlanm/msc22
+docs_dir: docs-src
+site_dir: docs
+theme:
+    name: material
+    palette:
+        primary: teal
+        accent: teal
+    features:
+        - header.autohide
+extra_css:
+    - css/extra.css
+plugins:
+    - search
+    - mkdocs-jupyter
+exclude_docs: |
+    .ipynb_checkpoints
+    .git

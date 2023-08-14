@@ -1,3 +1,5 @@
+# My MSc
+
      __  __         __  __ ____
     |  \/  |_   _  |  \/  / ___|  ___
     | |\/| | | | | | |\/| \___ \ / __|
@@ -6,10 +8,10 @@
             |___/
     My master's thesis
 
+Last edited: 2023-08-14  
 Website: <http://efurlanm.github.io/msc22>
 
 This repository contains the implementations made for my master's thesis, as well as miscellaneous materials and related information. The thesis explores three test cases implemented in the [LNCC Santos Dumont supercomputer](http://sdumont.lncc.br) (SDumont), described bellow.
-
 
 ## Directories
 
@@ -17,7 +19,6 @@ This repository contains the implementations made for my master's thesis, as wel
 - [fft][L2] - The three dimensional fast Fourier transform test case, an algorithm that computes the multidimensional Fourier transform of an 3D array using a fast Fourier transform algorithm
 - [rforest][L3] - The random forest test case, an ensemble learning method for tasks such as classification and regression
 - [thesis][L4] - My original master's thesis in LaTeX format
-
 
 ## Useful links
 
@@ -31,20 +32,16 @@ This repository contains the implementations made for my master's thesis, as wel
 
 - IDeepS project - <http://github.com/vsantjr/IDeepS>
 
-
 ## Acknowledgments
 
 Most of the information about SDumont contained in this repository was obtained during INPE's graduate program, and in the project approved by the LNCC with resources from the government of Brazil, without which this work would not be possible.
-
 
 ## License
 
 [Attribution-NonCommercial 4.0 International - CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
 
-
-
-
 <!-- REFERENCES -->
+
 [L1]: https://github.com/efurlanm/msc22/tree/main/stencil
 [L2]: https://github.com/efurlanm/msc22/tree/main/fft
 [L3]: https://github.com/efurlanm/msc22/tree/main/rforest
