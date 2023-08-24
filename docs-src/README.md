@@ -8,7 +8,7 @@
             |___/
     My master's thesis
 
-*Last edited: 2023-08-14  
+*Last edited: 2023-08-14<br>
 Website: <http://efurlanm.github.io/msc22>*
 
 This repository contains the implementations made for my master's thesis, as well as miscellaneous materials and related information. The thesis explores three test cases implemented in the [LNCC Santos Dumont supercomputer](http://sdumont.lncc.br) (SDumont), described bellow.
