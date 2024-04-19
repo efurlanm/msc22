@@ -379,7 +379,7 @@ From this point on, most tasks can be done within JL as it has a file browser, t
 
 ## JL (SDumont)
 
-To access SDumont we will choose two random ports, one for JL (35655), and another for ST (28863). First we activate the VPN in the system's network manager, then using a notebook in the JL, we activate the SSH connection, then already in the login node we activate the CE, then the STing, we enter the working directory (~/Sync), we run the JL server, and finally, on the local machine, we create the two tunnels to access the JL and STThing that are running on SDumont. The commands below are running inside a [notebook cell in JL](http://github.com/efurlanm/msc22/blob/main/docs/Notebooks/connect.ipynb) on the local machine:
+To access SDumont we will choose two random ports, one for JL (35655), and another for ST (28863). First we activate the VPN in the system's network manager, then using a notebook in the JL, we activate the SSH connection, then already in the login node we activate the CE, then the STing, we enter the working directory (~/Sync), we run the JL server, and finally, on the local machine, we create the two tunnels to access the JL and STThing that are running on SDumont. The commands below are running inside a [notebook cell in JL](https://github.com/efurlanm/msc22/blob/main/docs/notebooks/connect.html) on the local machine:
 
     %%bash
     ssh -Nf sd
@@ -438,11 +438,11 @@ To not have to keep adding directories, one option is to configure it to add aut
 
 ![](img/set016.png)
 
-Once the ST is configured, when creating or modifying a file on one machine, the other is automatically updated. In the picture below, on the left side is a browser window showing the JL running on the local machine editing a notebook [connect.ipynb](http://github.com/efurlanm/msc22/blob/main/docs/Notebooks/connect.ipynb), and on the right side window the same file is shown on the JL running on SDdumont:
+Once the ST is configured, when creating or modifying a file on one machine, the other is automatically updated. In the picture below, on the left side is a browser window showing the JL running on the local machine editing a notebook [connect.ipynb](https://github.com/efurlanm/msc22/blob/main/docs/notebooks/connect.html), and on the right side window the same file is shown on the JL running on SDdumont:
 
 ![](img/set017.png)
 
-The notebook file "connect.ipynb" is available at: <http://github.com/efurlanm/msc22/blob/main/docs/Notebooks/connect.ipynb>
+The notebook file "connect.ipynb" is available at: <https://github.com/efurlanm/msc22/blob/main/docs/notebooks/connect.html>
 
 At this point we already have the basic tools configured, and from now on to access SDumont the workflow is:
 
