@@ -852,7 +852,7 @@ $ jupyter-lab --no-browser --ip=0.0.0.0 --NotebookApp.token="" --port=8888 &gt; 
 <p>Enter the <code>Actions</code> menu choose <code>Show ID</code> and write down the ID to use later.</p>
 <p>From this point on, most tasks can be done within JL as it has a file browser, terminal, notebook, text editor, table of contents, pdf viewer, etc. Note that there are several possible ways to use JL, and I'm only using one of them. To access the SDumont we will use the JL, the only thing that will be done "outside" will be the VPN connection that will be made using the system's network manager.</p>
 <h2 id="jl-sdumont">JL (SDumont)</h2>
-<p>To access SDumont we will choose two random ports, one for JL (35655), and another for ST (28863). First we activate the VPN in the system's network manager, then using a notebook in the JL, we activate the SSH connection, then already in the login node we activate the CE, then the STing, we enter the working directory (~/Sync), we run the JL server, and finally, on the local machine, we create the two tunnels to access the JL and STThing that are running on SDumont. The commands below are running inside a <a href="https://github.com/efurlanm/msc22/blob/main/docs/notebooks/connect.html">notebook cell in JL</a> on the local machine:</p>
+<p>To access SDumont we will choose two random ports, one for JL (35655), and another for ST (28863). First we activate the VPN in the system's network manager, then using a notebook in the JL, we activate the SSH connection, then already in the login node we activate the CE, then the STing, we enter the working directory (~/Sync), we run the JL server, and finally, on the local machine, we create the two tunnels to access the JL and STThing that are running on SDumont. The commands below are running inside a <a href="https://github.com/efurlanm/msc22/blob/main/docs-src/notebooks/connect.ipynb">notebook cell in JL</a> on the local machine:</p>
 <pre><code>%%bash
 ssh -Nf sd
 ssh -T sd &lt;&lt;'EOF'
@@ -907,9 +907,9 @@ ssh -NfTL 8889:localhost:35655 sd
 <p><img alt="" src="img/set015.png" /></p>
 <p>To not have to keep adding directories, one option is to configure it to add automatically:</p>
 <p><img alt="" src="img/set016.png" /></p>
-<p>Once the ST is configured, when creating or modifying a file on one machine, the other is automatically updated. In the picture below, on the left side is a browser window showing the JL running on the local machine editing a notebook <a href="https://github.com/efurlanm/msc22/blob/main/docs/notebooks/connect.html">connect.ipynb</a>, and on the right side window the same file is shown on the JL running on SDdumont:</p>
+<p>Once the ST is configured, when creating or modifying a file on one machine, the other is automatically updated. In the picture below, on the left side is a browser window showing the JL running on the local machine editing a notebook <a href="https://github.com/efurlanm/msc22/blob/main/docs-src/notebooks/connect.ipynb">connect.ipynb</a>, and on the right side window the same file is shown on the JL running on SDdumont:</p>
 <p><img alt="" src="img/set017.png" /></p>
-<p>The notebook file "connect.ipynb" is available at: <a href="https://github.com/efurlanm/msc22/blob/main/docs/notebooks/connect.html">https://github.com/efurlanm/msc22/blob/main/docs/notebooks/connect.html</a></p>
+<p>The notebook file "connect.ipynb" is available at: <a href="https://github.com/efurlanm/msc22/blob/main/docs-src/notebooks/connect.ipynb">https://github.com/efurlanm/msc22/blob/main/docs-src/notebooks/connect.ipynb</a></p>
 <p>At this point we already have the basic tools configured, and from now on to access SDumont the workflow is:</p>
 <ul>
 <li>run JL and ST servers on local machine</li>
