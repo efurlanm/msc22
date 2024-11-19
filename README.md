@@ -1,5 +1,5 @@
 # My MSc
 
-Website: <http://efurlanm.github.io/msc22/>*
+Website: <http://efurlanm.github.io/msc22/>
 
-This repository contains the implementations made for my master's thesis, as well as miscellaneous materials and related information.
+This repository contains material related to my master's thesis, including implementations made, and related information.
