@@ -1,20 +1,21 @@
-site_name: My MSc
+site_name: MSc
 site_author: Eduardo Furlan
+site_url: https://efurlanm.github.io/msc22/
 copyright: CC BY-NC 4.0 License
-repo_name: efurlanm/msc22
-repo_url: http://github.com/efurlanm/msc22
+repo_name: msc22
+repo_url: http://github.com/efurlanm/msc22/
 docs_dir: docs-src
 site_dir: docs
-use_directory_urls: false  # need for inline html and dir navigation
 theme:
     name: material
+    # squidfunk.github.io/mkdocs-material/setup/changing-the-colors/
     palette:
-# https://squidfunk.github.io/mkdocs-material/setup/changing-the-colors/
         primary: teal
         accent: teal
     features:
         - header.autohide
 plugins:
+    - search
     - mkdocs-jupyter
 markdown_extensions:
     - def_list
@@ -23,5 +24,4 @@ markdown_extensions:
 extra_css:
     - css/extra.css
 exclude_docs: |
-    .ipynb_checkpoints
-    .git
+    .*

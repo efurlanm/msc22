@@ -9,7 +9,7 @@
     My master's thesis
 
 *Last edited: 2023-08-14<br>
-Website: <http://efurlanm.github.io/msc22>*
+Website: <http://efurlanm.github.io/msc22/>*
 
 This repository contains the implementations made for my master's thesis, as well as miscellaneous materials and related information. The thesis explores three test cases implemented in the [LNCC Santos Dumont supercomputer](http://sdumont.lncc.br) (SDumont), described bellow.
 
@@ -26,9 +26,9 @@ This repository contains the implementations made for my master's thesis, as wel
 
 - SDumont manual. User manual from LNCC (in Portuguese) - <http://sdumont.lncc.br/support_manual.php>
 
-- Using the SDumont. Manual in the form of slides, including some more details (in Portuguese) - <http://www.linea.gov.br/wp-content/uploads/lineadbfiles/apresentacao/17%20-%20Usando%20o%20santos%20dumont%20(16_9).pdf>
+- Using the SDumont. Manual in the form of slides, including some more details (in Portuguese) - <http://www.linea.org.br/wp-content/uploads/lineadbfiles/apresentacao/17%20-%20Usando%20o%20santos%20dumont%20(16_9).pdf>
 
-- Cadase project. Tutorial with screenshots, part of the Cadase project, which aims to perform numerical modeling and simulations, using HPC techniques, of applications belonging to the energy sector (in Portuguese) - <http://sites.usp.br/cadase/recursos-computacionais/tutoriais-sdumont>
+- Cadase project. Tutorial with screenshots, part of the Cadase project, which aims to perform numerical modeling and simulations, using HPC techniques, of applications belonging to the energy sector (in Portuguese) - <http://sites.usp.br/cadase/recursos-computacionais/tutoriais-sdumont> (broken link)
 
 - IDeepS project - <http://github.com/vsantjr/IDeepS>
 
