@@ -1,4 +1,4 @@
-# My MSc Thesis
+# My MSc
 
 Website: <http://efurlanm.github.io/msc22/>
 
