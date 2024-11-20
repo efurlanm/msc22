@@ -12,6 +12,7 @@ theme:
     palette:
         primary: teal
         accent: teal
+    font: false
     features:
         - header.autohide
 plugins:
