@@ -17,7 +17,6 @@ theme:
         - header.autohide
 plugins:
     - search
-    - mkdocs-jupyter
 markdown_extensions:
     - def_list
     - md_in_html
