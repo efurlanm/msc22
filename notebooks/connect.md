@@ -2,9 +2,9 @@
 
 *Last edited: 2024-11-22*
 
-This notebook is available at: <http://github.com/efurlanm/msc22/blob/main/docs-src/notebooks/connect.ipynb>
-
 - Turn on the VPN first, using the system's network manager
+- Change the `/scratch/app/anaconda3/2020.11/etc/profile.d/conda.sh` address to reflect your Anaconda installation.
+- The `conda` "--stack" option should be used with caution as it can cause unwanted issues.
 
 Connect:
 
@@ -45,8 +45,3 @@ pkill -f 8889:
 ```
 
 - Turn off the VPN, using the system's network manager
-
-
-```python
-
-```

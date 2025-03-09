@@ -21,7 +21,6 @@ What will be seen next is:
 - Configure ST to keep directories synchronized between machines;
 - Run JL on both local and SDumont machines
 
-
 ## Anaconda install (local machine)
 
 Let's start by installing the Anaconda distribution on the local machine, and for that we are going to download it, and this can be done either through the browser or the CLI:
@@ -48,7 +47,6 @@ Running JupyterLab to check if it's already working (the web browser will run au
 ![](img/set005.png)
 
 At this point the Anaconda distribution is installed and JupyterLab is running on the local machine. 
-
 
 ## VPN setup (local machine)
 
@@ -78,7 +76,6 @@ Then, through the network manager, make the connection, and it should appear con
 
 ![](img/set022.png)
 
-
 ## SSH setup
 
 The next step is to configure SSH to use keys and not passwords, and the steps include creating the key and copying it to the SDdumont user area. 
@@ -93,7 +90,7 @@ The `~/.ssh/config` file on the local machine would look like this:
             User <username>
             ControlMaster auto
             ControlPath ~/.ssh/remote_sd
-
+    
     ...
 
 The `<username>` needs to be replaced with the username. The option called ControlMaster allows sharing of multiple sessions on a single network connection, so when connecting to the cluster (using `ssh -Nf sd`) the connection is active, and all subsequent ssh sessions (including svn, rsync , etc. ) do not need authentication. At the end of use, it is necessary to end the connection with the command `ssh -O exit sd`. Note that the `<username>` is the username being used on the machine, and will vary from case to case.
@@ -133,9 +130,9 @@ Copy the SSH key to the user area on the SDdumont:
     /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
     /usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
     <username>@login.sdumont.lncc.br's password: 
-
+    
     Number of key(s) added: 1
-
+    
     Now try logging into the machine, with:   "ssh '<username>@login.sdumont.lncc.br'"
     and check to make sure that only the key(s) you wanted were added.
 
@@ -150,22 +147,21 @@ At this point, if everything was configured correctly, it is already possible to
      \___ \| |  | | | | | '_ ` _ \ / _ \| '_ \| __|
      ____) | |__| | |_| | | | | | | (_) | | | | |_ 
     |_____/|_____/ \__,_|_| |_| |_|\___/|_| |_|\__|
-                                                    
+    
     _________________________________________________________________
-
+    
     Manual: http://sdumont.lncc.br/support_manual.php
     _________________________________________________________________
     The available softwares can be listed with the command: module avail
     If there's something missing, please get in contact with helpdesk-sdumont@lncc.br
     _________________________________________________________________
-
+    
     O termo de uso do Supercomputador SDdumont foi atualizado em 10/10/2019.
     Ao continuar você concorda com todos os termos descritos nele.
-
+    
     Termo de uso: http://sdumont.lncc.br/terms.php
     _________________________________________________________________
     [<username>@sdumont13 ~]$
-
 
 ## Conda environment (SDumont)
 
@@ -188,26 +184,26 @@ Let's create an empty conda environment in the user area and activate it nested 
     $ conda create --prefix /scratch${HOME#/prj}/env01
     Collecting package metadata (current_repodata.json): done
     Solving environment: done
-
-
+    
+    
     ==> WARNING: A newer version of conda exists. <==
     current version: 4.9.2
     latest version: 4.12.0
-
+    
     Please update conda by running
-
+    
         $ conda update -n base -c defaults conda
-
-
-
+    
+    
+    
     ## Package Plan ##
-
+    
     environment location: /scratch/<project>/<username>/env01
-
-
-
+    
+    
+    
     Proceed ([y]/n)? 
-
+    
     Preparing transaction: done
     Verifying transaction: done
     Executing transaction: done
@@ -220,7 +216,6 @@ Let's create an empty conda environment in the user area and activate it nested 
     #
     #     $ conda deactivate
 
-
 And to activate and access the nested environment, we first configure the shell:
 
     $ source /scratch/app/anaconda3/2020.11/etc/profile.d/conda.sh
@@ -231,7 +226,6 @@ And then we activate the nested environment:
 
 Now we can update or install missing packages.
 
-
 ## ST setup (SDumont)
 
 The main purpose of `syncthing` (ST) is to have a mirror directory automatically and constantly synchronized between the local machine and SDdumont, so that we don't have to remember to copy files from one machine to another, or worry about what else is updated where, thus automating a part of the workflow. ST also works similarly to JL, with client/server architecture and web interface. The ST needs to be installed on both the local machine and the SDdumont, and this can be done using `conda`. Let's start with the SDdumont, assuming the nested conda environment is already active:
@@ -239,48 +233,47 @@ The main purpose of `syncthing` (ST) is to have a mirror directory automatically
     $ conda install -c conda-forge syncthing
     Collecting package metadata (current_repodata.json): done
     Solving environment: done
-
-
+    
+    
     ==> WARNING: A newer version of conda exists. <==
     current version: 4.9.2
     latest version: 4.12.0
-
+    
     Please update conda by running
-
+    
         $ conda update -n base -c defaults conda
-
-
-
+    
+    
+    
     ## Package Plan ##
-
+    
     environment location: /scratch/<project>/<username>/env01
-
+    
     added / updated specs:
         - syncthing
-
-
+    
+    
     The following packages will be downloaded:
-
+    
         package                    |            build
         ---------------------------|-----------------
         syncthing-1.19.2           |       ha8f183a_0         8.2 MB  conda-forge
         ------------------------------------------------------------
                                             Total:         8.2 MB
-
+    
     The following NEW packages will be INSTALLED:
-
+    
     syncthing          conda-forge/linux-64::syncthing-1.19.2-ha8f183a_0
-
-
+    
+    
     Proceed ([y]/n)? 
-
-
+    
+    
     Downloading and Extracting Packages
     syncthing-1.19.2     | 8.2 MB    | ############################################# | 100% 
     Preparing transaction: done
     Verifying transaction: done
     Executing transaction: done
-
 
 ## ST setup (local machine)
 
@@ -291,28 +284,28 @@ Let's do the same on the local machine, but in this case assuming the conda envi
     (base) x@vm001:~$ conda install -c conda-forge syncthing
     Collecting package metadata (current_repodata.json): done
     Solving environment: done
-
-
+    
+    
     ==> WARNING: A newer version of conda exists. <==
     current version: 4.10.3
     latest version: 4.12.0
-
+    
     Please update conda by running
-
+    
         $ conda update -n base -c defaults conda
-
-
-
+    
+    
+    
     ## Package Plan ##
-
+    
     environment location: /home/<username>/anaconda3
-
+    
     added / updated specs:
         - syncthing
-
-
+    
+    
     The following packages will be downloaded:
-
+    
         package                    |            build
         ---------------------------|-----------------
         conda-4.12.0               |   py39hf3d152e_0        1014 KB  conda-forge
@@ -320,20 +313,20 @@ Let's do the same on the local machine, but in this case assuming the conda envi
         syncthing-1.19.2           |       ha8f183a_0         8.2 MB  conda-forge
         ------------------------------------------------------------
                                             Total:         9.2 MB
-
+    
     The following NEW packages will be INSTALLED:
-
+    
     python_abi         conda-forge/linux-64::python_abi-3.9-2_cp39
     syncthing          conda-forge/linux-64::syncthing-1.19.2-ha8f183a_0
-
+    
     The following packages will be UPDATED:
-
+    
     conda              pkgs/main::conda-4.10.3-py39h06a4308_0 --> conda-forge::conda-4.12.0-py39hf3d152e_0
-
-
+    
+    
     Proceed ([y]/n)? 
-
-
+    
+    
     Downloading and Extracting Packages
     conda-4.12.0         | 1014 KB   | ############################################# | 100% 
     syncthing-1.19.2     | 8.2 MB    | ############################################# | 100% 
@@ -341,7 +334,6 @@ Let's do the same on the local machine, but in this case assuming the conda envi
     Preparing transaction: done
     Verifying transaction: done
     Executing transaction: done
-
 
 ## JL (local machine)
 
@@ -376,7 +368,6 @@ Enter the `Actions` menu choose `Show ID` and write down the ID to use later.
 
 From this point on, most tasks can be done within JL as it has a file browser, terminal, notebook, text editor, table of contents, pdf viewer, etc. Note that there are several possible ways to use JL, and I'm only using one of them. To access the SDumont we will use the JL, the only thing that will be done "outside" will be the VPN connection that will be made using the system's network manager.
 
-
 ## JL (SDumont)
 
 To access SDumont we will choose two random ports, one for JL (35655), and another for ST (28863). First we activate the VPN in the system's network manager, then using a notebook in the JL, we activate the SSH connection, then already in the login node we activate the CE, then the STing, we enter the working directory (~/Sync), we run the JL server, and finally, on the local machine, we create the two tunnels to access the JL and STThing that are running on SDumont. The commands below are running inside a [notebook cell in JL](https://github.com/efurlanm/msc22/blob/main/docs-src/notebooks/connect.ipynb) on the local machine:
@@ -409,10 +400,10 @@ ST running on SDdumont:
 
 In this example above, we have the servers running with the interface being accessed in the web browser on the local machine at the addresses:
 
-| server | local machine | SDumont |
-| --- | --- | --- |
-| JL | localhost:8888 | localhost:8889 |
-| ST | localhost:8384 | localhost:8385 |
+| server | local machine  | SDumont        |
+| ------ | -------------- | -------------- |
+| JL     | localhost:8888 | localhost:8889 |
+| ST     | localhost:8384 | localhost:8385 |
 
 The next step now is to sync the `~/Sync` directories. To do this, in ST, we click on *+ Add Remote Device* and enter the ID that we had previously noted:
 
